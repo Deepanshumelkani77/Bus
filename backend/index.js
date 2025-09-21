@@ -1,23 +1,43 @@
-
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+require("dotenv").config();
 
 const app = express();
 
 // Middleware
 app.use(express.json());
 app.use(cors());
-// Start Server
-const PORT =  2000;
-app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
 
+// Health check
+app.get("/health", (req, res) => {
+  res.json({ status: "ok" });
+});
 
+// Routes
+const authRoutes = require("./routes/auth");
+app.use("/auth", authRoutes);
 
-// Connect to MongoDB
-mongoose.connect("mongodb+srv://deepumelkani123_db_user:Bus7777@cluster0.ax4xicv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log("✅ MongoDB Connected"))
-.catch((err) => console.error("❌ MongoDB Connection Error:", err));
+const PORT = process.env.PORT || 2000;
+
+// Connect to MongoDB then start server
+async function start() {
+  try {
+    const mongoUri = process.env.MONGO_URI;
+    if (!mongoUri) {
+      console.warn("⚠️ MONGO_URI not set in environment. Using default local mongodb://127.0.0.1:27017/busapp");
+    }
+    await mongoose.connect(mongoUri || "mongodb://127.0.0.1:27017/busapp", {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log("✅ MongoDB Connected");
+
+    app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+  } catch (err) {
+    console.error("❌ Server startup error:", err);
+    process.exit(1);
+  }
+}
+
+start();
