@@ -1,20 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, RefreshControl, ScrollView, Modal, TextInput } from 'react-native';
-import { useRouter, useNavigation } from 'expo-router';
+import { useNavigation } from 'expo-router';
 import { theme } from '../lib/theme';
 import { getBuses, getCities, Bus } from '../lib/api';
 import BusCard from '../components/BusCard';
 
-function Chip({ label, selected, onPress }: { label: string; selected?: boolean; onPress?: () => void }) {
-  return (
-    <TouchableOpacity onPress={onPress} style={[styles.chip, selected && styles.chipSelected]}>
-      <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{label}</Text>
-    </TouchableOpacity>
-  );
-}
-
 export default function HomeScreen() {
-  const router = useRouter();
   const navigation = useNavigation();
   const [cities, setCities] = useState<string[]>([]);
   const [selectedCity, setSelectedCity] = useState<string | undefined>(undefined);

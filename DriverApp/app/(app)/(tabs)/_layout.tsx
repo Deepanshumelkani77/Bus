@@ -2,6 +2,8 @@ import React from 'react';
 import { Tabs } from 'expo-router';
 import { DrawerToggleButton } from '@react-navigation/drawer';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { View, Text } from 'react-native';
+import BusLogo from '../../../components/BusLogo';
 import { theme } from '../../../lib/theme';
 
 export default function TabsLayout() {
@@ -13,7 +15,14 @@ export default function TabsLayout() {
         tabBarActiveTintColor: theme.colors.navy,
         tabBarInactiveTintColor: theme.colors.textSecondary,
         tabBarStyle: { backgroundColor: theme.colors.card, borderTopColor: theme.colors.border },
-        headerLeft: () => <DrawerToggleButton tintColor={theme.colors.navyTextOn} />,
+        headerLeft: () => (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingLeft: 8 }}>
+            <BusLogo size={28} iconSize={16} variant="lightOnDark" />
+            <Text style={{ color: theme.colors.navyTextOn, fontWeight: '800' }}>BusTrac</Text>
+          </View>
+        ),
+        headerTitle: '',
+        headerRight: () => <DrawerToggleButton tintColor={theme.colors.navyTextOn} />,
       }}
     >
       <Tabs.Screen
