@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, KeyboardAvoidingView, Platform, Animated, Easing } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { signupDriver } from '../../lib/api';
 import { theme } from '../../lib/theme';
@@ -12,6 +12,24 @@ export default function SignupScreen() {
   const [password, setPassword] = useState('');
   const [city, setCity] = useState('');
   const [loading, setLoading] = useState(false);
+  const fade = useRef(new Animated.Value(0)).current;
+  const slide = useRef(new Animated.Value(10)).current;
+  const float = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fade, { toValue: 1, duration: 500, useNativeDriver: true }),
+      Animated.timing(slide, { toValue: 0, duration: 500, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+    ]).start();
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(float, { toValue: 1, duration: 3000, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        Animated.timing(float, { toValue: 0, duration: 3000, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+      ])
+    ).start();
+  }, [fade, slide, float]);
+
+  const floatY = float.interpolate({ inputRange: [0, 1], outputRange: [0, -6] });
 
   const onSignup = async () => {
     if (!name || !email || !password || !city) {
@@ -35,15 +53,19 @@ export default function SignupScreen() {
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={styles.container}>
         <View style={styles.hero}>
-          <Text style={styles.brand}>BusTrac</Text>
-          <View style={{ marginTop: 8, marginBottom: 12 }}>
-            <BusLogo size={64} iconSize={36} variant="lightOnDark" />
-          </View>
-          <Text style={styles.heroTitle}>Create your BusTrac account</Text>
-          <Text style={styles.heroSubtitle}>Join and start driving in your city</Text>
+          <Animated.View style={[styles.blobOne, { transform: [{ translateY: floatY }] }]} />
+          <View style={styles.blobTwo} />
+          <Animated.View style={{ alignItems: 'center', opacity: fade, transform: [{ translateY: slide }] }}>
+            <Text style={styles.brand}>BusTrac</Text>
+            <View style={{ marginTop: 8, marginBottom: 12 }}>
+              <BusLogo size={64} iconSize={36} variant="lightOnDark" />
+            </View>
+            <Text style={styles.heroTitle}>Create your account</Text>
+            <Text style={styles.heroSubtitle}>Join and start driving in your city</Text>
+          </Animated.View>
         </View>
 
-        <View style={styles.card}>
+        <Animated.View style={[styles.card, { opacity: fade, transform: [{ translateY: slide }] }]}>
           <Text style={styles.label}>Full Name</Text>
           <TextInput placeholder="John Doe" value={name} onChangeText={setName} style={styles.input} />
 
@@ -67,7 +89,7 @@ export default function SignupScreen() {
           <Text style={styles.switchText}>
             Already have an account? <Link href="/(auth)/login" style={styles.link}>Sign in</Link>
           </Text>
-        </View>
+        </Animated.View>
       </View>
     </KeyboardAvoidingView>
   );
@@ -88,6 +110,25 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: theme.radius.xl,
     borderBottomRightRadius: theme.radius.xl,
     marginHorizontal: -theme.spacing.lg,
+    overflow: 'hidden',
+  },
+  blobOne: {
+    position: 'absolute',
+    width: 200,
+    height: 200,
+    borderRadius: 120,
+    backgroundColor: 'rgba(56,189,248,0.20)',
+    top: -50,
+    right: -30,
+  },
+  blobTwo: {
+    position: 'absolute',
+    width: 140,
+    height: 140,
+    borderRadius: 100,
+    backgroundColor: 'rgba(20,184,166,0.18)',
+    bottom: -30,
+    left: -20,
   },
   brand: {
     color: theme.colors.navyTextOn,
@@ -134,6 +175,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 20,
     width: '100%',
+    ...theme.shadow.card,
   },
   buttonText: {
     color: theme.colors.navyTextOn,
