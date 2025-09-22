@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "DriverApp",
-    "slug": "DriverApp",
+    "name": "BusTrac",
+    "slug": "bustrac",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "driverapp",
+    "scheme": "bustrac",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {

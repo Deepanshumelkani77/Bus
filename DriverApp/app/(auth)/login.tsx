@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, KeyboardAvo
 import { Link, useRouter } from 'expo-router';
 import { loginDriver } from '../../lib/api';
 import { theme } from '../../lib/theme';
+import BusLogo from '../../components/BusLogo';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -32,9 +33,14 @@ export default function LoginScreen() {
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={styles.container}>
-        <View style={styles.headerWrap}>
-          <Text style={styles.title}>Driver Login</Text>
-          <Text style={styles.subtitle}>Access your driver dashboard</Text>
+        {/* Hero header */}
+        <View style={styles.hero}>
+          <Text style={styles.brand}>BusTrac</Text>
+          <View style={{ marginTop: 8, marginBottom: 12 }}>
+            <BusLogo size={64} iconSize={36} variant="lightOnDark" />
+          </View>
+          <Text style={styles.heroTitle}>Welcome to BusTrac</Text>
+          <Text style={styles.heroSubtitle}>Please sign in to continue</Text>
         </View>
 
         <View style={styles.card}>
@@ -60,7 +66,11 @@ export default function LoginScreen() {
           <TouchableOpacity style={[styles.button, loading && { opacity: 0.7 }]} onPress={onLogin} disabled={loading}>
             <Text style={styles.buttonText}>{loading ? 'Signing in...' : 'Sign In'}</Text>
           </TouchableOpacity>
-
+          <View style={styles.dividerRow}>
+            <View style={styles.divider} />
+            <Text style={styles.dividerText}>or</Text>
+            <View style={styles.divider} />
+          </View>
           <Text style={styles.switchText}>
             New driver? <Link href="/(auth)/signup" style={styles.link}>Create an account</Link>
           </Text>
@@ -75,25 +85,40 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.background,
     paddingHorizontal: theme.spacing.lg,
+    paddingTop: 0,
+  },
+  hero: {
+    backgroundColor: theme.colors.navy,
     paddingTop: 80,
+    paddingBottom: 40,
+    paddingHorizontal: theme.spacing.lg,
+    borderBottomLeftRadius: theme.radius.xl,
+    borderBottomRightRadius: theme.radius.xl,
+    marginHorizontal: -theme.spacing.lg,
   },
-  headerWrap: {
-    marginBottom: 24,
+  brand: {
+    color: theme.colors.navyTextOn,
+    opacity: 0.9,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+    marginBottom: 8,
+    fontSize: 16,
   },
-  title: {
-    color: theme.colors.textPrimary,
-    fontSize: 28,
+  heroTitle: {
+    color: theme.colors.navyTextOn,
+    fontSize: 26,
     fontWeight: '800',
   },
-  subtitle: {
-    color: theme.colors.textSecondary,
-    marginTop: 4,
+  heroSubtitle: {
+    color: 'rgba(255,255,255,0.8)',
+    marginTop: 6,
   },
   card: {
     backgroundColor: theme.colors.card,
     borderRadius: theme.radius.lg,
     padding: theme.spacing.lg,
     ...theme.shadow.card,
+    marginTop: -24,
   },
   label: {
     color: theme.colors.textSecondary,
@@ -111,10 +136,11 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: theme.colors.navy,
-    borderRadius: theme.radius.sm,
-    paddingVertical: 14,
+    borderRadius: theme.radius.pill,
+    paddingVertical: 16,
     alignItems: 'center',
     marginTop: 20,
+    width: '100%',
   },
   buttonText: {
     color: theme.colors.navyTextOn,
@@ -129,5 +155,20 @@ const styles = StyleSheet.create({
   link: {
     color: theme.colors.navy,
     fontWeight: '700',
+  },
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 16,
+  },
+  divider: {
+    flex: 1,
+    height: 1,
+    backgroundColor: theme.colors.border,
+  },
+  dividerText: {
+    color: theme.colors.textSecondary,
+    paddingHorizontal: 8,
   },
 });
