@@ -23,11 +23,11 @@ const PORT = process.env.PORT || 2000;
 // Connect to MongoDB then start server
 async function start() {
   try {
-    const mongoUri = process.env.MONGO_URI;
+    const mongoUri = "mongodb+srv://deepumelkani123_db_user:Bus7777@cluster0.ax4xicv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
     if (!mongoUri) {
       console.warn("⚠️ MONGO_URI not set in environment. Using default local mongodb://127.0.0.1:27017/busapp");
     }
-    await mongoose.connect(mongoUri || "mongodb://127.0.0.1:27017/busapp", {
+    await mongoose.connect(mongoUri , {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
