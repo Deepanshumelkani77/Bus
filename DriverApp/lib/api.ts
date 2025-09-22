@@ -23,6 +23,26 @@ export type AuthResponse = {
   };
 };
 
+export type Bus = {
+  _id: string;
+  busNumber: string;
+  image?: string;
+  city: string;
+  totalSeats: number;
+  status?: string;
+};
+
+async function getJSON<T>(path: string): Promise<T> {
+  const res = await fetch(`${BASE_URL}${path}`);
+  const text = await res.text();
+  const data = text ? JSON.parse(text) : {};
+  if (!res.ok) {
+    const msg = (data as any)?.message || `Request failed with status ${res.status}`;
+    throw { response: { data: { message: msg }, status: res.status } };
+  }
+  return data as T;
+}
+
 async function postJSON<T>(path: string, body: any): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {
     method: 'POST',
@@ -49,4 +69,14 @@ export async function signupDriver(input: { name: string; email: string; passwor
 
 export async function loginDriver(input: { email: string; password: string }) {
   return postJSON<AuthResponse>('/auth/login', input);
+}
+
+// Buses
+export async function getCities() {
+  return getJSON<{ cities: string[] }>('/buses/cities');
+}
+
+export async function getBuses(city?: string) {
+  const q = city ? `?city=${encodeURIComponent(city)}` : '';
+  return getJSON<{ buses: Bus[] }>(`/buses${q}`);
 }
