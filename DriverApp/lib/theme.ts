@@ -1,4 +1,5 @@
 // Centralized theme for DriverApp inspired by the provided design
+import { Platform } from 'react-native';
 // Palette: soft mint background, deep navy headers/buttons, white cards, subtle grays,
 // with green and yellow accents for statuses.
 
@@ -54,13 +55,19 @@ export const theme = {
     xl: 28,
   },
   shadow: {
-    card: {
-      shadowColor: '#000',
-      shadowOpacity: 0.08,
-      shadowRadius: 12,
-      shadowOffset: { width: 0, height: 6 },
-      elevation: 3,
-    },
+    card: Platform.select({
+      web: {
+        // React Native Web: prefer boxShadow (avoids shadow* deprecation warnings)
+        boxShadow: '0px 6px 12px rgba(16, 24, 40, 0.08)',
+      },
+      default: {
+        shadowColor: '#000',
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
+        shadowOffset: { width: 0, height: 6 },
+        elevation: 3,
+      },
+    }),
   },
   // Semantic aliases for easier usage
   semantic: {

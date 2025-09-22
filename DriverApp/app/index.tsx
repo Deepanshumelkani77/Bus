@@ -11,14 +11,14 @@ export default function Index() {
       <Text style={styles.appName}>BusTrac</Text>
       <BusLogo size={88} iconSize={48} />
       <Text style={styles.title}>Welcome to BusTrac</Text>
-      <Text style={styles.subtitle}>Please select your login type</Text>
+      <Text style={styles.subtitle}>This app is for drivers. Sign in to continue or create a new account.</Text>
 
       <TouchableOpacity style={styles.primaryBtn} onPress={() => router.push('/(auth)/login')}>
-        <Text style={styles.primaryText}>Admin Login</Text>
+        <Text style={styles.primaryText}>Sign In</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.secondaryBtn} onPress={() => router.push('/(auth)/login')}>
-        <Text style={styles.secondaryText}>Driver Login</Text>
+      <TouchableOpacity style={styles.secondaryBtn} onPress={() => router.push('/(auth)/signup')}>
+        <Text style={styles.secondaryText}>Create Account</Text>
       </TouchableOpacity>
 
       <Text style={styles.terms}>

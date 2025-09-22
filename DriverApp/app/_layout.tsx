@@ -9,6 +9,7 @@ export default function RootLayout() {
         headerTintColor: theme.colors.navyTextOn,
         headerTitleStyle: { fontWeight: '700' },
         contentStyle: { backgroundColor: theme.colors.background },
+        headerShown:false
       }}
     />
   );

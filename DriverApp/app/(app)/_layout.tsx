@@ -12,6 +12,7 @@ export default function AppLayout() {
         drawerType: 'front',
         drawerStyle: { width: 280 },
         sceneStyle: { backgroundColor: theme.colors.background },
+         headerShown:false
       }}
       drawerContent={() => <SidebarContent />}
     />

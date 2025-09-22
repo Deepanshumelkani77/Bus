@@ -1,12 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, RefreshControl, ScrollView, Modal, TextInput } from 'react-native';
-import { useNavigation } from 'expo-router';
+// no navigation imports needed here
 import { theme } from '../lib/theme';
 import { getBuses, getCities, Bus } from '../lib/api';
 import BusCard from '../components/BusCard';
 
 export default function HomeScreen() {
-  const navigation = useNavigation();
   const [cities, setCities] = useState<string[]>([]);
   const [selectedCity, setSelectedCity] = useState<string | undefined>(undefined);
   const [buses, setBuses] = useState<Bus[]>([]);
@@ -15,9 +14,7 @@ export default function HomeScreen() {
   const [cityModalVisible, setCityModalVisible] = useState(false);
   const [citySearch, setCitySearch] = useState('');
 
-  useEffect(() => {
-    navigation.setOptions?.({ title: "Today's Schedule" });
-  }, [navigation]);
+  // Header is provided by Tabs; keep screen content simple
 
   async function loadCities() {
     try {
@@ -56,7 +53,6 @@ export default function HomeScreen() {
 
   const header = useMemo(() => (
     <View style={styles.headerArea}>
-      <Text style={styles.pageTitle}>Today's Schedule</Text>
       <Text style={styles.subtitle}>Select a city to filter buses</Text>
       <View style={styles.selectorRow}>
         <TouchableOpacity style={styles.selector} onPress={() => setCityModalVisible(true)}>
@@ -213,6 +209,18 @@ const styles = StyleSheet.create({
   },
   cityText: {
     color: theme.colors.textPrimary,
+  },
+  modalClose: {
+    marginTop: 12,
+    alignSelf: 'flex-end',
+    backgroundColor: theme.colors.navy,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: theme.radius.pill,
+  },
+  modalCloseText: {
+    color: theme.colors.navyTextOn,
+    fontWeight: '700',
   },
   empty: {
     color: theme.colors.textSecondary,

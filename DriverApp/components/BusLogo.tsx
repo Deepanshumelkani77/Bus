@@ -1,5 +1,5 @@
 import React from 'react';
-import { View } from 'react-native';
+import { View, Platform } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../lib/theme';
 
@@ -51,11 +51,15 @@ export const BusLogo: React.FC<Props> = ({
           borderRadius: rounded ? innerSize / 2 : theme.radius.lg,
           alignItems: 'center',
           justifyContent: 'center',
-          shadowColor: '#000',
-          shadowOpacity: 0.08,
-          shadowRadius: 12,
-          shadowOffset: { width: 0, height: 6 },
-          elevation: 2,
+          ...(Platform.OS === 'web'
+            ? { boxShadow: '0px 6px 12px rgba(16, 24, 40, 0.08)' }
+            : {
+                shadowColor: '#000',
+                shadowOpacity: 0.08,
+                shadowRadius: 12,
+                shadowOffset: { width: 0, height: 6 },
+                elevation: 2,
+              }),
           overflow: 'hidden',
         }}
       >
