@@ -1,6 +1,6 @@
 import React from 'react';
 import { View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../lib/theme';
 
 interface Props {
@@ -20,7 +20,7 @@ export const BusLogo: React.FC<Props> = ({
 }) => {
   const bg = variant === 'darkOnLight' ? theme.colors.muted : theme.colors.navy;
   const fg = variant === 'darkOnLight' ? theme.colors.navy : theme.colors.navyTextOn;
-  const ring = accentColor || theme.colors.sky;
+  const ring = accentColor || theme.colors.teal;
   const innerSize = size - 10;
   return (
     <View
@@ -40,7 +40,7 @@ export const BusLogo: React.FC<Props> = ({
           height: size,
           borderRadius: rounded ? size / 2 : theme.radius.lg,
           backgroundColor: ring,
-          opacity: 0.2,
+          opacity: 0.25,
         }}
       />
       <View
@@ -56,9 +56,22 @@ export const BusLogo: React.FC<Props> = ({
           shadowRadius: 12,
           shadowOffset: { width: 0, height: 6 },
           elevation: 2,
+          overflow: 'hidden',
         }}
       >
-        <Ionicons name="bus" size={iconSize} color={fg} />
+        <MaterialCommunityIcons name="bus" size={iconSize} color={fg} />
+        {/* Accent footer bar */}
+        <View
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: innerSize * 0.18,
+            backgroundColor: ring,
+            opacity: 0.35,
+          }}
+        />
       </View>
     </View>
   );
