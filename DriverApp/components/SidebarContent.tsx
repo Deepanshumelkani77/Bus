@@ -1,20 +1,34 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Animated, Easing } from 'react-native';
 import { Link } from 'expo-router';
 import { theme } from '../lib/theme';
 import BusLogo from './BusLogo';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function SidebarContent() {
+  const fade = useRef(new Animated.Value(0)).current;
+  const slide = useRef(new Animated.Value(10)).current;
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fade, { toValue: 1, duration: 400, useNativeDriver: true }),
+      Animated.timing(slide, { toValue: 0, duration: 400, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+    ]).start();
+  }, [fade, slide]);
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <BusLogo size={72} iconSize={36} variant="darkOnLight" />
-        <Text style={styles.brand}>BusTrac</Text>
-        <Text style={styles.subtitle}>Driver Console</Text>
+        {/* Decorative blobs */}
+        <View style={styles.blobOne} />
+        <View style={styles.blobTwo} />
+        <Animated.View style={{ alignItems: 'center', opacity: fade, transform: [{ translateY: slide }] }}>
+          <BusLogo size={74} iconSize={38} variant="darkOnLight" />
+          <Text style={styles.brand}>BusTrac</Text>
+          <Text style={styles.subtitle}>Driver Console</Text>
+        </Animated.View>
       </View>
 
-      <View style={styles.links}>
+      <Animated.View style={[styles.links, { opacity: fade, transform: [{ translateY: slide }] }]}>
         <Link href="/home" asChild>
           <TouchableOpacity style={styles.linkRow}>
             <MaterialCommunityIcons name="view-dashboard" size={20} color={theme.colors.textPrimary} />
@@ -33,7 +47,7 @@ export default function SidebarContent() {
             <Text style={styles.linkText}>Profile</Text>
           </TouchableOpacity>
         </Link>
-      </View>
+      </Animated.View>
 
       <View style={styles.footer}>
         <Text style={styles.footerText}>© {new Date().getFullYear()} BusTrac</Text>
@@ -49,10 +63,29 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    paddingTop: 40,
-    paddingBottom: 16,
+    paddingTop: 48,
+    paddingBottom: 20,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
+    overflow: 'hidden',
+  },
+  blobOne: {
+    position: 'absolute',
+    width: 180,
+    height: 180,
+    borderRadius: 120,
+    backgroundColor: theme.colors.skyBg,
+    top: -40,
+    right: -40,
+  },
+  blobTwo: {
+    position: 'absolute',
+    width: 120,
+    height: 120,
+    borderRadius: 100,
+    backgroundColor: theme.colors.tealBg,
+    bottom: -30,
+    left: -30,
   },
   brand: {
     marginTop: 10,
@@ -72,9 +105,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    borderRadius: theme.radius.sm,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    borderRadius: theme.radius.md,
+    backgroundColor: theme.colors.muted,
   },
   linkText: {
     color: theme.colors.textPrimary,

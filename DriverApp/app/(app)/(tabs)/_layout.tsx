@@ -10,11 +10,16 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerStyle: { backgroundColor: theme.colors.navy },
+        headerStyle: { backgroundColor: theme.colors.navy, shadowColor: '#000' },
         headerTintColor: theme.colors.navyTextOn,
         tabBarActiveTintColor: theme.colors.navy,
         tabBarInactiveTintColor: theme.colors.textSecondary,
-        tabBarStyle: { backgroundColor: theme.colors.card, borderTopColor: theme.colors.border },
+        tabBarStyle: {
+          backgroundColor: theme.colors.card,
+          borderTopColor: theme.colors.border,
+          height: 60,
+          paddingBottom: 6,
+        },
         headerLeft: () => (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingLeft: 8 }}>
             <BusLogo size={28} iconSize={16} variant="lightOnDark" />
