@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { loginDriver } from '../../lib/api';
+import { theme } from '../../lib/theme';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -72,64 +73,61 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
-    paddingHorizontal: 20,
+    backgroundColor: theme.colors.background,
+    paddingHorizontal: theme.spacing.lg,
     paddingTop: 80,
   },
   headerWrap: {
     marginBottom: 24,
   },
   title: {
-    color: 'white',
+    color: theme.colors.textPrimary,
     fontSize: 28,
     fontWeight: '800',
   },
   subtitle: {
-    color: '#cbd5e1',
+    color: theme.colors.textSecondary,
     marginTop: 4,
   },
   card: {
-    backgroundColor: '#111827',
-    borderRadius: 16,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
+    backgroundColor: theme.colors.card,
+    borderRadius: theme.radius.lg,
+    padding: theme.spacing.lg,
+    ...theme.shadow.card,
   },
   label: {
-    color: '#94a3b8',
+    color: theme.colors.textSecondary,
     marginTop: 12,
     marginBottom: 6,
   },
   input: {
-    backgroundColor: '#0b1220',
+    backgroundColor: theme.colors.inputBg,
     borderWidth: 1,
-    borderColor: '#1f2937',
-    color: 'white',
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    borderColor: theme.colors.border,
+    color: theme.colors.textPrimary,
+    borderRadius: theme.radius.sm,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
   },
   button: {
-    backgroundColor: '#22c55e',
-    borderRadius: 10,
+    backgroundColor: theme.colors.navy,
+    borderRadius: theme.radius.sm,
     paddingVertical: 14,
     alignItems: 'center',
     marginTop: 20,
   },
   buttonText: {
-    color: '#052e16',
+    color: theme.colors.navyTextOn,
     fontWeight: '800',
     fontSize: 16,
   },
   switchText: {
-    color: '#94a3b8',
+    color: theme.colors.textSecondary,
     textAlign: 'center',
     marginTop: 16,
   },
   link: {
-    color: '#60a5fa',
+    color: theme.colors.navy,
     fontWeight: '700',
   },
 });

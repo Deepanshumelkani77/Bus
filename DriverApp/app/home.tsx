@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
+import { theme } from '../lib/theme';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -18,22 +19,22 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
-    paddingHorizontal: 20,
+    backgroundColor: theme.colors.background,
+    paddingHorizontal: theme.spacing.lg,
     paddingTop: 80,
   },
   title: {
-    color: 'white',
+    color: theme.colors.textPrimary,
     fontSize: 28,
     fontWeight: '800',
   },
   subtitle: {
-    color: '#cbd5e1',
+    color: theme.colors.textSecondary,
     marginTop: 8,
   },
   button: {
-    backgroundColor: '#3b82f6',
-    borderRadius: 10,
+    backgroundColor: theme.colors.navy,
+    borderRadius: theme.radius.sm,
     paddingVertical: 14,
     alignItems: 'center',
     marginTop: 24,
@@ -41,7 +42,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   buttonText: {
-    color: 'white',
+    color: theme.colors.navyTextOn,
     fontWeight: '700',
   },
 });
