@@ -21,7 +21,7 @@ export default function LoginScreen() {
       const res = await loginDriver({ email: email.trim(), password });
       // TODO: store token securely (SecureStore/Keychain). For MVP, navigate to Home.
       Alert.alert('Welcome', `Logged in as ${res.driver.name}`);
-      router.replace('/home');
+      router.replace('/(app)');
     } catch (e: any) {
       const msg = e?.response?.data?.message || 'Login failed';
       Alert.alert('Error', msg);
