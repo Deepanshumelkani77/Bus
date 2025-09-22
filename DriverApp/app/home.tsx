@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, RefreshControl, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, RefreshControl, ScrollView, Modal, TextInput } from 'react-native';
 import { useRouter, useNavigation } from 'expo-router';
 import { theme } from '../lib/theme';
 import { getBuses, getCities, Bus } from '../lib/api';
@@ -21,6 +21,8 @@ export default function HomeScreen() {
   const [buses, setBuses] = useState<Bus[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [cityModalVisible, setCityModalVisible] = useState(false);
+  const [citySearch, setCitySearch] = useState('');
 
   useEffect(() => {
     navigation.setOptions?.({ title: "Today's Schedule" });
@@ -64,15 +66,15 @@ export default function HomeScreen() {
   const header = useMemo(() => (
     <View style={styles.headerArea}>
       <Text style={styles.pageTitle}>Today's Schedule</Text>
-      <Text style={styles.subtitle}>Choose city to filter buses</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipsRow}>
-        <Chip label="All" selected={!selectedCity} onPress={() => setSelectedCity(undefined)} />
-        {cities.map((c) => (
-          <Chip key={c} label={c} selected={selectedCity === c} onPress={() => setSelectedCity(c)} />
-        ))}
-      </ScrollView>
+      <Text style={styles.subtitle}>Select a city to filter buses</Text>
+      <View style={styles.selectorRow}>
+        <TouchableOpacity style={styles.selector} onPress={() => setCityModalVisible(true)}>
+          <Text style={styles.selectorText}>{selectedCity || 'All Cities'}</Text>
+          <Text style={styles.selectorCaret}>▾</Text>
+        </TouchableOpacity>
+      </View>
     </View>
-  ), [cities, selectedCity]);
+  ), [selectedCity]);
 
   if (loading) {
     return (
@@ -93,6 +95,52 @@ export default function HomeScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         ListEmptyComponent={<Text style={styles.empty}>No buses found {selectedCity ? `in ${selectedCity}` : ''}</Text>}
       />
+
+      {/* City Select Modal */}
+      <Modal visible={cityModalVisible} transparent animationType="fade" onRequestClose={() => setCityModalVisible(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>Select City</Text>
+            <TextInput
+              placeholder="Search city..."
+              value={citySearch}
+              onChangeText={setCitySearch}
+              style={styles.searchInput}
+              placeholderTextColor={theme.colors.textSecondary}
+            />
+            <ScrollView style={{ maxHeight: 320 }}>
+              <TouchableOpacity
+                style={styles.cityItem}
+                onPress={() => {
+                  setSelectedCity(undefined);
+                  setCityModalVisible(false);
+                  setCitySearch('');
+                }}
+              >
+                <Text style={[styles.cityText, !selectedCity && { fontWeight: '800' }]}>All Cities</Text>
+              </TouchableOpacity>
+              {cities
+                .filter((c) => c.toLowerCase().includes(citySearch.toLowerCase()))
+                .map((c) => (
+                  <TouchableOpacity
+                    key={c}
+                    style={styles.cityItem}
+                    onPress={() => {
+                      setSelectedCity(c);
+                      setCityModalVisible(false);
+                      setCitySearch('');
+                    }}
+                  >
+                    <Text style={[styles.cityText, selectedCity === c && { fontWeight: '800', color: theme.colors.navy }]}>{c}</Text>
+                  </TouchableOpacity>
+                ))}
+            </ScrollView>
+            <TouchableOpacity style={styles.modalClose} onPress={() => setCityModalVisible(false)}>
+              <Text style={styles.modalCloseText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -108,6 +156,29 @@ const styles = StyleSheet.create({
   headerArea: {
     marginBottom: theme.spacing.lg,
   },
+  selectorRow: {
+    marginTop: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  selector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    backgroundColor: theme.colors.muted,
+    borderRadius: theme.radius.pill,
+    minWidth: 140,
+  },
+  selectorText: {
+    color: theme.colors.textPrimary,
+    fontWeight: '700',
+  },
+  selectorCaret: {
+    marginLeft: 8,
+    color: theme.colors.textSecondary,
+  },
   pageTitle: {
     color: theme.colors.textPrimary,
     fontSize: 24,
@@ -117,25 +188,40 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
     marginTop: 6,
   },
-  chipsRow: {
-    marginTop: 12,
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: theme.spacing.lg,
   },
-  chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    backgroundColor: theme.colors.muted,
-    borderRadius: theme.radius.pill,
-    marginRight: 10,
+  modalCard: {
+    backgroundColor: theme.colors.card,
+    borderRadius: theme.radius.lg,
+    width: '100%',
+    padding: theme.spacing.lg,
   },
-  chipSelected: {
-    backgroundColor: theme.colors.navy,
-  },
-  chipText: {
+  modalTitle: {
     color: theme.colors.textPrimary,
-    fontWeight: '700',
+    fontWeight: '800',
+    fontSize: 18,
+    marginBottom: 10,
   },
-  chipTextSelected: {
-    color: theme.colors.navyTextOn,
+  searchInput: {
+    backgroundColor: theme.colors.inputBg,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radius.sm,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    marginBottom: 10,
+  },
+  cityItem: {
+    paddingVertical: 12,
+  },
+  cityText: {
+    color: theme.colors.textPrimary,
   },
   empty: {
     color: theme.colors.textSecondary,
