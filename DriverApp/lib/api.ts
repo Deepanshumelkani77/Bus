@@ -2,11 +2,14 @@ import { Platform } from 'react-native';
 
 // Adjust this BASE_URL for your environment if needed
 // If testing on Android emulator use 10.0.2.2 to access the host machine
-const DEFAULT_BASE_URL = Platform.select({
-  android: 'http://10.0.2.2:2000',
-  ios: 'http://localhost:2000',
-  default: 'http://localhost:2000',
-});
+let DEFAULT_BASE_URL = 'http://localhost:2000';
+// 
+
+// Platform.select({
+//   android: 'http://10.0.2.2:2000',
+//   ios: 'http://localhost:2000',
+//   default: 'http://localhost:2000',
+// });
 
 export const BASE_URL = DEFAULT_BASE_URL!;
 
