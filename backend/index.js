@@ -1,7 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-require("dotenv").config();
+
 
 const app = express();
 
@@ -22,7 +22,7 @@ app.use("/buses", busRoutes);
 const tripRoutes = require("./routes/trips");
 app.use("/trips", tripRoutes);
 
-const PORT = process.env.PORT || 2000;
+const PORT =  2000;
 
 // Connect to MongoDB then start server
 async function start() {
@@ -31,10 +31,7 @@ async function start() {
     if (!mongoUri) {
       console.warn("⚠️ MONGO_URI not set in environment. Using default local mongodb://127.0.0.1:27017/busapp");
     }
-    await mongoose.connect(mongoUri , {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await mongoose.connect(mongoUri);
     console.log("✅ MongoDB Connected");
 
     app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
