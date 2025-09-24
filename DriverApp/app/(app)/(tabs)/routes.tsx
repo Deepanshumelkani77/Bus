@@ -1,146 +1,270 @@
-import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform, Alert, ActivityIndicator, TextInput } from 'react-native';
-import { theme } from '../../../lib/theme';
-import { createTrip } from '../../../lib/api';
-import { getCurrentDriver } from '../../../lib/session';
+import React, { useMemo, useState, useRef } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Platform,
+  Alert,
+  ActivityIndicator,
+  TextInput,
+  ScrollView,
+  KeyboardAvoidingView,
+} from 'react-native';
+import MapView, { Marker, Polyline } from 'react-native-maps';
+import axios from 'axios';
+import { theme } from '../../../lib/theme'; // keep your theme import
 
-// NOTE: We will lazy-require GooglePlacesAutocomplete only when a key exists to avoid web bundler issues
-export default function RoutesScreen() {
-  const [source, setSource] = useState('');
-  const [destination, setDestination] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [lastTripId, setLastTripId] = useState<string | null>(null);
-  const [sourceCoords, setSourceCoords] = useState<{ lat: number; lng: number } | undefined>(undefined);
-  const [destinationCoords, setDestinationCoords] = useState<{ lat: number; lng: number } | undefined>(undefined);
+// -----------------
+// HARD-CODED API KEY (as you requested)
+const GOOGLE_API_KEY = "AIzaSyBpr4hS8JlH5-ZJK_cJRGndeeezpdLtbkk";
+// -----------------
 
-  // Use safe access to env to avoid TS complaints in RN
-  const placesKey = "AIzaSyBpr4hS8JlH5-ZJK_cJRGndeeezpdLtbkk"; // your API key
+export default function RoutesMapScreen() {
+  // text labels
+  const [sourceText, setSourceText] = useState('');
+  const [destText, setDestText] = useState('');
+  // coords
+  const [sourceCoords, setSourceCoords] = useState(null);
+  const [destCoords, setDestCoords] = useState(null);
+  // routes: [{ summary, distance, duration, coords: [{lat,longitude}, ...] }]
+  const [routes, setRoutes] = useState([]);
+  const [selectedRouteIndex, setSelectedRouteIndex] = useState(null);
+  const [loadingRoutes, setLoadingRoutes] = useState(false);
 
+  const mapRef = useRef(null);
+
+  // lazy-load GooglePlacesAutocomplete to avoid web bundler issues
   const PlacesAutocomplete = useMemo(() => {
-    if (!placesKey || Platform.OS === 'web') return null;
+    if (Platform.OS === 'web') return null;
     try {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const mod = require('react-native-google-places-autocomplete');
-      return mod.GooglePlacesAutocomplete || mod.default; // ✅ safe fallback
+      return mod.GooglePlacesAutocomplete || mod.default;
     } catch (e) {
-      console.warn('GooglePlacesAutocomplete not available:', e);
+      console.warn('react-native-google-places-autocomplete not available:', e);
       return null;
     }
-  }, [placesKey]);
+  }, []);
 
-  const handleCreate = async () => {
-    if (!source || !destination) {
-      Alert.alert('Missing', 'Please enter both source and destination');
-      return;
+  // decode polyline from Google into [{latitude, longitude}, ...]
+  const decodePolyline = (t) => {
+    if (!t) return [];
+    let points = [];
+    let index = 0, lat = 0, lng = 0;
+    while (index < t.length) {
+      let b, shift = 0, result = 0;
+      do {
+        b = t.charCodeAt(index++) - 63;
+        result |= (b & 0x1f) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+      let dlat = (result & 1) ? ~(result >> 1) : (result >> 1);
+      lat += dlat;
+      shift = 0;
+      result = 0;
+      do {
+        b = t.charCodeAt(index++) - 63;
+        result |= (b & 0x1f) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+      let dlng = (result & 1) ? ~(result >> 1) : (result >> 1);
+      lng += dlng;
+      points.push({ latitude: lat / 1e5, longitude: lng / 1e5 });
     }
-    const driver = getCurrentDriver();
-    if (!driver || !driver.activeBus) {
-      Alert.alert('No Bus Selected', 'Please select a bus first on Home screen.');
+    return points;
+  };
+
+  // Build origin/destination strings and call Directions API
+  const fetchRoutes = async () => {
+    if (!sourceCoords || !destCoords) {
+      Alert.alert('Coordinates missing', 'Pick both source and destination from suggestions.');
       return;
     }
     try {
-      setLoading(true);
-      const res = await createTrip({
-        busId: driver.activeBus,
-        driverId: driver._id,
-        source,
-        destination,
-        sourceCoords,
-        destinationCoords,
+      setLoadingRoutes(true);
+      const origin = `${sourceCoords.lat},${sourceCoords.lng}`;
+      const destination = `${destCoords.lat},${destCoords.lng}`;
+      const url = `https://maps.googleapis.com/maps/api/directions/json`;
+      const res = await axios.get(url, {
+        params: {
+          origin,
+          destination,
+          alternatives: true,
+          key: GOOGLE_API_KEY,
+        },
       });
-      setLastTripId(res.trip?._id || null);
-      Alert.alert('Success', 'Trip created successfully');
-    } catch (e: any) {
-      const msg = e?.response?.data?.message || 'Failed to create trip';
-      Alert.alert('Error', msg);
+
+      if (!res.data || res.data.status !== 'OK') {
+        console.warn('Directions API response', res.data);
+        Alert.alert('Directions error', res.data?.status || 'Failed to fetch routes');
+        setRoutes([]);
+        return;
+      }
+
+      const parsed = res.data.routes.map((r) => {
+        const leg = (r.legs && r.legs[0]) || {};
+        return {
+          summary: r.summary || 'Route',
+          distance: leg.distance ? leg.distance.text : '',
+          duration: leg.duration ? leg.duration.text : '',
+          coords: decodePolyline(r.overview_polyline.points),
+        };
+      });
+
+      setRoutes(parsed);
+      setSelectedRouteIndex(parsed.length ? 0 : null);
+
+      // fit map to first route if exists
+      if (parsed.length && mapRef.current) {
+        const coords = parsed[0].coords;
+        if (coords && coords.length) {
+          mapRef.current.fitToCoordinates(coords, { edgePadding: { top: 80, right: 50, bottom: 200, left: 50 }, animated: true });
+        }
+      }
+    } catch (err) {
+      console.error('fetchRoutes error:', err);
+      Alert.alert('Error', 'Failed to fetch routes. Check your API key and network.');
     } finally {
-      setLoading(false);
+      setLoadingRoutes(false);
+    }
+  };
+
+  // when user selects a route card
+  const handleSelectRoute = (index) => {
+    setSelectedRouteIndex(index);
+    const coords = routes[index]?.coords;
+    if (coords && coords.length && mapRef.current) {
+      mapRef.current.fitToCoordinates(coords, { edgePadding: { top: 80, right: 50, bottom: 200, left: 50 }, animated: true });
     }
   };
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={styles.container}>
-        <Text style={styles.title}>Plan Your Route</Text>
-        <Text style={styles.subtitle}>Set source and destination for your trip</Text>
+        {/* Map (hide on web to avoid compatibility issues) */}
+        {Platform.OS !== 'web' ? (
+          <MapView
+            ref={mapRef}
+            style={styles.map}
+            initialRegion={{
+              latitude: 29.2183,
+              longitude: 79.5125,
+              latitudeDelta: 0.2,
+              longitudeDelta: 0.2,
+            }}
+            showsUserLocation={false}
+            showsMyLocationButton={true}
+          >
+            {sourceCoords && <Marker coordinate={{ latitude: sourceCoords.lat, longitude: sourceCoords.lng }} title="Source" />}
+            {destCoords && <Marker coordinate={{ latitude: destCoords.lat, longitude: destCoords.lng }} title="Destination" />}
 
-        <View style={styles.card}>
+            {/* Draw all routes; highlight selected */}
+            {routes.map((r, idx) => (
+              <Polyline
+                key={`route-${idx}`}
+                coordinates={r.coords}
+                strokeColor={idx === selectedRouteIndex ? '#1976D2' : 'rgba(0,0,0,0.3)'}
+                strokeWidth={idx === selectedRouteIndex ? 5 : 3}
+              />
+            ))}
+          </MapView>
+        ) : (
+          <View style={styles.mapPlaceholder}>
+            <Text style={{ color: '#666' }}>Map preview disabled on web</Text>
+          </View>
+        )}
+
+        {/* Controls on top */}
+        <View style={styles.controls}>
+          <Text style={styles.heading}>Plan your route</Text>
+
+          {/* Source Autocomplete or fallback input */}
           <Text style={styles.label}>Source</Text>
           {PlacesAutocomplete ? (
             <PlacesAutocomplete
               placeholder="Enter pickup / source"
-              fetchDetails
-              debounce={250}
-              onPress={(data: any, details: any = null) => {
-                const desc = data?.description ?? '';
-                setSource(desc);
-                const loc = details && details.geometry && details.geometry.location ? details.geometry.location : undefined;
-                if (loc && typeof loc.lat === 'number' && typeof loc.lng === 'number') {
-                  setSourceCoords({ lat: loc.lat, lng: loc.lng });
-                } else {
-                  setSourceCoords(undefined);
-                }
+              fetchDetails={true}
+              debounce={200}
+              minLength={2}
+              onPress={(data, details = null) => {
+                const desc = data?.description || data?.structured_formatting?.main_text || data?.name || '';
+                setSourceText(desc);
+                const loc = details && details.geometry && details.geometry.location ? details.geometry.location : null;
+                if (loc) setSourceCoords({ lat: loc.lat, lng: loc.lng });
               }}
-              query={{ key: placesKey, language: 'en' }}
+              query={{ key: GOOGLE_API_KEY, language: 'en' }}
               styles={gpStyles}
+              nearbyPlacesAPI="GooglePlacesSearch"
+              enablePoweredByContainer={false}
             />
           ) : (
-            <TextInput
-              placeholder="Enter pickup / source"
-              value={source}
-              onChangeText={setSource}
-              style={styles.input}
-              placeholderTextColor={theme.colors.textSecondary}
-            />
+            <TextInput value={sourceText} onChangeText={setSourceText} placeholder="Enter source" style={styles.input} />
           )}
 
-          <Text style={styles.label}>Destination</Text>
+          <Text style={[styles.label, { marginTop: 8 }]}>Destination</Text>
           {PlacesAutocomplete ? (
             <PlacesAutocomplete
               placeholder="Enter drop / destination"
-              fetchDetails
-              debounce={250}
-              onPress={(data: any, details: any = null) => {
-                const desc = data?.description ?? '';
-                setDestination(desc);
-                const loc = details && details.geometry && details.geometry.location ? details.geometry.location : undefined;
-                if (loc && typeof loc.lat === 'number' && typeof loc.lng === 'number') {
-                  setDestinationCoords({ lat: loc.lat, lng: loc.lng });
-                } else {
-                  setDestinationCoords(undefined);
-                }
+              fetchDetails={true}
+              debounce={200}
+              minLength={2}
+              onPress={(data, details = null) => {
+                const desc = data?.description || data?.structured_formatting?.main_text || data?.name || '';
+                setDestText(desc);
+                const loc = details && details.geometry && details.geometry.location ? details.geometry.location : null;
+                if (loc) setDestCoords({ lat: loc.lat, lng: loc.lng });
               }}
-              query={{ key: placesKey, language: 'en' }}
+              query={{ key: GOOGLE_API_KEY, language: 'en' }}
               styles={gpStyles}
+              nearbyPlacesAPI="GooglePlacesSearch"
+              enablePoweredByContainer={false}
             />
           ) : (
-            <TextInput
-              placeholder="Enter drop / destination"
-              value={destination}
-              onChangeText={setDestination}
-              style={styles.input}
-              placeholderTextColor={theme.colors.textSecondary}
-            />
+            <TextInput value={destText} onChangeText={setDestText} placeholder="Enter destination" style={styles.input} />
           )}
 
-          <TouchableOpacity style={[styles.button, loading && { opacity: 0.7 }]} onPress={handleCreate} disabled={loading}>
-            {loading ? (
-              <ActivityIndicator color={theme.colors.navyTextOn} />
-            ) : (
-              <Text style={styles.buttonText}>Find Routes</Text>
-            )}
-          </TouchableOpacity>
-
-          {lastTripId && (
-            <Text style={styles.note}>Trip created: {lastTripId}</Text>
-          )}
+          <View style={{ flexDirection: 'row', marginTop: 10 }}>
+            <TouchableOpacity
+              style={[styles.button, (!sourceCoords || !destCoords) && styles.buttonDisabled]}
+              onPress={fetchRoutes}
+              disabled={!sourceCoords || !destCoords || loadingRoutes}
+            >
+              {loadingRoutes ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Get Routes</Text>}
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.secondaryButton]}
+              onPress={() => {
+                // quick clear
+                setRoutes([]);
+                setSelectedRouteIndex(null);
+                setSourceCoords(null);
+                setDestCoords(null);
+                setSourceText('');
+                setDestText('');
+              }}
+            >
+              <Text style={styles.secondaryButtonText}>Clear</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
-        <View style={styles.hintBox}>
-          <Text style={styles.hintTitle}>Tip</Text>
-          <Text style={styles.hintText}>
-            For precise places, we can enable Google Places Autocomplete. You’ll need a Google API key. I can wire this when you’re ready.
-          </Text>
+        {/* Routes list (bottom sheet like) */}
+        <View style={styles.routesList}>
+          <ScrollView horizontal contentContainerStyle={{ paddingHorizontal: 12 }}>
+            {routes.length === 0 ? (
+              <View style={styles.emptyCard}><Text style={{ color: '#666' }}>No routes yet</Text></View>
+            ) : (
+              routes.map((r, idx) => (
+                <View key={`card-${idx}`} style={[styles.routeCard, idx === selectedRouteIndex && styles.routeCardSelected]}>
+                  <Text style={styles.routeSummary}>{r.summary || `Route ${idx + 1}`}</Text>
+                  <Text style={styles.routeMeta}>{r.distance} • {r.duration}</Text>
+                  <TouchableOpacity style={styles.selectBtn} onPress={() => handleSelectRoute(idx)}>
+                    <Text style={styles.selectBtnText}>{idx === selectedRouteIndex ? 'Selected' : 'Select'}</Text>
+                  </TouchableOpacity>
+                </View>
+              ))
+            )}
+          </ScrollView>
         </View>
       </View>
     </KeyboardAvoidingView>
@@ -148,101 +272,91 @@ export default function RoutesScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-    padding: theme.spacing.lg,
+  container: { flex: 1, backgroundColor: '#fff' },
+  map: { flex: 1 },
+  mapPlaceholder: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f5f5f5' },
+  controls: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 50 : 30,
+    left: 12,
+    right: 12,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 12,
+    ...Platform.select({ ios: { shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 8 }, android: { elevation: 5 } }),
   },
-  title: {
-    color: theme.colors.textPrimary,
-    fontSize: 22,
-    fontWeight: '800',
-  },
-  subtitle: {
-    color: theme.colors.textSecondary,
-    marginTop: 6,
-  },
-  card: {
-    backgroundColor: theme.colors.card,
-    borderRadius: theme.radius.lg,
-    padding: theme.spacing.lg,
-    marginTop: theme.spacing.lg,
-    ...theme.shadow.card,
-  },
-  label: {
-    color: theme.colors.textSecondary,
-    marginTop: 12,
-    marginBottom: 6,
-  },
+  heading: { fontWeight: '700', fontSize: 16, marginBottom: 6 },
+  label: { color: '#444', fontSize: 12, marginBottom: 6 },
   input: {
-    backgroundColor: theme.colors.inputBg,
+    backgroundColor: '#f7f7f7',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     borderWidth: 1,
-    borderColor: theme.colors.border,
-    color: theme.colors.textPrimary,
-    borderRadius: theme.radius.sm,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
+    borderColor: '#eee',
   },
   button: {
-    backgroundColor: theme.colors.navy,
-    borderRadius: theme.radius.pill,
-    paddingVertical: 16,
+    backgroundColor: '#1976D2',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  buttonDisabled: { opacity: 0.6 },
+  buttonText: { color: '#fff', fontWeight: '700' },
+  secondaryButton: {
+    marginLeft: 10,
+    backgroundColor: '#eee',
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    justifyContent: 'center',
+  },
+  secondaryButtonText: { color: '#333', fontWeight: '700' },
+
+  routesList: {
+    position: 'absolute',
+    bottom: 18,
+    left: 0,
+    right: 0,
+    paddingVertical: 8,
+  },
+  routeCard: {
+    width: 200,
+    backgroundColor: '#fff',
+    marginHorizontal: 8,
+    borderRadius: 10,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#eee',
+    alignItems: 'flex-start',
+  },
+  routeCardSelected: {
+    borderColor: '#1976D2',
+    backgroundColor: '#E8F0FF',
+  },
+  routeSummary: { fontWeight: '700', marginBottom: 6 },
+  routeMeta: { color: '#666', marginBottom: 8 },
+  selectBtn: { backgroundColor: '#1976D2', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 },
+  selectBtnText: { color: '#fff', fontWeight: '700' },
+
+  emptyCard: {
+    width: 200,
+    height: 80,
+    backgroundColor: '#fff',
+    marginHorizontal: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#eee',
     alignItems: 'center',
-    marginTop: 20,
-  },
-  buttonText: {
-    color: theme.colors.navyTextOn,
-    fontWeight: '800',
-    fontSize: 16,
-  },
-  note: {
-    marginTop: 12,
-    color: theme.colors.textSecondary,
-  },
-  hintBox: {
-    marginTop: theme.spacing.lg,
-    backgroundColor: theme.colors.muted,
-    borderRadius: theme.radius.md,
-    padding: theme.spacing.md,
-  },
-  hintTitle: {
-    color: theme.colors.textPrimary,
-    fontWeight: '800',
-    marginBottom: 4,
-  },
-  hintText: {
-    color: theme.colors.textSecondary,
+    justifyContent: 'center',
   },
 });
 
-// Styles for GooglePlacesAutocomplete inputs
+// small styles for GooglePlacesAutocomplete internals
 const gpStyles = {
-  textInputContainer: {
-    padding: 0,
-    margin: 0,
-  },
-  textInput: {
-    backgroundColor: theme.colors.inputBg,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    color: theme.colors.textPrimary,
-    borderRadius: theme.radius.sm,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    height: 44,
-    fontSize: 16,
-  },
-  listView: {
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.radius.md,
-    marginTop: 6,
-  },
-  row: {
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-  },
-  description: {
-    color: theme.colors.textSecondary,
-  },
+  textInputContainer: { padding: 0, margin: 0 },
+  textInput: { height: 44, backgroundColor: '#f7f7f7', borderRadius: 8, paddingHorizontal: 12, borderWidth: 1, borderColor: '#eee' },
+  listView: { backgroundColor: '#fff', borderRadius: 8, marginTop: 6, borderWidth: 1, borderColor: '#eee' },
+  row: { paddingVertical: 10, paddingHorizontal: 12 },
+  description: { color: '#444' },
 };
