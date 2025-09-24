@@ -85,3 +85,14 @@ export async function getBuses(city?: string) {
 export async function assignBusToDriver(input: { busId: string; driverId: string }) {
   return postJSON<{ message: string; bus: any; driver: any }>(`/buses/assign`, input);
 }
+
+export async function createTrip(input: {
+  busId: string;
+  driverId: string;
+  source: string;
+  destination: string;
+  sourceCoords?: { lat: number; lng: number };
+  destinationCoords?: { lat: number; lng: number };
+}) {
+  return postJSON<{ message: string; trip: any }>(`/trips/create`, input);
+}

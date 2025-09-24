@@ -1,13 +1,87 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Alert, ActivityIndicator } from 'react-native';
 import { theme } from '../../../lib/theme';
+import { createTrip } from '../../../lib/api';
+import { getCurrentDriver } from '../../../lib/session';
 
 export default function RoutesScreen() {
+  const [source, setSource] = useState('');
+  const [destination, setDestination] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [lastTripId, setLastTripId] = useState<string | null>(null);
+
+  const handleCreate = async () => {
+    if (!source || !destination) {
+      Alert.alert('Missing', 'Please enter both source and destination');
+      return;
+    }
+    const driver = getCurrentDriver();
+    if (!driver || !driver.activeBus) {
+      Alert.alert('No Bus Selected', 'Please select a bus first on Home screen.');
+      return;
+    }
+    try {
+      setLoading(true);
+      const res = await createTrip({
+        busId: driver.activeBus,
+        driverId: driver._id,
+        source,
+        destination,
+      });
+      setLastTripId(res.trip?._id || null);
+      Alert.alert('Success', 'Trip created successfully');
+    } catch (e: any) {
+      const msg = e?.response?.data?.message || 'Failed to create trip';
+      Alert.alert('Error', msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Routes</Text>
-      <Text style={styles.subtitle}>This is a placeholder screen. We can list assigned routes here.</Text>
-    </View>
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <View style={styles.container}>
+        <Text style={styles.title}>Plan Your Route</Text>
+        <Text style={styles.subtitle}>Set source and destination for your trip</Text>
+
+        <View style={styles.card}>
+          <Text style={styles.label}>Source</Text>
+          <TextInput
+            placeholder="Enter pickup / source"
+            value={source}
+            onChangeText={setSource}
+            style={styles.input}
+            placeholderTextColor={theme.colors.textSecondary}
+          />
+
+          <Text style={styles.label}>Destination</Text>
+          <TextInput
+            placeholder="Enter drop / destination"
+            value={destination}
+            onChangeText={setDestination}
+            style={styles.input}
+            placeholderTextColor={theme.colors.textSecondary}
+          />
+
+          <TouchableOpacity style={[styles.button, loading && { opacity: 0.7 }]} onPress={handleCreate} disabled={loading}>
+            {loading ? (
+              <ActivityIndicator color={theme.colors.navyTextOn} />
+            ) : (
+              <Text style={styles.buttonText}>Find Routes</Text>
+            )}
+          </TouchableOpacity>
+
+          {lastTripId && (
+            <Text style={styles.note}>Trip created: {lastTripId}</Text>
+          )}
+        </View>
+
+        <View style={styles.hintBox}>
+          <Text style={styles.hintTitle}>Tip</Text>
+          <Text style={styles.hintText}>For precise places, we can enable Google Places Autocomplete. You’ll need a Google API key. I can wire this when you’re ready.</Text>
+        </View>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -25,5 +99,56 @@ const styles = StyleSheet.create({
   subtitle: {
     color: theme.colors.textSecondary,
     marginTop: 6,
+  },
+  card: {
+    backgroundColor: theme.colors.card,
+    borderRadius: theme.radius.lg,
+    padding: theme.spacing.lg,
+    marginTop: theme.spacing.lg,
+    ...theme.shadow.card,
+  },
+  label: {
+    color: theme.colors.textSecondary,
+    marginTop: 12,
+    marginBottom: 6,
+  },
+  input: {
+    backgroundColor: theme.colors.inputBg,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    color: theme.colors.textPrimary,
+    borderRadius: theme.radius.sm,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+  },
+  button: {
+    backgroundColor: theme.colors.navy,
+    borderRadius: theme.radius.pill,
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  buttonText: {
+    color: theme.colors.navyTextOn,
+    fontWeight: '800',
+    fontSize: 16,
+  },
+  note: {
+    marginTop: 12,
+    color: theme.colors.textSecondary,
+  },
+  hintBox: {
+    marginTop: theme.spacing.lg,
+    backgroundColor: theme.colors.muted,
+    borderRadius: theme.radius.md,
+    padding: theme.spacing.md,
+  },
+  hintTitle: {
+    color: theme.colors.textPrimary,
+    fontWeight: '800',
+    marginBottom: 4,
+  },
+  hintText: {
+    color: theme.colors.textSecondary,
   },
 });
