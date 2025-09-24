@@ -19,6 +19,8 @@ const authRoutes = require("./routes/auth");
 app.use("/auth", authRoutes);
 const busRoutes = require("./routes/bus");
 app.use("/buses", busRoutes);
+const tripRoutes = require("./routes/trips");
+app.use("/trips", tripRoutes);
 
 const PORT = process.env.PORT || 2000;
 
