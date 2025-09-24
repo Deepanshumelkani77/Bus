@@ -1,4 +1,5 @@
 const Bus = require('../models/Bus');
+const Driver = require('../models/Driver');
 
 // GET /buses?city=Jaipur
 async function listBuses(req, res) {
@@ -67,3 +68,40 @@ async function seedBuses(req, res) {
 }
 
 module.exports.seedBuses = seedBuses;
+
+// POST /buses/assign { busId, driverId }
+async function assignBusToDriver(req, res) {
+  try {
+    const { busId, driverId } = req.body;
+    if (!busId || !driverId) return res.status(400).json({ message: 'busId and driverId are required' });
+
+    const bus = await Bus.findById(busId);
+    if (!bus) return res.status(404).json({ message: 'Bus not found' });
+    const driver = await Driver.findById(driverId);
+    if (!driver) return res.status(404).json({ message: 'Driver not found' });
+
+    // If the bus already has a driver, detach
+    if (bus.driver && String(bus.driver) !== String(driverId)) {
+      await Driver.updateOne({ _id: bus.driver }, { $unset: { activeBus: '' } });
+    }
+
+    // If the driver already has an activeBus, detach previous bus
+    if (driver.activeBus && String(driver.activeBus) !== String(busId)) {
+      await Bus.updateOne({ _id: driver.activeBus }, { $unset: { driver: '' } });
+    }
+
+    // Link both sides
+    bus.driver = driver._id;
+    await bus.save();
+
+    driver.activeBus = bus._id;
+    await driver.save();
+
+    res.json({ message: 'Assigned', bus, driver });
+  } catch (e) {
+    console.error('Assign bus error', e);
+    res.status(500).json({ message: 'Failed to assign bus' });
+  }
+}
+
+module.exports.assignBusToDriver = assignBusToDriver;

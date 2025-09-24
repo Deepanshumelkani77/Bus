@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, KeyboardAvoidingView, Platform, Animated, Easing } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { signupDriver } from '../../lib/api';
+import { setCurrentDriver } from '../../lib/session';
 import { theme } from '../../lib/theme';
 import BusLogo from '../../components/BusLogo';
 
@@ -39,6 +40,7 @@ export default function SignupScreen() {
     try {
       setLoading(true);
       const res = await signupDriver({ name: name.trim(), email: email.trim(), password, city: city.trim() });
+      setCurrentDriver(res.driver);
       Alert.alert('Success', `Welcome ${res.driver.name}`);
       router.replace('/home');
     } catch (e: any) {

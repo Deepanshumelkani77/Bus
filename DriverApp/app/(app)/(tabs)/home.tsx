@@ -1,10 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, RefreshControl, ScrollView, Modal, TextInput } from 'react-native';
 import { theme } from '../../../lib/theme';
-import { getBuses, getCities, Bus } from '../../../lib/api';
+import { getBuses, getCities, Bus, assignBusToDriver } from '../../../lib/api';
+import { getCurrentDriver, setCurrentDriver } from '../../../lib/session';
+import { useRouter } from 'expo-router';
 import BusCard from '../../../components/BusCard';
 
 export default function HomeScreen() {
+  const router = useRouter();
   const [cities, setCities] = useState<string[]>([]);
   const [selectedCity, setSelectedCity] = useState<string | undefined>(undefined);
   const [buses, setBuses] = useState<Bus[]>([]);
@@ -60,6 +63,25 @@ export default function HomeScreen() {
     </View>
   ), [selectedCity]);
 
+  async function onSelectBus(bus: Bus) {
+    const driver = getCurrentDriver();
+    if (!driver) {
+      alert('Please sign in again. No driver session found.');
+      return;
+    }
+    try {
+      setLoading(true);
+      const res = await assignBusToDriver({ busId: bus._id, driverId: driver._id });
+      setCurrentDriver({ ...driver, activeBus: res.bus._id });
+      router.replace('/(app)/(tabs)/routes');
+    } catch (e: any) {
+      const msg = e?.response?.data?.message || 'Failed to assign bus';
+      alert(msg);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   if (loading) {
     return (
       <View style={[styles.container, { alignItems: 'center', justifyContent: 'center' }]}> 
@@ -75,7 +97,7 @@ export default function HomeScreen() {
         keyExtractor={(item) => item._id}
         ListHeaderComponent={header}
         contentContainerStyle={styles.listContent}
-        renderItem={({ item }) => <BusCard bus={item} />}
+        renderItem={({ item }) => <BusCard bus={item} onPress={() => onSelectBus(item)} />}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         ListEmptyComponent={<Text style={styles.empty}>No buses found {selectedCity ? `in ${selectedCity}` : ''}</Text>}
       />

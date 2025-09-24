@@ -80,3 +80,8 @@ export async function getBuses(city?: string) {
   const q = city ? `?city=${encodeURIComponent(city)}` : '';
   return getJSON<{ buses: Bus[] }>(`/buses${q}`);
 }
+
+// Assign a bus to a driver (and vice versa)
+export async function assignBusToDriver(input: { busId: string; driverId: string }) {
+  return postJSON<{ message: string; bus: any; driver: any }>(`/buses/assign`, input);
+}

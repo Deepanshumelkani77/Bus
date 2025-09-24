@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, KeyboardAvoidingView, Platform, Animated, Easing } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { loginDriver } from '../../lib/api';
+import { setCurrentDriver } from '../../lib/session';
 import { theme } from '../../lib/theme';
 import BusLogo from '../../components/BusLogo';
 
@@ -37,7 +38,8 @@ export default function LoginScreen() {
     try {
       setLoading(true);
       const res = await loginDriver({ email: email.trim(), password });
-      // TODO: store token securely (SecureStore/Keychain). For MVP, navigate to Home.
+      // TODO: store token securely (SecureStore/Keychain). For MVP, set session in-memory/localStorage.
+      setCurrentDriver(res.driver);
       Alert.alert('Welcome', `Logged in as ${res.driver.name}`);
       router.replace('/(app)');
     } catch (e: any) {

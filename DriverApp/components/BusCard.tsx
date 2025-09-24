@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
 import { theme } from '../lib/theme';
 import { Bus } from '../lib/api';
@@ -12,11 +12,14 @@ function statusMeta(status?: string) {
   return { label: status || 'Unknown', fg: theme.colors.sky, bg: theme.colors.skyBg };
 }
 
-export default function BusCard({ bus }: { bus: Bus }) {
+export default function BusCard({ bus, onPress }: { bus: Bus; onPress?: () => void }) {
   const meta = statusMeta(bus.status);
   const image = bus.image || 'https://images.unsplash.com/photo-1517940310602-75fb8bdaf2f3?q=80&w=1600&auto=format&fit=crop';
+  const Container: React.ComponentType<any> = onPress ? TouchableOpacity : View;
+  const containerProps = onPress ? { activeOpacity: 0.9, onPress } : {};
+
   return (
-    <View style={styles.card}>
+    <Container style={styles.card} {...containerProps}>
       <View style={styles.imageWrap}>
         <Image source={{ uri: image }} style={styles.image} contentFit="cover" transition={200} />
         <View style={styles.overlayTop}>
@@ -46,7 +49,7 @@ export default function BusCard({ bus }: { bus: Bus }) {
       <View style={styles.progressBarBg}>
         <View style={styles.progressBarFill} />
       </View>
-    </View>
+    </Container>
   );
 }
 
