@@ -3,8 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platfor
 import { theme } from '../../../lib/theme';
 import { createTrip } from '../../../lib/api';
 import { getCurrentDriver } from '../../../lib/session';
-// NOTE: We will lazy-require GooglePlacesAutocomplete only when a key exists to avoid web bundler issues
 
+// NOTE: We will lazy-require GooglePlacesAutocomplete only when a key exists to avoid web bundler issues
 export default function RoutesScreen() {
   const [source, setSource] = useState('');
   const [destination, setDestination] = useState('');
@@ -14,16 +14,14 @@ export default function RoutesScreen() {
   const [destinationCoords, setDestinationCoords] = useState<{ lat: number; lng: number } | undefined>(undefined);
 
   // Use safe access to env to avoid TS complaints in RN
-   const placesKey = "AIzaSyBpr4hS8JlH5-ZJK_cJRGndeeezpdLtbkk"; // your API key
-;
+  const placesKey = "AIzaSyBpr4hS8JlH5-ZJK_cJRGndeeezpdLtbkk"; // your API key
+
   const PlacesAutocomplete = useMemo(() => {
-    // Do not use the library on web; it often breaks due to missing Google script/runtime
     if (!placesKey || Platform.OS === 'web') return null;
     try {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
-      // @ts-ignore - dynamic require at runtime
       const mod = require('react-native-google-places-autocomplete');
-      return mod.GooglePlacesAutocomplete as any;
+      return mod.GooglePlacesAutocomplete || mod.default; // ✅ safe fallback
     } catch (e) {
       console.warn('GooglePlacesAutocomplete not available:', e);
       return null;
@@ -74,8 +72,9 @@ export default function RoutesScreen() {
               fetchDetails
               debounce={250}
               onPress={(data: any, details: any = null) => {
-                setSource(data.description || '');
-                const loc = details?.geometry?.location;
+                const desc = data?.description ?? '';
+                setSource(desc);
+                const loc = details && details.geometry && details.geometry.location ? details.geometry.location : undefined;
                 if (loc && typeof loc.lat === 'number' && typeof loc.lng === 'number') {
                   setSourceCoords({ lat: loc.lat, lng: loc.lng });
                 } else {
@@ -102,8 +101,9 @@ export default function RoutesScreen() {
               fetchDetails
               debounce={250}
               onPress={(data: any, details: any = null) => {
-                setDestination(data.description || '');
-                const loc = details?.geometry?.location;
+                const desc = data?.description ?? '';
+                setDestination(desc);
+                const loc = details && details.geometry && details.geometry.location ? details.geometry.location : undefined;
                 if (loc && typeof loc.lat === 'number' && typeof loc.lng === 'number') {
                   setDestinationCoords({ lat: loc.lat, lng: loc.lng });
                 } else {
@@ -138,7 +138,9 @@ export default function RoutesScreen() {
 
         <View style={styles.hintBox}>
           <Text style={styles.hintTitle}>Tip</Text>
-          <Text style={styles.hintText}>For precise places, we can enable Google Places Autocomplete. You’ll need a Google API key. I can wire this when you’re ready.</Text>
+          <Text style={styles.hintText}>
+            For precise places, we can enable Google Places Autocomplete. You’ll need a Google API key. I can wire this when you’re ready.
+          </Text>
         </View>
       </View>
     </KeyboardAvoidingView>
@@ -214,7 +216,7 @@ const styles = StyleSheet.create({
 });
 
 // Styles for GooglePlacesAutocomplete inputs
-const gpStyles: any = {
+const gpStyles = {
   textInputContainer: {
     padding: 0,
     margin: 0,
