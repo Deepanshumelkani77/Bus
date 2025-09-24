@@ -1,14 +1,34 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Alert, ActivityIndicator } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform, Alert, ActivityIndicator, TextInput } from 'react-native';
 import { theme } from '../../../lib/theme';
 import { createTrip } from '../../../lib/api';
 import { getCurrentDriver } from '../../../lib/session';
+// NOTE: We will lazy-require GooglePlacesAutocomplete only when a key exists to avoid web bundler issues
 
 export default function RoutesScreen() {
   const [source, setSource] = useState('');
   const [destination, setDestination] = useState('');
   const [loading, setLoading] = useState(false);
   const [lastTripId, setLastTripId] = useState<string | null>(null);
+  const [sourceCoords, setSourceCoords] = useState<{ lat: number; lng: number } | undefined>(undefined);
+  const [destinationCoords, setDestinationCoords] = useState<{ lat: number; lng: number } | undefined>(undefined);
+
+  // Use safe access to env to avoid TS complaints in RN
+   const placesKey = "AIzaSyBpr4hS8JlH5-ZJK_cJRGndeeezpdLtbkk"; // your API key
+;
+  const PlacesAutocomplete = useMemo(() => {
+    // Do not use the library on web; it often breaks due to missing Google script/runtime
+    if (!placesKey || Platform.OS === 'web') return null;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      // @ts-ignore - dynamic require at runtime
+      const mod = require('react-native-google-places-autocomplete');
+      return mod.GooglePlacesAutocomplete as any;
+    } catch (e) {
+      console.warn('GooglePlacesAutocomplete not available:', e);
+      return null;
+    }
+  }, [placesKey]);
 
   const handleCreate = async () => {
     if (!source || !destination) {
@@ -27,6 +47,8 @@ export default function RoutesScreen() {
         driverId: driver._id,
         source,
         destination,
+        sourceCoords,
+        destinationCoords,
       });
       setLastTripId(res.trip?._id || null);
       Alert.alert('Success', 'Trip created successfully');
@@ -46,22 +68,60 @@ export default function RoutesScreen() {
 
         <View style={styles.card}>
           <Text style={styles.label}>Source</Text>
-          <TextInput
-            placeholder="Enter pickup / source"
-            value={source}
-            onChangeText={setSource}
-            style={styles.input}
-            placeholderTextColor={theme.colors.textSecondary}
-          />
+          {PlacesAutocomplete ? (
+            <PlacesAutocomplete
+              placeholder="Enter pickup / source"
+              fetchDetails
+              debounce={250}
+              onPress={(data: any, details: any = null) => {
+                setSource(data.description || '');
+                const loc = details?.geometry?.location;
+                if (loc && typeof loc.lat === 'number' && typeof loc.lng === 'number') {
+                  setSourceCoords({ lat: loc.lat, lng: loc.lng });
+                } else {
+                  setSourceCoords(undefined);
+                }
+              }}
+              query={{ key: placesKey, language: 'en' }}
+              styles={gpStyles}
+            />
+          ) : (
+            <TextInput
+              placeholder="Enter pickup / source"
+              value={source}
+              onChangeText={setSource}
+              style={styles.input}
+              placeholderTextColor={theme.colors.textSecondary}
+            />
+          )}
 
           <Text style={styles.label}>Destination</Text>
-          <TextInput
-            placeholder="Enter drop / destination"
-            value={destination}
-            onChangeText={setDestination}
-            style={styles.input}
-            placeholderTextColor={theme.colors.textSecondary}
-          />
+          {PlacesAutocomplete ? (
+            <PlacesAutocomplete
+              placeholder="Enter drop / destination"
+              fetchDetails
+              debounce={250}
+              onPress={(data: any, details: any = null) => {
+                setDestination(data.description || '');
+                const loc = details?.geometry?.location;
+                if (loc && typeof loc.lat === 'number' && typeof loc.lng === 'number') {
+                  setDestinationCoords({ lat: loc.lat, lng: loc.lng });
+                } else {
+                  setDestinationCoords(undefined);
+                }
+              }}
+              query={{ key: placesKey, language: 'en' }}
+              styles={gpStyles}
+            />
+          ) : (
+            <TextInput
+              placeholder="Enter drop / destination"
+              value={destination}
+              onChangeText={setDestination}
+              style={styles.input}
+              placeholderTextColor={theme.colors.textSecondary}
+            />
+          )}
 
           <TouchableOpacity style={[styles.button, loading && { opacity: 0.7 }]} onPress={handleCreate} disabled={loading}>
             {loading ? (
@@ -152,3 +212,35 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
   },
 });
+
+// Styles for GooglePlacesAutocomplete inputs
+const gpStyles: any = {
+  textInputContainer: {
+    padding: 0,
+    margin: 0,
+  },
+  textInput: {
+    backgroundColor: theme.colors.inputBg,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    color: theme.colors.textPrimary,
+    borderRadius: theme.radius.sm,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    height: 44,
+    fontSize: 16,
+  },
+  listView: {
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radius.md,
+    marginTop: 6,
+  },
+  row: {
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+  },
+  description: {
+    color: theme.colors.textSecondary,
+  },
+};
