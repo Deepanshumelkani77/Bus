@@ -23,6 +23,8 @@ const tripRoutes = require("./routes/trips");
 app.use("/trips", tripRoutes);
 const routeRoutes = require("./routes/routes");
 app.use("/routes", routeRoutes);
+const googleRoutes=require("./routes/google.js");
+app.use("/google",googleRoutes);
 
 const PORT =  2000;
 

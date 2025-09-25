@@ -123,7 +123,7 @@ export default function RoutesScreen() {
     return points;
   };
 
-  // Search places using Google Places API
+  // Search places using backend Google API
   const searchPlaces = async (query: string, isSource: boolean) => {
     if (query.length < 2) {
       if (isSource) {
@@ -137,17 +137,17 @@ export default function RoutesScreen() {
     }
 
     try {
+      console.log('Searching places for:', query);
       const response = await axios.get(
-        `https://maps.googleapis.com/maps/api/place/autocomplete/json`,
+        `http://10.65.103.156:2000/google/autocomplete`,
         {
           params: {
             input: query,
-            key: GOOGLE_API_KEY,
-            types: 'geocode',
-            components: 'country:in', // Restrict to India
           },
         }
       );
+
+      console.log('Places API response:', response.data);
 
       if (response.data.status === 'OK') {
         const suggestions = response.data.predictions.slice(0, 5);
@@ -158,25 +158,28 @@ export default function RoutesScreen() {
           setDestSuggestions(suggestions);
           setShowDestSuggestions(true);
         }
+      } else {
+        console.warn('Places API error:', response.data.status);
       }
     } catch (error) {
       console.error('Places API error:', error);
     }
   };
 
-  // Get place details using Google Places API
+  // Get place details using backend Google API
   const getPlaceDetails = async (placeId: string, isSource: boolean) => {
     try {
+      console.log('Getting place details for:', placeId);
       const response = await axios.get(
-        `https://maps.googleapis.com/maps/api/place/details/json`,
+        `http://10.65.103.156:2000/google/place-details`,
         {
           params: {
             place_id: placeId,
-            key: GOOGLE_API_KEY,
-            fields: 'geometry,name,formatted_address',
           },
         }
       );
+
+      console.log('Place details response:', response.data);
 
       if (response.data.status === 'OK') {
         const place = response.data.result;
@@ -194,13 +197,15 @@ export default function RoutesScreen() {
           setDestText(place.formatted_address || place.name);
           setShowDestSuggestions(false);
         }
+      } else {
+        console.warn('Place details error:', response.data.status);
       }
     } catch (error) {
       console.error('Place details error:', error);
     }
   };
 
-  // Fetch routes using Google Directions API
+  // Fetch routes using backend Google Directions API
   const fetchRoutes = async () => {
     if (!sourceCoords || !destCoords) {
       Alert.alert('Missing Locations', 'Please select both source and destination');
@@ -212,20 +217,19 @@ export default function RoutesScreen() {
       const origin = `${sourceCoords.lat},${sourceCoords.lng}`;
       const destination = `${destCoords.lat},${destCoords.lng}`;
 
+      console.log('Fetching routes from:', origin, 'to:', destination);
+
       const response = await axios.get<GoogleDirectionsResponse>(
-        `https://maps.googleapis.com/maps/api/directions/json`,
+        `http://10.65.103.156:2000/google/directions`,
         {
           params: {
             origin,
             destination,
-            alternatives: true,
-            key: GOOGLE_API_KEY,
-            mode: 'driving',
-            traffic_model: 'best_guess',
-            departure_time: 'now',
           },
         }
       );
+
+      console.log('Directions API response:', response.data);
 
       if (response.data.status !== 'OK') {
         Alert.alert('Route Error', response.data.status || 'Failed to fetch routes');
@@ -429,9 +433,23 @@ export default function RoutesScreen() {
                 setSourceText(text);
                 searchPlaces(text, true);
               }}
-              placeholder="Enter pickup location"
+              placeholder="Enter pickup location (e.g., Delhi, India)"
               placeholderTextColor="#999"
             />
+            {/* Manual coordinate entry for testing */}
+            {!sourceCoords && sourceText.length > 0 && (
+              <TouchableOpacity
+                style={styles.manualButton}
+                onPress={() => {
+                  // Demo coordinates for Delhi
+                  setSourceCoords({ lat: 28.6139, lng: 77.2090 });
+                  setSourceText(sourceText || 'Delhi, India');
+                  setShowSourceSuggestions(false);
+                }}
+              >
+                <Text style={styles.manualButtonText}>Use "{sourceText}" as source</Text>
+              </TouchableOpacity>
+            )}
             {showSourceSuggestions && sourceSuggestions.length > 0 && (
               <View style={styles.suggestionsContainer}>
                 {sourceSuggestions.map((suggestion) => (
@@ -457,9 +475,23 @@ export default function RoutesScreen() {
                 setDestText(text);
                 searchPlaces(text, false);
               }}
-              placeholder="Enter destination location"
+              placeholder="Enter destination location (e.g., Mumbai, India)"
               placeholderTextColor="#999"
             />
+            {/* Manual coordinate entry for testing */}
+            {!destCoords && destText.length > 0 && (
+              <TouchableOpacity
+                style={styles.manualButton}
+                onPress={() => {
+                  // Demo coordinates for Mumbai
+                  setDestCoords({ lat: 19.0760, lng: 72.8777 });
+                  setDestText(destText || 'Mumbai, India');
+                  setShowDestSuggestions(false);
+                }}
+              >
+                <Text style={styles.manualButtonText}>Use "{destText}" as destination</Text>
+              </TouchableOpacity>
+            )}
             {showDestSuggestions && destSuggestions.length > 0 && (
               <View style={styles.suggestionsContainer}>
                 {destSuggestions.map((suggestion) => (
@@ -733,5 +765,20 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  manualButton: {
+    backgroundColor: '#e3f2fd',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: '#2196F3',
+  },
+  manualButtonText: {
+    color: '#2196F3',
+    fontSize: 14,
+    fontWeight: '500',
+    textAlign: 'center',
   },
 });
