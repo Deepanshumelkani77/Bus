@@ -13,6 +13,7 @@ router.get("/autocomplete", async (req, res) => {
     if (!input) return res.status(400).json({ message: "Missing input parameter" });
 
     console.log("Autocomplete request for:", input);
+    console.log("Using API key:", GOOGLE_API_KEY.substring(0, 10) + "...");
 
     const response = await axios.get(
       "https://maps.googleapis.com/maps/api/place/autocomplete/json",
@@ -27,6 +28,17 @@ router.get("/autocomplete", async (req, res) => {
     );
 
     console.log("Google API response status:", response.data.status);
+    console.log("Full Google API response:", JSON.stringify(response.data, null, 2));
+    
+    if (response.data.status === 'REQUEST_DENIED') {
+      console.error("API Key Error:", response.data.error_message || 'Request denied - check API key and billing');
+      return res.status(403).json({ 
+        message: "Google API access denied", 
+        error: response.data.error_message || 'Check API key configuration',
+        status: response.data.status
+      });
+    }
+    
     res.json(response.data);
   } catch (error) {
     console.error("Autocomplete error:", error.message);
@@ -54,6 +66,16 @@ router.get("/place-details", async (req, res) => {
     );
 
     console.log("Place details response status:", response.data.status);
+    
+    if (response.data.status === 'REQUEST_DENIED') {
+      console.error("API Key Error:", response.data.error_message || 'Request denied - check API key and billing');
+      return res.status(403).json({ 
+        message: "Google API access denied", 
+        error: response.data.error_message || 'Check API key configuration',
+        status: response.data.status
+      });
+    }
+    
     res.json(response.data);
   } catch (error) {
     console.error("Place details error:", error.message);
@@ -87,6 +109,16 @@ router.get("/directions", async (req, res) => {
     );
 
     console.log("Directions response status:", response.data.status);
+    
+    if (response.data.status === 'REQUEST_DENIED') {
+      console.error("API Key Error:", response.data.error_message || 'Request denied - check API key and billing');
+      return res.status(403).json({ 
+        message: "Google API access denied", 
+        error: response.data.error_message || 'Check API key configuration',
+        status: response.data.status
+      });
+    }
+    
     res.json(response.data);
   } catch (error) {
     console.error("Directions error:", error.message);
