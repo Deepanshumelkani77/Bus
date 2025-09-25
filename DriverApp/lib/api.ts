@@ -7,13 +7,13 @@
 
 import { Platform } from "react-native";
 
-// Replace with your actual computer IP (NOT localhost)
 let DEFAULT_BASE_URL =
   Platform.OS === "android"
-    ? "http://192.168.1.31:2000" // for Android device/Emulator
-    : "http://192.168.1.31:2000"; // for iOS device
+    ? "http://10.65.103.156:2000"  // same as your Metro IP
+    : "http://10.65.103.156:2000"; // works for iOS too
 
 export const BASE_URL = DEFAULT_BASE_URL;
+
 
 
 // Platform.select({
