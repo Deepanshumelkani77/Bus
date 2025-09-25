@@ -21,6 +21,8 @@ const busRoutes = require("./routes/bus");
 app.use("/buses", busRoutes);
 const tripRoutes = require("./routes/trips");
 app.use("/trips", tripRoutes);
+const routeRoutes = require("./routes/routes");
+app.use("/routes", routeRoutes);
 
 const PORT =  2000;
 
