@@ -1,9 +1,20 @@
-import { Platform } from 'react-native';
+
 
 // Adjust this BASE_URL for your environment if needed
 // If testing on Android emulator use 10.0.2.2 to access the host machine
-let DEFAULT_BASE_URL = 'http://localhost:2000';
+//let DEFAULT_BASE_URL = 'http://localhost:2000';
 // 
+
+import { Platform } from "react-native";
+
+// Replace with your actual computer IP (NOT localhost)
+let DEFAULT_BASE_URL =
+  Platform.OS === "android"
+    ? "http://192.168.1.31:2000" // for Android device/Emulator
+    : "http://192.168.1.31:2000"; // for iOS device
+
+export const BASE_URL = DEFAULT_BASE_URL;
+
 
 // Platform.select({
 //   android: 'http://10.0.2.2:2000',
@@ -11,7 +22,9 @@ let DEFAULT_BASE_URL = 'http://localhost:2000';
 //   default: 'http://localhost:2000',
 // });
 
-export const BASE_URL = DEFAULT_BASE_URL!;
+//192.168.1.31
+
+
 
 export type AuthResponse = {
   token: string;
