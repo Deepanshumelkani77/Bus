@@ -3,19 +3,20 @@ import { useNavigate } from 'react-router-dom';
 
 const Welcome = () => {
   const [isVisible, setIsVisible] = useState(false);
-  const [countdown, setCountdown] = useState(5);
+  const [countdown, setCountdown] = useState(10);
   const navigate = useNavigate();
 
   useEffect(() => {
     // Start animations
-    setTimeout(() => setIsVisible(true), 1000);
+    setTimeout(() => setIsVisible(true), 300);
 
     // Countdown timer
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          navigate('/login');
+          // Use setTimeout to avoid setState during render
+          setTimeout(() => navigate('/login'), 0);
           return 0;
         }
         return prev - 1;
