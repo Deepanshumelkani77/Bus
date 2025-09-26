@@ -125,7 +125,7 @@ router.get("/place-details", async (req, res) => {
   }
 });
 
-// Directions using OSRM API
+// Directions API
 router.get("/directions", async (req, res) => {
   try {
     const { origin, destination } = req.query;
@@ -133,55 +133,38 @@ router.get("/directions", async (req, res) => {
       return res.status(400).json({ message: "Missing origin or destination parameters" });
     }
 
-    console.log("🗺️ OSRM directions request from:", origin, "to:", destination);
-
-    // Parse coordinates (format: "lat,lng")
-    const [originLat, originLng] = origin.split(',').map(parseFloat);
-    const [destLat, destLng] = destination.split(',').map(parseFloat);
-
-    // OSRM expects format: lng,lat (opposite of Google)
-    const osrmOrigin = `${originLng},${originLat}`;
-    const osrmDest = `${destLng},${destLat}`;
+    console.log("Directions request from:", origin, "to:", destination);
 
     const response = await axios.get(
-      `http://router.project-osrm.org/route/v1/driving/${osrmOrigin};${osrmDest}`,
+      "https://maps.googleapis.com/maps/api/directions/json",
       {
         params: {
-          overview: "full",
-          alternatives: "true",
-          steps: "true",
-          geometries: "polyline"
-        }
+          origin,
+          destination,
+          alternatives: true,
+          key: GOOGLE_API_KEY,
+          mode: "driving",
+          traffic_model: "best_guess",
+          departure_time: "now",
+        },
       }
     );
 
-    console.log("✅ OSRM found", response.data.routes?.length || 0, "routes");
-
-    // Convert OSRM format to Google Directions format for compatibility
-    const routes = response.data.routes.map((route, index) => ({
-      summary: `Route ${index + 1}`,
-      legs: [{
-        distance: {
-          text: `${(route.distance / 1000).toFixed(1)} km`,
-          value: route.distance
-        },
-        duration: {
-          text: `${Math.round(route.duration / 60)} min`,
-          value: route.duration
-        }
-      }],
-      overview_polyline: {
-        points: route.geometry
-      }
-    }));
-
-    res.json({
-      status: "OK",
-      routes: routes
-    });
+    console.log("Directions response status:", response.data.status);
+    
+    if (response.data.status === 'REQUEST_DENIED') {
+      console.error("API Key Error:", response.data.error_message || 'Request denied - check API key and billing');
+      return res.status(403).json({ 
+        message: "Google API access denied", 
+        error: response.data.error_message || 'Check API key configuration',
+        status: response.data.status
+      });
+    }
+    
+    res.json(response.data);
   } catch (error) {
-    console.error("❌ OSRM directions error:", error.message);
-    res.status(500).json({ message: "OSRM Directions API error", error: error.message });
+    console.error("Directions error:", error.message);
+    res.status(500).json({ message: "Google Directions API error", error: error.message });
   }
 });
 
