@@ -1,11 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [isSignup, setIsSignup] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    city: ''
+  });
   const [loading, setLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -13,114 +22,343 @@ const Login = () => {
     setTimeout(() => setIsVisible(true), 100);
   }, []);
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    if (!email || !password) {
-      alert('Please enter email and password');
-      return;
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    // Clear error when user starts typing
+    if (error) setError('');
+  };
+
+  const validateForm = () => {
+    if (!formData.email || !formData.password) {
+      setError('Please fill in all required fields');
+      return false;
     }
+
+    if (isSignup) {
+      if (!formData.name || !formData.city) {
+        setError('Please fill in all required fields');
+        return false;
+      }
+      if (formData.password !== formData.confirmPassword) {
+        setError('Passwords do not match');
+        return false;
+      }
+      if (formData.password.length < 6) {
+        setError('Password must be at least 6 characters long');
+        return false;
+      }
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError('Please enter a valid email address');
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validateForm()) return;
     
     try {
       setLoading(true);
-      // TODO: Implement actual login API call
-      console.log('Login attempt:', { email, password });
+      setError('');
+
+      const endpoint = isSignup ? '/auth/signup' : '/auth/login';
+      const payload = isSignup 
+        ? { 
+            name: formData.name, 
+            email: formData.email, 
+            password: formData.password, 
+            city: formData.city 
+          }
+        : { email: formData.email, password: formData.password };
+
+      const response = await axios.post(`http://localhost:2000${endpoint}`, payload);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // For now, just navigate to dashboard
-      navigate('/dashboard');
+      if (response.data.token) {
+        // Store token in localStorage
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('driver', JSON.stringify(response.data.driver));
+        
+        // Navigate to dashboard
+        navigate('/dashboard');
+      }
     } catch (error) {
-      alert('Login failed. Please try again.');
+      console.error('Auth error:', error);
+      setError(
+        error.response?.data?.message || 
+        `${isSignup ? 'Signup' : 'Login'} failed. Please try again.`
+      );
     } finally {
       setLoading(false);
     }
   };
 
+  const toggleMode = () => {
+    setIsSignup(!isSignup);
+    setFormData({
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      city: ''
+    });
+    setError('');
+  };
+
   return (
-    <div className="min-h-screen bg-white">
-      {/* Hero Section - Dark Navy with Blobs */}
-      <div className="relative bg-slate-900 pt-20 pb-10 px-5 rounded-b-3xl overflow-hidden">
-        {/* Decorative Blobs */}
-        <div className="absolute w-50 h-50 rounded-full bg-sky-400/20 -top-12 -right-8 animate-pulse" style={{width: '200px', height: '200px'}}></div>
-        <div className="absolute w-35 h-35 rounded-full bg-teal-400/18 -bottom-8 -left-5 animate-pulse" style={{width: '140px', height: '140px', animationDelay: '1s'}}></div>
-        
-        {/* Hero Content */}
-        <div className={`text-center relative z-10 transform transition-all duration-500 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'}`}>
-          <h1 className="text-white/90 text-base font-bold tracking-wide mb-2">BusTracker</h1>
-          
-          {/* Logo */}
-          <div className="flex justify-center mb-3">
-            <div className="w-16 h-16 bg-gradient-to-br from-teal-400 to-sky-400 rounded-full flex items-center justify-center">
-              <svg className="w-9 h-9 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M4 16c0 .88.39 1.67 1 2.22V20a1 1 0 001 1h1a1 1 0 001-1v-1h8v1a1 1 0 001 1h1a1 1 0 001-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/>
-              </svg>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-30">
+        <div className="w-full h-full" style={{backgroundImage: "url('data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23e2e8f0' fill-opacity='0.4'%3E%3Ccircle cx='7' cy='7' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')"}}></div>
+      </div>
+      
+      <div className="relative min-h-screen flex">
+        {/* Left Side - Hero Section (Hidden on mobile, visible on laptop) */}
+        <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
+          {/* Animated Background Elements */}
+          <div className="absolute inset-0">
+            <div className="absolute w-96 h-96 rounded-full bg-teal-400/10 -top-20 -left-20 animate-pulse"></div>
+            <div className="absolute w-80 h-80 rounded-full bg-sky-400/10 top-1/3 -right-20 animate-pulse" style={{animationDelay: '1s'}}></div>
+            <div className="absolute w-64 h-64 rounded-full bg-purple-400/10 bottom-20 left-1/4 animate-pulse" style={{animationDelay: '2s'}}></div>
+          </div>
+
+          <div className="relative z-10 flex flex-col justify-center px-16 text-white">
+            <div className={`transform transition-all duration-1000 ${isVisible ? 'translate-x-0 opacity-100' : '-translate-x-10 opacity-0'}`}>
+              <div className="flex items-center gap-4 mb-8">
+                <div className="w-16 h-16 bg-gradient-to-br from-teal-400 to-sky-400 rounded-2xl flex items-center justify-center shadow-2xl">
+                  <svg className="w-9 h-9 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M4 16c0 .88.39 1.67 1 2.22V20a1 1 0 001 1h1a1 1 0 001-1v-1h8v1a1 1 0 001 1h1a1 1 0 001-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/>
+                  </svg>
+                </div>
+                <h1 className="text-3xl font-bold">BusTrac</h1>
+              </div>
+              
+              <h2 className="text-4xl font-bold mb-6 leading-tight">
+                Smart Bus Tracking<br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-sky-400">
+                  Made Simple
+                </span>
+              </h2>
+              
+              <p className="text-xl text-slate-300 mb-8 leading-relaxed">
+                Join thousands of drivers who trust BusTrac for efficient route management and real-time passenger updates.
+              </p>
+
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-teal-500/20 rounded-full flex items-center justify-center">
+                    <svg className="w-4 h-4 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <span className="text-slate-300">Real-time GPS tracking</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-sky-500/20 rounded-full flex items-center justify-center">
+                    <svg className="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <span className="text-slate-300">Smart route optimization</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-purple-500/20 rounded-full flex items-center justify-center">
+                    <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <span className="text-slate-300">Passenger notifications</span>
+                </div>
+              </div>
             </div>
           </div>
-          
-          <h2 className="text-white text-2xl font-bold mb-1">Welcome back</h2>
-          <p className="text-white/80 text-sm">Sign in to continue</p>
         </div>
-      </div>
 
-      {/* Login Card */}
-      <div className="px-5 -mt-6 relative z-20">
-        <div className={`bg-white rounded-2xl p-5 shadow-lg border border-gray-100 transform transition-all duration-500 delay-200 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
-          <form onSubmit={handleLogin} className="space-y-4">
-            {/* Email Field */}
-            <div>
-              <label className="block text-slate-500 text-sm mb-1.5 mt-3">Email</label>
-              <input
-                type="email"
-                placeholder="driver@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-white border border-gray-200 text-slate-900 rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all"
-                required
-              />
+        {/* Right Side - Auth Form */}
+        <div className="w-full lg:w-1/2 flex items-center justify-center p-8 lg:p-16">
+          <div className="w-full max-w-md">
+            {/* Mobile Logo (Visible only on mobile) */}
+            <div className="lg:hidden text-center mb-8">
+              <div className="flex justify-center mb-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-teal-400 to-sky-400 rounded-2xl flex items-center justify-center shadow-lg">
+                  <svg className="w-9 h-9 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M4 16c0 .88.39 1.67 1 2.22V20a1 1 0 001 1h1a1 1 0 001-1v-1h8v1a1 1 0 001 1h1a1 1 0 001-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/>
+                  </svg>
+                </div>
+              </div>
+              <h1 className="text-2xl font-bold text-slate-900">BusTrac</h1>
             </div>
 
-            {/* Password Field */}
-            <div>
-              <label className="block text-slate-500 text-sm mb-1.5 mt-3">Password</label>
-              <input
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-white border border-gray-200 text-slate-900 rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all"
-                required
-              />
+            {/* Auth Card */}
+            <div className={`bg-white/80 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/20 transform transition-all duration-700 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
+              
+              {/* Header */}
+              <div className="text-center mb-8">
+                <h2 className="text-3xl font-bold text-slate-900 mb-2">
+                  {isSignup ? 'Create Account' : 'Welcome Back'}
+                </h2>
+                <p className="text-slate-600">
+                  {isSignup ? 'Join our community of drivers' : 'Sign in to your account'}
+                </p>
+              </div>
+
+              {/* Error Message */}
+              {error && (
+                <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-6 rounded-r-lg">
+                  <div className="flex items-center">
+                    <svg className="w-5 h-5 text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    <span className="text-red-700 text-sm">{error}</span>
+                  </div>
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Name Field - Only for Signup */}
+                {isSignup && (
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-slate-700">Full Name</label>
+                    <input
+                      type="text"
+                      name="name"
+                      placeholder="Enter your full name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      className="w-full bg-white/50 border-2 border-slate-200 text-slate-900 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 focus:bg-white transition-all duration-200"
+                      required={isSignup}
+                    />
+                  </div>
+                )}
+
+                {/* Email Field */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-slate-700">Email Address</label>
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="driver@example.com"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className="w-full bg-white/50 border-2 border-slate-200 text-slate-900 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 focus:bg-white transition-all duration-200"
+                    required
+                  />
+                </div>
+
+                {/* City Field - Only for Signup */}
+                {isSignup && (
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-slate-700">City</label>
+                    <input
+                      type="text"
+                      name="city"
+                      placeholder="Enter your city"
+                      value={formData.city}
+                      onChange={handleInputChange}
+                      className="w-full bg-white/50 border-2 border-slate-200 text-slate-900 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 focus:bg-white transition-all duration-200"
+                      required={isSignup}
+                    />
+                  </div>
+                )}
+
+                {/* Password Field */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-slate-700">Password</label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      placeholder="••••••••"
+                      value={formData.password}
+                      onChange={handleInputChange}
+                      className="w-full bg-white/50 border-2 border-slate-200 text-slate-900 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:border-teal-500 focus:bg-white transition-all duration-200"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                    >
+                      {showPassword ? (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                        </svg>
+                      ) : (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+             
+
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className={`w-full bg-gradient-to-r from-teal-500 to-sky-500 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:from-teal-600 hover:to-sky-600 transition-all duration-300 mt-8 ${loading ? 'opacity-70 cursor-not-allowed' : 'hover:shadow-xl transform hover:-translate-y-1'}`}
+                >
+                  {loading ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      {isSignup ? 'Creating Account...' : 'Signing In...'}
+                    </div>
+                  ) : (
+                    isSignup ? 'Create Account' : 'Sign In'
+                  )}
+                </button>
+
+                {/* Toggle Mode */}
+                <div className="text-center mt-6">
+                  <p className="text-slate-600 text-sm">
+                    {isSignup ? 'Already have an account?' : "Don't have an account?"}{' '}
+                    <button
+                      type="button"
+                      onClick={toggleMode}
+                      className="text-teal-600 font-semibold hover:text-teal-700 hover:underline transition-colors"
+                    >
+                      {isSignup ? 'Sign In' : 'Create new account'}
+                    </button>
+                  </p>
+                </div>
+
+                {/* Forgot Password - Only for Login */}
+                {!isSignup && (
+                  <div className="text-center mt-4">
+                    <button
+                      type="button"
+                      className="text-slate-500 text-sm hover:text-slate-700 hover:underline transition-colors"
+                    >
+                      Forgot your password?
+                    </button>
+                  </div>
+                )}
+              </form>
+
+              {/* Terms and Conditions - Only for Signup */}
+              {isSignup && (
+                <p className="text-slate-500 text-xs text-center mt-6 leading-relaxed">
+                  By creating an account, you agree to our{' '}
+                  <span className="text-teal-600 font-medium hover:underline cursor-pointer">Terms of Service</span> and{' '}
+                  <span className="text-teal-600 font-medium hover:underline cursor-pointer">Privacy Policy</span>
+                </p>
+              )}
             </div>
-
-            {/* Sign In Button */}
-            <button
-              type="submit"
-              disabled={loading}
-              className={`w-full bg-slate-900 text-white py-4 rounded-full font-bold text-base shadow-lg hover:bg-slate-800 transition-all duration-200 mt-5 ${loading ? 'opacity-70 cursor-not-allowed' : 'hover:shadow-xl'}`}
-            >
-              {loading ? 'Signing in...' : 'Sign In'}
-            </button>
-
-            {/* Divider */}
-            <div className="flex items-center gap-2 mt-4">
-              <div className="flex-1 h-px bg-gray-200"></div>
-              <span className="text-slate-500 text-sm px-2">or</span>
-              <div className="flex-1 h-px bg-gray-200"></div>
-            </div>
-
-            {/* Sign Up Link */}
-            <p className="text-slate-500 text-center text-sm mt-4">
-              New driver?{' '}
-              <button
-                type="button"
-                onClick={() => navigate('/signup')}
-                className="text-slate-900 font-bold hover:underline"
-              >
-                Create an account
-              </button>
-            </p>
-          </form>
+          </div>
         </div>
       </div>
     </div>
