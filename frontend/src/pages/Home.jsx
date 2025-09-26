@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import Header from '../components/Header';
 
 const Home = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -37,6 +38,7 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-white overflow-hidden">
       <Navbar />
+      <Header />
       
       {/* Background Blobs */}
       <div className="absolute w-96 h-96 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 -top-20 -right-20 animate-pulse opacity-60"></div>
