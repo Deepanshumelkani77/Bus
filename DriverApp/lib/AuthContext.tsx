@@ -7,6 +7,7 @@ interface Driver {
   name: string;
   email: string;
   city: string;
+  activeBus?: string;
 }
 
 interface AuthContextType {

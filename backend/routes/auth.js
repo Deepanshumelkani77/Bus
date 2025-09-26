@@ -8,7 +8,7 @@ const router = express.Router();
 // Helpers
 function signToken(driver) {
   const payload = { id: driver._id, email: driver.email, city: driver.city, role: 'driver' };
-  const secret = process.env.JWT_SECRET || 'dev_secret';
+  const secret = process.env.JWT_SECRET || 'your_super_secret_jwt_key_for_bus_app_2024_development_only';
   const expiresIn = '7d';
   return jwt.sign(payload, secret, { expiresIn });
 }

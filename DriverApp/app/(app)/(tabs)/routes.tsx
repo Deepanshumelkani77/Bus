@@ -11,6 +11,7 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   SafeAreaView,
+  Modal,
 } from 'react-native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import axios from 'axios';
@@ -77,6 +78,11 @@ export default function RoutesScreen() {
   const [selectedRouteIndex, setSelectedRouteIndex] = useState<number | null>(null);
   const [loadingRoutes, setLoadingRoutes] = useState<boolean>(false);
   const [savingRoute, setSavingRoute] = useState<boolean>(false);
+  
+  // Trip states
+  const [showTripModal, setShowTripModal] = useState<boolean>(false);
+  const [creatingTrip, setCreatingTrip] = useState<boolean>(false);
+  const [savedRouteData, setSavedRouteData] = useState<any>(null);
   
   // Search states
   const [sourceSuggestions, setSourceSuggestions] = useState<PlaceResult[]>([]);
@@ -326,15 +332,33 @@ export default function RoutesScreen() {
       );
 
       if (response.status === 200) {
-        Alert.alert('Success', 'Route saved successfully!', [
-          {
-            text: 'OK',
-            onPress: () => {
-              // Clear the form
-              clearRoute();
+        // Store the saved route data for trip creation
+        setSavedRouteData({
+          routeId: response.data.route._id,
+          source: sourceText,
+          destination: destText,
+          sourceCoords,
+          destinationCoords: destCoords,
+          selectedRoute: selectedRoute
+        });
+        
+        Alert.alert(
+          'Route Saved Successfully!', 
+          'Would you like to create a trip for this route?',
+          [
+            {
+              text: 'Later',
+              style: 'cancel',
+              onPress: () => clearRoute(),
             },
-          },
-        ]);
+            {
+              text: 'Create Trip',
+              onPress: () => setShowTripModal(true),
+            },
+          ]
+        );
+      } else {
+        Alert.alert('Error', 'Failed to save route. Please try again.');
       }
     } catch (error) {
       console.error('Save route error:', error);
@@ -356,6 +380,63 @@ export default function RoutesScreen() {
     setDestSuggestions([]);
     setShowSourceSuggestions(false);
     setShowDestSuggestions(false);
+  };
+
+  // Create trip function
+  const createTrip = async () => {
+    if (!savedRouteData || !driver) {
+      Alert.alert('Error', 'Missing route or driver information');
+      return;
+    }
+
+    try {
+      setCreatingTrip(true);
+      
+      // For now, we'll use a placeholder busId. In a real app, this would come from bus selection
+      const busId = driver.activeBus || '507f1f77bcf86cd799439011'; // placeholder bus ID
+      
+      const tripData = {
+        busId: busId,
+        driverId: driver._id,
+        source: savedRouteData.source,
+        destination: savedRouteData.destination,
+        sourceCoords: savedRouteData.sourceCoords,
+        destinationCoords: savedRouteData.destinationCoords,
+      };
+
+      const response = await axios.post(
+        'http://10.65.103.156:2000/trips/create',
+        tripData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        Alert.alert(
+          'Trip Created Successfully!',
+          `Trip from ${savedRouteData.source} to ${savedRouteData.destination} has been created.`,
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                setShowTripModal(false);
+                clearRoute();
+                setSavedRouteData(null);
+              },
+            },
+          ]
+        );
+      }
+    } catch (error) {
+      console.error('Create trip error:', error);
+      Alert.alert('Error', 'Failed to create trip. Please try again.');
+    } finally {
+      setCreatingTrip(false);
+    }
   };
 
   // Show authentication warning if not logged in
@@ -600,6 +681,54 @@ export default function RoutesScreen() {
             )}
           </View>
         )}
+
+        {/* Trip Creation Modal */}
+        <Modal
+          visible={showTripModal}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setShowTripModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContainer}>
+              <Text style={styles.modalTitle}>Create Trip</Text>
+              
+              {savedRouteData && (
+                <View style={styles.tripDetails}>
+                  <Text style={styles.tripDetailLabel}>Route Details:</Text>
+                  <Text style={styles.tripDetailText}>From: {savedRouteData.source}</Text>
+                  <Text style={styles.tripDetailText}>To: {savedRouteData.destination}</Text>
+                  <Text style={styles.tripDetailText}>Distance: {savedRouteData.selectedRoute?.distance}</Text>
+                  <Text style={styles.tripDetailText}>Duration: {savedRouteData.selectedRoute?.duration}</Text>
+                </View>
+              )}
+
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.cancelButton]}
+                  onPress={() => {
+                    setShowTripModal(false);
+                    setSavedRouteData(null);
+                  }}
+                >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.createButton, creatingTrip && styles.disabledButton]}
+                  onPress={createTrip}
+                  disabled={creatingTrip}
+                >
+                  {creatingTrip ? (
+                    <ActivityIndicator color="#fff" size="small" />
+                  ) : (
+                    <Text style={styles.createButtonText}>Create Trip</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -842,6 +971,71 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   driverHeaderText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 24,
+    width: '100%',
+    maxWidth: 400,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  tripDetails: {
+    backgroundColor: '#f8f9fa',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 20,
+  },
+  tripDetailLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 8,
+  },
+  tripDetailText: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 4,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: '#f0f0f0',
+  },
+  cancelButtonText: {
+    color: '#666',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  createButton: {
+    backgroundColor: '#4CAF50',
+  },
+  createButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
