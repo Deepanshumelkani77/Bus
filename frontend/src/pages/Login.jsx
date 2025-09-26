@@ -70,7 +70,7 @@ const Login = () => {
       setLoading(true);
       setError('');
 
-      const endpoint = isSignup ? '/auth/signup' : '/auth/login';
+      const endpoint = isSignup ? '/user-auth/signup' : '/user-auth/login';
       const payload = isSignup 
         ? { 
             name: formData.name, 
@@ -85,7 +85,7 @@ const Login = () => {
       if (response.data.token) {
         // Store token in localStorage
         localStorage.setItem('token', response.data.token);
-        localStorage.setItem('driver', JSON.stringify(response.data.driver));
+        localStorage.setItem('user', JSON.stringify(response.data.user));
         
         // Navigate to dashboard
         navigate('/dashboard');

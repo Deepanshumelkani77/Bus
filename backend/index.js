@@ -17,6 +17,8 @@ app.get("/health", (req, res) => {
 // Routes
 const authRoutes = require("./routes/auth");
 app.use("/auth", authRoutes);
+const userAuthRoutes = require("./routes/userAuth");
+app.use("/user-auth", userAuthRoutes);
 const busRoutes = require("./routes/bus");
 app.use("/buses", busRoutes);
 const tripRoutes = require("./routes/trips");
