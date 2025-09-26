@@ -3,87 +3,129 @@ const axios = require("axios");
 
 const router = express.Router();
 
-// Google API Key - using your provided key
-const GOOGLE_API_KEY = "AIzaSyBpr4hS8JlH5-ZJK_cJRGndeeezpdLtbkk";
+// Using free APIs - no API key required!
+console.log("🌍 Using free OpenStreetMap APIs (Nominatim + OSRM)");
 
-// Places Autocomplete API
+// Places Autocomplete using Nominatim API
 router.get("/autocomplete", async (req, res) => {
   try {
     const { input } = req.query;
     if (!input) return res.status(400).json({ message: "Missing input parameter" });
 
-    console.log("Autocomplete request for:", input);
-    console.log("Using API key:", GOOGLE_API_KEY.substring(0, 10) + "...");
+    console.log("🔍 Nominatim autocomplete request for:", input);
 
     const response = await axios.get(
-      "https://maps.googleapis.com/maps/api/place/autocomplete/json",
+      "https://nominatim.openstreetmap.org/search",
       {
         params: {
-          input,
-          key: GOOGLE_API_KEY,
-          types: "geocode",
-          components: "country:in",
+          q: input + ", India", // Add India to focus on Indian locations
+          format: "json",
+          addressdetails: 1,
+          limit: 5,
+          countrycodes: "in", // Restrict to India
         },
+        headers: {
+          'User-Agent': 'BusDriverApp/1.0' // Required by Nominatim
+        }
       }
     );
 
-    console.log("Google API response status:", response.data.status);
-    console.log("Full Google API response:", JSON.stringify(response.data, null, 2));
-    
-    if (response.data.status === 'REQUEST_DENIED') {
-      console.error("API Key Error:", response.data.error_message || 'Request denied - check API key and billing');
-      return res.status(403).json({ 
-        message: "Google API access denied", 
-        error: response.data.error_message || 'Check API key configuration',
-        status: response.data.status
-      });
-    }
-    
-    res.json(response.data);
+    console.log("✅ Nominatim found", response.data.length, "results");
+
+    // Convert Nominatim format to Google-like format for compatibility
+    const predictions = response.data.map((place, index) => ({
+      place_id: place.place_id || `nominatim_${index}`,
+      description: place.display_name,
+      structured_formatting: {
+        main_text: place.name || place.display_name.split(',')[0],
+        secondary_text: place.display_name
+      },
+      geometry: {
+        location: {
+          lat: parseFloat(place.lat),
+          lng: parseFloat(place.lon)
+        }
+      }
+    }));
+
+    res.json({
+      status: "OK",
+      predictions: predictions
+    });
   } catch (error) {
-    console.error("Autocomplete error:", error.message);
-    res.status(500).json({ message: "Google Places API error", error: error.message });
+    console.error("❌ Nominatim autocomplete error:", error.message);
+    res.status(500).json({ message: "Nominatim API error", error: error.message });
   }
 });
 
-// Place Details API
+// Place Details using Nominatim API
 router.get("/place-details", async (req, res) => {
   try {
     const { place_id } = req.query;
     if (!place_id) return res.status(400).json({ message: "Missing place_id parameter" });
 
-    console.log("Place details request for:", place_id);
+    console.log("🔍 Nominatim place details request for:", place_id);
 
-    const response = await axios.get(
-      "https://maps.googleapis.com/maps/api/place/details/json",
-      {
-        params: {
-          place_id,
-          key: GOOGLE_API_KEY,
-          fields: "geometry,name,formatted_address",
-        },
-      }
-    );
-
-    console.log("Place details response status:", response.data.status);
+    // If it's a Nominatim place_id, get details by place_id
+    // If it's a custom ID, we'll search by the description
+    let response;
     
-    if (response.data.status === 'REQUEST_DENIED') {
-      console.error("API Key Error:", response.data.error_message || 'Request denied - check API key and billing');
-      return res.status(403).json({ 
-        message: "Google API access denied", 
-        error: response.data.error_message || 'Check API key configuration',
-        status: response.data.status
+    if (place_id.startsWith('nominatim_')) {
+      // This is a fallback - we already have the coordinates from autocomplete
+      return res.json({
+        status: "OK",
+        result: {
+          geometry: {
+            location: {
+              lat: 0, // This will be handled differently
+              lng: 0
+            }
+          },
+          name: "Location",
+          formatted_address: "Address"
+        }
       });
+    } else {
+      // Real Nominatim place_id
+      response = await axios.get(
+        `https://nominatim.openstreetmap.org/details.php`,
+        {
+          params: {
+            place_id: place_id,
+            format: "json",
+            addressdetails: 1,
+          },
+          headers: {
+            'User-Agent': 'BusDriverApp/1.0'
+          }
+        }
+      );
     }
-    
-    res.json(response.data);
+
+    console.log("✅ Nominatim place details found");
+
+    // Convert to Google-like format
+    const place = response.data;
+    res.json({
+      status: "OK",
+      result: {
+        geometry: {
+          location: {
+            lat: parseFloat(place.centroid?.coordinates?.[1] || place.lat || 0),
+            lng: parseFloat(place.centroid?.coordinates?.[0] || place.lon || 0)
+          }
+        },
+        name: place.localname || place.name || "Location",
+        formatted_address: place.display_name || "Address"
+      }
+    });
   } catch (error) {
-    console.error("Place details error:", error.message);
-    res.status(500).json({ message: "Google Place Details API error", error: error.message });
+    console.error("❌ Nominatim place details error:", error.message);
+    res.status(500).json({ message: "Nominatim Place Details API error", error: error.message });
   }
 });
 
-// Directions API
+// Directions using OSRM API
 router.get("/directions", async (req, res) => {
   try {
     const { origin, destination } = req.query;
@@ -91,38 +133,55 @@ router.get("/directions", async (req, res) => {
       return res.status(400).json({ message: "Missing origin or destination parameters" });
     }
 
-    console.log("Directions request from:", origin, "to:", destination);
+    console.log("🗺️ OSRM directions request from:", origin, "to:", destination);
+
+    // Parse coordinates (format: "lat,lng")
+    const [originLat, originLng] = origin.split(',').map(parseFloat);
+    const [destLat, destLng] = destination.split(',').map(parseFloat);
+
+    // OSRM expects format: lng,lat (opposite of Google)
+    const osrmOrigin = `${originLng},${originLat}`;
+    const osrmDest = `${destLng},${destLat}`;
 
     const response = await axios.get(
-      "https://maps.googleapis.com/maps/api/directions/json",
+      `http://router.project-osrm.org/route/v1/driving/${osrmOrigin};${osrmDest}`,
       {
         params: {
-          origin,
-          destination,
-          alternatives: true,
-          key: GOOGLE_API_KEY,
-          mode: "driving",
-          traffic_model: "best_guess",
-          departure_time: "now",
-        },
+          overview: "full",
+          alternatives: "true",
+          steps: "true",
+          geometries: "polyline"
+        }
       }
     );
 
-    console.log("Directions response status:", response.data.status);
-    
-    if (response.data.status === 'REQUEST_DENIED') {
-      console.error("API Key Error:", response.data.error_message || 'Request denied - check API key and billing');
-      return res.status(403).json({ 
-        message: "Google API access denied", 
-        error: response.data.error_message || 'Check API key configuration',
-        status: response.data.status
-      });
-    }
-    
-    res.json(response.data);
+    console.log("✅ OSRM found", response.data.routes?.length || 0, "routes");
+
+    // Convert OSRM format to Google Directions format for compatibility
+    const routes = response.data.routes.map((route, index) => ({
+      summary: `Route ${index + 1}`,
+      legs: [{
+        distance: {
+          text: `${(route.distance / 1000).toFixed(1)} km`,
+          value: route.distance
+        },
+        duration: {
+          text: `${Math.round(route.duration / 60)} min`,
+          value: route.duration
+        }
+      }],
+      overview_polyline: {
+        points: route.geometry
+      }
+    }));
+
+    res.json({
+      status: "OK",
+      routes: routes
+    });
   } catch (error) {
-    console.error("Directions error:", error.message);
-    res.status(500).json({ message: "Google Directions API error", error: error.message });
+    console.error("❌ OSRM directions error:", error.message);
+    res.status(500).json({ message: "OSRM Directions API error", error: error.message });
   }
 });
 
