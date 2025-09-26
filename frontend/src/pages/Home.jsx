@@ -39,9 +39,9 @@ const Home = () => {
       <Navbar />
       
       {/* Background Blobs */}
-      <div className="absolute w-96 h-96 rounded-full bg-gradient-to-br from-teal-100 to-sky-100 -top-20 -right-20 animate-pulse opacity-60"></div>
-      <div className="absolute w-80 h-80 rounded-full bg-gradient-to-br from-purple-100 to-pink-100 -bottom-16 -left-16 animate-pulse opacity-50" style={{animationDelay: '1s'}}></div>
-      <div className="absolute w-60 h-60 rounded-full bg-gradient-to-br from-yellow-100 to-orange-100 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate-pulse opacity-40" style={{animationDelay: '2s'}}></div>
+      <div className="absolute w-96 h-96 rounded-full bg-sky-400/20 -top-20 -right-20 animate-pulse"></div>
+      <div className="absolute w-80 h-80 rounded-full bg-teal-400/18 -bottom-16 -left-16 animate-pulse" style={{animationDelay: '1s'}}></div>
+      <div className="absolute w-60 h-60 rounded-full bg-purple-400/15 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate-pulse" style={{animationDelay: '2s'}}></div>
 
       {/* Hero Section */}
       <section className="relative z-10 px-5 lg:px-20 py-20 lg:py-32">
@@ -60,7 +60,7 @@ const Home = () => {
               
               <h1 className="text-4xl lg:text-6xl font-bold text-gray-800 mb-6 leading-tight">
                 Track Your Bus in{' '}
-                <span className="bg-gradient-to-r from-teal-500 to-sky-500 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-teal-400 to-sky-400 bg-clip-text text-transparent">
                   Real-Time
                 </span>
               </h1>
@@ -90,25 +90,25 @@ const Home = () => {
               
               {/* Live Stats */}
               <div className="grid grid-cols-3 gap-4 mb-8">
-                <div className="bg-gradient-to-br from-teal-50 to-teal-100 p-6 rounded-2xl border border-teal-200 text-center shadow-sm hover:shadow-md transition-shadow">
-                  <div className="text-2xl lg:text-3xl font-bold text-teal-600 mb-2">{activeBuses}</div>
-                  <div className="text-sm text-teal-700">Active Buses</div>
+                <div className="bg-white/90 backdrop-blur-sm p-6 rounded-2xl border border-teal-200 text-center shadow-sm hover:shadow-md transition-shadow">
+                  <div className="text-2xl lg:text-3xl font-bold text-teal-400 mb-2">{activeBuses}</div>
+                  <div className="text-sm text-gray-600">Active Buses</div>
                 </div>
-                <div className="bg-gradient-to-br from-sky-50 to-sky-100 p-6 rounded-2xl border border-sky-200 text-center shadow-sm hover:shadow-md transition-shadow">
-                  <div className="text-2xl lg:text-3xl font-bold text-sky-600 mb-2">{totalRoutes}</div>
-                  <div className="text-sm text-sky-700">Total Routes</div>
+                <div className="bg-white/90 backdrop-blur-sm p-6 rounded-2xl border border-sky-200 text-center shadow-sm hover:shadow-md transition-shadow">
+                  <div className="text-2xl lg:text-3xl font-bold text-sky-400 mb-2">{totalRoutes}</div>
+                  <div className="text-sm text-gray-600">Total Routes</div>
                 </div>
-                <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-2xl border border-purple-200 text-center shadow-sm hover:shadow-md transition-shadow">
-                  <div className="text-2xl lg:text-3xl font-bold text-purple-600 mb-2">{happyUsers.toLocaleString()}+</div>
-                  <div className="text-sm text-purple-700">Happy Users</div>
+                <div className="bg-white/90 backdrop-blur-sm p-6 rounded-2xl border border-purple-200 text-center shadow-sm hover:shadow-md transition-shadow">
+                  <div className="text-2xl lg:text-3xl font-bold text-purple-400 mb-2">{happyUsers.toLocaleString()}+</div>
+                  <div className="text-sm text-gray-600">Happy Users</div>
                 </div>
               </div>
 
               {/* Feature Cards */}
               <div className="space-y-4">
-                <div className="bg-white p-5 rounded-2xl border border-gray-200 hover:border-teal-300 hover:shadow-md transition-all duration-300">
+                <div className="bg-white p-5 rounded-2xl border border-gray-200 hover:border-teal-400 hover:shadow-md transition-all duration-300">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-teal-400 to-teal-500 rounded-full flex items-center justify-center shadow-sm">
+                    <div className="w-12 h-12 bg-gradient-to-br from-teal-400 to-sky-400 rounded-full flex items-center justify-center shadow-lg">
                       <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -121,9 +121,9 @@ const Home = () => {
                   </div>
                 </div>
 
-                <div className="bg-white p-5 rounded-2xl border border-gray-200 hover:border-sky-300 hover:shadow-md transition-all duration-300">
+                <div className="bg-white p-5 rounded-2xl border border-gray-200 hover:border-sky-400 hover:shadow-md transition-all duration-300">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-sky-400 to-sky-500 rounded-full flex items-center justify-center shadow-sm">
+                    <div className="w-12 h-12 bg-gradient-to-br from-sky-400 to-teal-400 rounded-full flex items-center justify-center shadow-lg">
                       <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
@@ -135,9 +135,9 @@ const Home = () => {
                   </div>
                 </div>
 
-                <div className="bg-white p-5 rounded-2xl border border-gray-200 hover:border-purple-300 hover:shadow-md transition-all duration-300">
+                <div className="bg-white p-5 rounded-2xl border border-gray-200 hover:border-purple-400 hover:shadow-md transition-all duration-300">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-500 rounded-full flex items-center justify-center shadow-sm">
+                    <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center shadow-lg">
                       <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                       </svg>
