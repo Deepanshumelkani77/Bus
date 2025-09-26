@@ -18,38 +18,121 @@ const AppContextProvider = (props) => {
 
   const [user, setUser] = useState(initialUser);
   const [token, setToken] = useState(tokenCookie || null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-
+  // Base URL for API calls
+  const API_BASE_URL = "http://localhost:2000";
 
   // Signup
-  const signup = async (username, email, password, phone) => {
+  const signup = async (name, email, password, city, phone) => {
     try {
-      await axios.post("http://localhost:1000/user/signup", {
-        username,
+      setLoading(true);
+      setError("");
+      
+      const response = await axios.post(`${API_BASE_URL}/user-auth/signup`, {
+        name,
         email,
         password,
+        city,
         phone,
       });
-       
-      alert("Signup successful! Please login.");
+      
+      // Auto-login after successful signup
+      if (response.data.token) {
+        Cookies.set("token", response.data.token, { expires: 7 });
+        Cookies.set("user", JSON.stringify(response.data.user), { expires: 7 });
+        setUser(response.data.user);
+        setToken(response.data.token);
+        navigate("/dashboard");
+        return { success: true, message: response.data.message };
+      }
     } catch (error) {
-      alert(error.response?.data?.message || "Signup failed");
+      const errorMessage = error.response?.data?.message || "Signup failed";
+      setError(errorMessage);
+      return { success: false, message: errorMessage };
+    } finally {
+      setLoading(false);
     }
   };
 
   // Login
   const login = async (email, password) => {
     try {
-      const response = await axios.post("http://localhost:1000/user/login", {
+      setLoading(true);
+      setError("");
+      
+      const response = await axios.post(`${API_BASE_URL}/user-auth/login`, {
         email,
         password,
       });
-      Cookies.set("token", response.data.token, { expires: 1 });
-      Cookies.set("user", JSON.stringify(response.data.user), { expires: 1 });
-      setUser(response.data.user);
-      setToken(response.data.token);
+      
+      if (response.data.token) {
+        Cookies.set("token", response.data.token, { expires: 7 });
+        Cookies.set("user", JSON.stringify(response.data.user), { expires: 7 });
+        setUser(response.data.user);
+        setToken(response.data.token);
+        navigate("/dashboard");
+        return { success: true, message: response.data.message };
+      }
     } catch (error) {
-      alert(error.response?.data?.message || "Login failed");
+      const errorMessage = error.response?.data?.message || "Login failed";
+      setError(errorMessage);
+      return { success: false, message: errorMessage };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Update Profile
+  const updateProfile = async (profileData) => {
+    try {
+      setLoading(true);
+      setError("");
+      
+      const response = await axios.put(`${API_BASE_URL}/user-auth/profile`, profileData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      if (response.data.user) {
+        Cookies.set("user", JSON.stringify(response.data.user), { expires: 7 });
+        setUser(response.data.user);
+        return { success: true, message: response.data.message };
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || "Profile update failed";
+      setError(errorMessage);
+      return { success: false, message: errorMessage };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Get Profile
+  const getProfile = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      
+      const response = await axios.get(`${API_BASE_URL}/user-auth/profile`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      if (response.data.user) {
+        Cookies.set("user", JSON.stringify(response.data.user), { expires: 7 });
+        setUser(response.data.user);
+        return { success: true, user: response.data.user };
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || "Failed to fetch profile";
+      setError(errorMessage);
+      return { success: false, message: errorMessage };
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -59,21 +142,58 @@ const AppContextProvider = (props) => {
     Cookies.remove("user");
     setUser(null);
     setToken(null);
+    setError("");
     navigate("/");
   };
 
-  // Toggle function for sidebar
-  const toggleSidebar = () => {
-    setSidebarOpen(prev => !prev);
+  // Clear error
+  const clearError = () => {
+    setError("");
   };
 
-  // Close sidebar function
-  const closeSidebar = () => {
-    setSidebarOpen(false);
+  // Check if user is authenticated
+  const isAuthenticated = () => {
+    return !!(user && token);
   };
+
+  // Auto-logout on token expiration
+  useEffect(() => {
+    if (token) {
+      // Set up axios interceptor for token expiration
+      const interceptor = axios.interceptors.response.use(
+        (response) => response,
+        (error) => {
+          if (error.response?.status === 401 || error.response?.status === 403) {
+            logout();
+          }
+          return Promise.reject(error);
+        }
+      );
+
+      return () => {
+        axios.interceptors.response.eject(interceptor);
+      };
+    }
+  }, [token]);
 
   const value = {
-   
+    // State
+    user,
+    token,
+    loading,
+    error,
+    
+    // Functions
+    signup,
+    login,
+    logout,
+    updateProfile,
+    getProfile,
+    clearError,
+    isAuthenticated,
+    
+    // Utils
+    API_BASE_URL,
   };
 
   return (

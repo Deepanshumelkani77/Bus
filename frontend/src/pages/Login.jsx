@@ -1,21 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { AppContext } from '../context/AppContext';
 
 const Login = () => {
+  const { signup, login, loading, error, clearError, isAuthenticated } = useContext(AppContext);
   const [isSignup, setIsSignup] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
-    confirmPassword: '',
     city: ''
   });
-  const [loading, setLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
-  const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [localError, setLocalError] = useState('');
   const navigate = useNavigate();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
 
   useEffect(() => {
     // Start animations
@@ -28,34 +34,31 @@ const Login = () => {
       ...prev,
       [name]: value
     }));
-    // Clear error when user starts typing
-    if (error) setError('');
+    // Clear errors when user starts typing
+    if (error) clearError();
+    if (localError) setLocalError('');
   };
 
   const validateForm = () => {
     if (!formData.email || !formData.password) {
-      setError('Please fill in all required fields');
+      setLocalError('Please fill in all required fields');
       return false;
     }
 
     if (isSignup) {
       if (!formData.name || !formData.city) {
-        setError('Please fill in all required fields');
-        return false;
-      }
-      if (formData.password !== formData.confirmPassword) {
-        setError('Passwords do not match');
+        setLocalError('Please fill in all required fields');
         return false;
       }
       if (formData.password.length < 6) {
-        setError('Password must be at least 6 characters long');
+        setLocalError('Password must be at least 6 characters long');
         return false;
       }
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
-      setError('Please enter a valid email address');
+      setLocalError('Please enter a valid email address');
       return false;
     }
 
@@ -66,38 +69,30 @@ const Login = () => {
     e.preventDefault();
     if (!validateForm()) return;
     
+    // Clear any previous errors
+    clearError();
+    setLocalError('');
+    
     try {
-      setLoading(true);
-      setError('');
-
-      const endpoint = isSignup ? '/user-auth/signup' : '/user-auth/login';
-      const payload = isSignup 
-        ? { 
-            name: formData.name, 
-            email: formData.email, 
-            password: formData.password, 
-            city: formData.city 
-          }
-        : { email: formData.email, password: formData.password };
-
-      const response = await axios.post(`http://localhost:2000${endpoint}`, payload);
+      let result;
       
-      if (response.data.token) {
-        // Store token in localStorage
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-        
-        // Navigate to dashboard
-        navigate('/dashboard');
+      if (isSignup) {
+        result = await signup(
+          formData.name,
+          formData.email,
+          formData.password,
+          formData.city
+        );
+      } else {
+        result = await login(formData.email, formData.password);
       }
+      
+      // If successful, the context will handle navigation
+      // If there's an error, it will be set in the context
+      
     } catch (error) {
       console.error('Auth error:', error);
-      setError(
-        error.response?.data?.message || 
-        `${isSignup ? 'Signup' : 'Login'} failed. Please try again.`
-      );
-    } finally {
-      setLoading(false);
+      setLocalError('An unexpected error occurred. Please try again.');
     }
   };
 
@@ -107,10 +102,10 @@ const Login = () => {
       name: '',
       email: '',
       password: '',
-      confirmPassword: '',
       city: ''
     });
-    setError('');
+    clearError();
+    setLocalError('');
   };
 
   return (
@@ -211,13 +206,13 @@ const Login = () => {
               </div>
 
               {/* Error Message */}
-              {error && (
+              {(error || localError) && (
                 <div className="bg-red-50 border-l-4 border-red-400 p-3 mb-4 rounded-r-lg">
                   <div className="flex items-center">
                     <svg className="w-4 h-4 text-red-400 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                     </svg>
-                    <span className="text-red-700 text-sm">{error}</span>
+                    <span className="text-red-700 text-sm">{error || localError}</span>
                   </div>
                 </div>
               )}
