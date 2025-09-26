@@ -2,12 +2,13 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, KeyboardAvoidingView, Platform, Animated, Easing } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { signupDriver } from '../../lib/api';
-import { setCurrentDriver } from '../../lib/session';
+import { useAuth } from '../../lib/AuthContext';
 import { theme } from '../../lib/theme';
 import BusLogo from '../../components/BusLogo';
 
 export default function SignupScreen() {
   const router = useRouter();
+  const { login } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -39,10 +40,19 @@ export default function SignupScreen() {
     }
     try {
       setLoading(true);
+      // First create the driver account
       const res = await signupDriver({ name: name.trim(), email: email.trim(), password, city: city.trim() });
-      setCurrentDriver(res.driver);
-      Alert.alert('Success', `Welcome ${res.driver.name}`);
-      router.replace('/home');
+      
+      // Then automatically log them in
+      const loginResult = await login(email.trim(), password);
+      
+      if (loginResult.success) {
+        Alert.alert('Success', `Welcome ${name}!`);
+        router.replace('/(app)');
+      } else {
+        Alert.alert('Signup successful', 'Please login with your new account');
+        router.replace('/(auth)/login');
+      }
     } catch (e: any) {
       const msg = e?.response?.data?.message || 'Signup failed';
       Alert.alert('Error', msg);

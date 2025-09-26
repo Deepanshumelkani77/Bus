@@ -2,12 +2,13 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, RefreshControl, ScrollView, Modal, TextInput } from 'react-native';
 import { theme } from '../../../lib/theme';
 import { getBuses, getCities, Bus, assignBusToDriver } from '../../../lib/api';
-import { getCurrentDriver, setCurrentDriver } from '../../../lib/session';
+import { useAuth } from '../../../lib/AuthContext';
 import { useRouter } from 'expo-router';
 import BusCard from '../../../components/BusCard';
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { driver, isAuthenticated } = useAuth();
   const [cities, setCities] = useState<string[]>([]);
   const [selectedCity, setSelectedCity] = useState<string | undefined>(undefined);
   const [buses, setBuses] = useState<Bus[]>([]);
@@ -64,15 +65,15 @@ export default function HomeScreen() {
   ), [selectedCity]);
 
   async function onSelectBus(bus: Bus) {
-    const driver = getCurrentDriver();
-    if (!driver) {
-      alert('Please sign in again. No driver session found.');
+    if (!isAuthenticated() || !driver) {
+      alert('Please sign in again. Authentication required.');
+      router.replace('/(auth)/login');
       return;
     }
     try {
       setLoading(true);
       const res = await assignBusToDriver({ busId: bus._id, driverId: driver._id });
-      setCurrentDriver({ ...driver, activeBus: res.bus._id });
+      // Note: You might want to update the driver context with activeBus if needed
       router.replace('/(app)/(tabs)/routes');
     } catch (e: any) {
       const msg = e?.response?.data?.message || 'Failed to assign bus';
