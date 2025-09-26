@@ -456,20 +456,7 @@ export default function RoutesScreen() {
                   <TouchableOpacity
                     key={suggestion.place_id}
                     style={styles.suggestionItem}
-                    onPress={() => {
-                      // For Nominatim, coordinates are already in the autocomplete response
-                      if (suggestion.geometry && suggestion.geometry.location) {
-                        setSourceCoords({
-                          lat: suggestion.geometry.location.lat,
-                          lng: suggestion.geometry.location.lng
-                        });
-                        setSourceText(suggestion.description);
-                        setShowSourceSuggestions(false);
-                      } else {
-                        // Fallback to place details API
-                        getPlaceDetails(suggestion.place_id, true);
-                      }
-                    }}
+                    onPress={() => getPlaceDetails(suggestion.place_id, true)}
                   >
                     <Text style={styles.suggestionText}>{suggestion.description}</Text>
                   </TouchableOpacity>
