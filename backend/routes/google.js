@@ -4,7 +4,7 @@ const axios = require("axios");
 const router = express.Router();
 
 // Google API Key - using your provided key
-const GOOGLE_API_KEY = "AIzaSyBpr4hS8JlH5-ZJK_cJRGndeeezpdLtbkk";
+const GOOGLE_API_KEY = "AIzaSyB3WtPB3oxkeJZ7rqjYjEwjdoHUmUyeEYE";
 
 // Places Autocomplete API
 router.get("/autocomplete", async (req, res) => {
@@ -127,3 +127,4 @@ router.get("/directions", async (req, res) => {
 });
 
 module.exports = router;
+//AIzaSyC76juKOJGvHUXi2Oy7InLTh24cjNZdjRg
