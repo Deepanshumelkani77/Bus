@@ -44,7 +44,7 @@ const AppContextProvider = (props) => {
         Cookies.set("user", JSON.stringify(response.data.user), { expires: 7 });
         setUser(response.data.user);
         setToken(response.data.token);
-        navigate("/dashboard");
+        navigate("/home");
         return { success: true, message: response.data.message };
       }
     } catch (error) {
@@ -72,7 +72,7 @@ const AppContextProvider = (props) => {
         Cookies.set("user", JSON.stringify(response.data.user), { expires: 7 });
         setUser(response.data.user);
         setToken(response.data.token);
-        navigate("/dashboard");
+        navigate("/home");
         return { success: true, message: response.data.message };
       }
     } catch (error) {
