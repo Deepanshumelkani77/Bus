@@ -1,13 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, KeyboardAvoidingView, Platform, Animated, Easing } from 'react-native';
 import { Link, useRouter } from 'expo-router';
-import { loginDriver } from '../../lib/api';
-import { setCurrentDriver } from '../../lib/session';
+import { useAuth } from '../../lib/AuthContext';
 import { theme } from '../../lib/theme';
 import BusLogo from '../../components/BusLogo';
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -37,13 +37,16 @@ export default function LoginScreen() {
     }
     try {
       setLoading(true);
-      const res = await loginDriver({ email: email.trim(), password });
-      // TODO: store token securely (SecureStore/Keychain). For MVP, set session in-memory/localStorage.
-      setCurrentDriver(res.driver);
-      Alert.alert('Welcome', `Logged in as ${res.driver.name}`);
-      router.replace('/(app)');
+      const result = await login(email.trim(), password);
+      
+      if (result.success) {
+        Alert.alert('Welcome', 'Login successful!');
+        router.replace('/(app)');
+      } else {
+        Alert.alert('Error', result.message);
+      }
     } catch (e: any) {
-      const msg = e?.response?.data?.message || 'Login failed';
+      const msg = e?.message || 'Login failed';
       Alert.alert('Error', msg);
     } finally {
       setLoading(false);

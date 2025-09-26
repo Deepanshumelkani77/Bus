@@ -14,8 +14,7 @@ import {
 } from 'react-native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import axios from 'axios';
-// Note: For production, consider using expo-secure-store or @react-native-async-storage/async-storage
-// For now, we'll use a simple approach
+import { useAuth } from '../../../lib/AuthContext';
 import { theme } from '../../../lib/theme';
 
 // Google API Key
@@ -65,6 +64,8 @@ interface GoogleDirectionsResponse {
 }
 
 export default function RoutesScreen() {
+  const { driver, token, isAuthenticated } = useAuth();
+  
   // Location states
   const [sourceText, setSourceText] = useState<string>('');
   const [destText, setDestText] = useState<string>('');
@@ -289,20 +290,20 @@ export default function RoutesScreen() {
       return;
     }
 
+    if (!isAuthenticated() || !driver || !token) {
+      Alert.alert('Authentication Required', 'Please login to save routes');
+      return;
+    }
+
     try {
       setSavingRoute(true);
       const selectedRoute = routes[selectedRouteIndex];
       
-      // For demo purposes, using hardcoded values
-      // In production, get these from your auth context or storage
-      const demoDriverId = "demo_driver_123";
-      const demoToken = "demo_token_for_testing";
-      
-      // Save route to backend
+      // Save route to backend with proper authentication
       const response = await axios.post(
         'http://10.65.103.156:2000/routes/save',
         {
-          driverId: demoDriverId,
+          driverId: driver._id,
           source: sourceText,
           destination: destText,
           sourceCoords,
@@ -318,7 +319,7 @@ export default function RoutesScreen() {
         },
         {
           headers: {
-            Authorization: `Bearer ${demoToken}`,
+            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
         }
@@ -357,12 +358,38 @@ export default function RoutesScreen() {
     setShowDestSuggestions(false);
   };
 
+  // Show authentication warning if not logged in
+  if (!isAuthenticated()) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.authWarningContainer}>
+          <Text style={styles.authWarningTitle}>Authentication Required</Text>
+          <Text style={styles.authWarningText}>
+            Please login as a driver to access route planning features.
+          </Text>
+          <Text style={styles.authWarningSubtext}>
+            You can still view the map and search for places, but saving routes requires authentication.
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView 
         style={styles.container} 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
+        {/* Driver Info Header */}
+        {driver && (
+          <View style={styles.driverHeader}>
+            <Text style={styles.driverHeaderText}>
+              Welcome, {driver.name} • {driver.city}
+            </Text>
+          </View>
+        )}
+
         {/* Map View */}
         <View style={styles.mapContainer}>
           {Platform.OS !== 'web' ? (
@@ -780,5 +807,43 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     textAlign: 'center',
+  },
+  authWarningContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#f5f5f5',
+  },
+  authWarningTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  authWarningText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 12,
+    lineHeight: 24,
+  },
+  authWarningSubtext: {
+    fontSize: 14,
+    color: '#888',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  driverHeader: {
+    backgroundColor: '#2196F3',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+  },
+  driverHeaderText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

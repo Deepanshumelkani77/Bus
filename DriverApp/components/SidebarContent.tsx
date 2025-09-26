@@ -1,11 +1,14 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Animated, Easing } from 'react-native';
-import { Link } from 'expo-router';
+import { View, Text, TouchableOpacity, StyleSheet, Animated, Easing, Alert } from 'react-native';
+import { Link, useRouter } from 'expo-router';
 import { theme } from '../lib/theme';
 import BusLogo from './BusLogo';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useAuth } from '../lib/AuthContext';
 
 export default function SidebarContent() {
+  const { driver, logout } = useAuth();
+  const router = useRouter();
   const fade = useRef(new Animated.Value(0)).current;
   const slide = useRef(new Animated.Value(10)).current;
   useEffect(() => {
@@ -14,6 +17,24 @@ export default function SidebarContent() {
       Animated.timing(slide, { toValue: 0, duration: 400, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
     ]).start();
   }, [fade, slide]);
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Logout', 
+          style: 'destructive',
+          onPress: async () => {
+            await logout();
+            router.replace('/(auth)/login');
+          }
+        }
+      ]
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -25,6 +46,9 @@ export default function SidebarContent() {
           <BusLogo size={74} iconSize={38} variant="darkOnLight" />
           <Text style={styles.brand}>BusTrac</Text>
           <Text style={styles.subtitle}>Driver Console</Text>
+          {driver && (
+            <Text style={styles.driverName}>{driver.name}</Text>
+          )}
         </Animated.View>
       </View>
 
@@ -47,6 +71,12 @@ export default function SidebarContent() {
             <Text style={styles.linkText}>Profile</Text>
           </TouchableOpacity>
         </Link>
+        
+        {/* Logout Button */}
+        <TouchableOpacity style={styles.logoutRow} onPress={handleLogout}>
+          <MaterialCommunityIcons name="logout" size={20} color="#EF4444" />
+          <Text style={styles.logoutText}>Logout</Text>
+        </TouchableOpacity>
       </Animated.View>
 
       <View style={styles.footer}>
@@ -122,5 +152,25 @@ const styles = StyleSheet.create({
   },
   footerText: {
     color: theme.colors.textSecondary,
+  },
+  driverName: {
+    color: theme.colors.textPrimary,
+    fontSize: 14,
+    fontWeight: '600',
+    marginTop: 4,
+  },
+  logoutRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    borderRadius: theme.radius.md,
+    backgroundColor: '#FEF2F2', // light red background
+    marginTop: 8,
+  },
+  logoutText: {
+    color: '#EF4444', // red color
+    fontWeight: '700',
   },
 });
