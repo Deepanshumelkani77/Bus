@@ -1,9 +1,17 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-
+const http = require("http");
+const socketIo = require("socket.io");
 
 const app = express();
+const server = http.createServer(app);
+const io = socketIo(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"]
+  }
+});
 
 // Middleware
 app.use(express.json());
@@ -13,6 +21,9 @@ app.use(cors());
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
+
+// Make io available to routes
+app.set('io', io);
 
 // Routes
 const authRoutes = require("./routes/auth");
@@ -27,6 +38,8 @@ const routeRoutes = require("./routes/routes");
 app.use("/routes", routeRoutes);
 const googleRoutes=require("./routes/google.js");
 app.use("/google",googleRoutes);
+const smartTripRoutes = require("./routes/smartTrips");
+app.use("/smart-trips", smartTripRoutes);
 
 const PORT =  2000;
 
@@ -40,7 +53,22 @@ async function start() {
     await mongoose.connect(mongoUri);
     console.log("✅ MongoDB Connected");
 
-    app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+    // Socket.io connection handling
+    io.on('connection', (socket) => {
+      console.log('🔌 User connected:', socket.id);
+      
+      // Driver location updates
+      socket.on('driver-location-update', (data) => {
+        // Broadcast to all users tracking this trip
+        socket.broadcast.emit('bus-location-update', data);
+      });
+      
+      socket.on('disconnect', () => {
+        console.log('🔌 User disconnected:', socket.id);
+      });
+    });
+
+    server.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
   } catch (err) {
     console.error("❌ Server startup error:", err);
     process.exit(1);
