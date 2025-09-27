@@ -4,7 +4,7 @@ import { Bus, MapPin, Clock, Users, Navigation, ArrowRight, Search, Star, Zap, S
 
 const Welcome = () => {
   const [isVisible, setIsVisible] = useState(false);
-  const [countdown, setCountdown] = useState(5);
+  const [countdown, setCountdown] = useState(100);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,7 +28,7 @@ const Welcome = () => {
   }, [navigate]);
 
   return (
-    <div className="h-screen bg-white flex flex-col overflow-hidden relative">
+    <div className="h-[100vh] bg-white flex flex-col overflow-hidden relative">
       {/* Decorative Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-slate-900/5 to-indigo-600/10 rounded-full blur-3xl"></div>
