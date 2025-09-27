@@ -37,7 +37,7 @@ const Welcome = () => {
       </div>
 
       {/* Header */}
-      <div className="relative z-10 bg-white/80 backdrop-blur-xl shadow-xl border-b border-slate-200/50 px-4 sm:px-6 lg:px-8 py-6">
+      <div className=" h-[10vh] relative z-10 bg-white/80 backdrop-blur-xl shadow-xl border-b border-slate-200/50 px-4 sm:px-6 lg:px-8 py-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="relative">
@@ -65,7 +65,7 @@ const Welcome = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8">
+      <div className=" h-[80vh] bg-pink-200 flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8">
         <div className="max-w-6xl mx-auto w-full">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left Side - Hero Content */}
@@ -225,31 +225,7 @@ const Welcome = () => {
                   </div>
                 </div>
 
-                {/* Enhanced Stats Card */}
-                <div className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-8 text-white shadow-2xl border border-slate-700/20 overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent"></div>
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-full blur-2xl"></div>
-                  <div className="relative">
-                    <div className="text-center mb-6">
-                      <h4 className="text-xl font-bold text-white mb-2">🚀 System Performance</h4>
-                      <p className="text-slate-300 text-sm">Real-time metrics & capabilities</p>
-                    </div>
-                    <div className="grid grid-cols-3 gap-6 text-center">
-                      <div className="bg-white/5 rounded-2xl p-4 backdrop-blur-sm border border-white/10">
-                        <div className="text-3xl font-black bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">24/7</div>
-                        <div className="text-slate-300 text-sm font-semibold mt-1">Live Tracking</div>
-                      </div>
-                      <div className="bg-white/5 rounded-2xl p-4 backdrop-blur-sm border border-white/10">
-                        <div className="text-3xl font-black bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">100%</div>
-                        <div className="text-slate-300 text-sm font-semibold mt-1">Real-time</div>
-                      </div>
-                      <div className="bg-white/5 rounded-2xl p-4 backdrop-blur-sm border border-white/10">
-                        <div className="text-3xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">AI</div>
-                        <div className="text-slate-300 text-sm font-semibold mt-1">Powered</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+             
               </div>
             </div>
           </div>
@@ -257,7 +233,7 @@ const Welcome = () => {
       </div>
 
       {/* Footer */}
-      <div className="bg-white border-t border-gray-100 px-4 sm:px-6 lg:px-8 py-4">
+      <div className=" h-[10vh] bg-white border-t border-gray-100 px-4 sm:px-6 lg:px-8 py-4">
         <div className="max-w-7xl mx-auto">
           <p className="text-center text-sm text-gray-500">
             By using BusTracker, you agree to our{' '}
