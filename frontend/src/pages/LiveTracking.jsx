@@ -790,24 +790,18 @@ const LiveTracking = () => {
                   <div className="bg-blue-100 p-2 rounded-xl">
                     <Clock className="h-5 w-5 text-blue-600" />
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900">Bus Arrival Time</h3>
+                  <h3 className="text-xl font-bold text-gray-900">Estimated Arrival</h3>
                 </div>
-                
-                {/* Time to reach user's source */}
-                <div className="text-center mb-6">
-                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-4 border border-green-200 mb-4">
-                    <div className="text-sm text-green-700 font-medium mb-1">Time to reach your pickup point</div>
-                    <div className="text-3xl font-bold text-green-600">
-                      {Math.round(eta.duration / 60)} min
-                    </div>
-                    <div className="text-xs text-green-600 mt-1">
-                      Distance: {(eta.distance / 1000).toFixed(1)} km
-                    </div>
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-blue-600 mb-2">
+                    {Math.round(eta.duration / 60)} min
                   </div>
-                  
+                  <div className="text-sm text-blue-500 font-medium mb-4">
+                    Distance: {(eta.distance / 1000).toFixed(1)} km
+                  </div>
                   <div className="bg-white rounded-2xl p-4 border border-blue-200">
                     <div className="text-sm text-gray-600 mb-1">Bus will reach your location at</div>
-                    <div className="font-bold text-gray-900 text-lg">
+                    <div className="font-bold text-gray-900">
                       {new Date(Date.now() + eta.duration * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                     </div>
                   </div>
