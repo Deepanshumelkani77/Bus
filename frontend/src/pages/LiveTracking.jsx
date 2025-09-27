@@ -295,8 +295,8 @@ const LiveTracking = () => {
       map: mapInstanceRef.current,
       icon: busIcon,
       title: `Bus ${trip?.bus?.busNumber || 'Unknown'} - Live Location`,
-      animation: window.google.maps.Animation.BOUNCE,
-      zIndex: 1000
+      zIndex: 1000,
+      optimized: false
     });
 
     console.log('Bus marker created successfully:', busMarkerRef.current);
@@ -368,7 +368,12 @@ const LiveTracking = () => {
     if (busMarkerRef.current) {
       const newPosition = { lat: location.latitude, lng: location.longitude };
       console.log('Moving existing marker to:', newPosition);
+      
+      // Smooth transition without animation
       busMarkerRef.current.setPosition(newPosition);
+      
+      // Ensure marker stays stable
+      busMarkerRef.current.setAnimation(null);
     } else {
       console.log('No existing marker, creating new one');
       addBusMarker(location);
