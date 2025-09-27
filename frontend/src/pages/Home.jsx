@@ -40,11 +40,7 @@ const Home = () => {
       <Navbar />
       <Header />
       
-      {/* Background Blobs */}
-      <div className="absolute w-96 h-96 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 -top-20 -right-20 animate-pulse opacity-60"></div>
-      <div className="absolute w-80 h-80 rounded-full bg-gradient-to-br from-emerald-100 to-teal-100 -bottom-16 -left-16 animate-pulse opacity-50" style={{animationDelay: '1s'}}></div>
-      <div className="absolute w-60 h-60 rounded-full bg-gradient-to-br from-amber-100 to-orange-100 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate-pulse opacity-40" style={{animationDelay: '2s'}}></div>
-
+      
       {/* Hero Section */}
       <section className="relative z-10 px-5 lg:px-20 py-20 lg:py-32">
         <div className="max-w-6xl mx-auto">
