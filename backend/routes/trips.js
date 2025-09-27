@@ -8,7 +8,9 @@ const {
   completeTrip, 
   updateTripLocation, 
   getTripLocation,
-  getActiveTrips 
+  getActiveTrips,
+  searchTrips,
+  getTripDetails 
 } = require('../controller/tripController');
 
 // POST /trips/create
@@ -28,6 +30,12 @@ router.post('/location', authenticateToken, updateTripLocation);
 
 // GET /trips/:tripId/location
 router.get('/:tripId/location', getTripLocation);
+
+// GET /trips/search?src=SRC&des=DES - Search trips by source and destination
+router.get('/search', searchTrips);
+
+// GET /trips/:id - Get trip details by ID
+router.get('/:id', getTripDetails);
 
 // GET /trips/active - Public endpoint for users to track buses
 router.get('/active', getActiveTrips);
