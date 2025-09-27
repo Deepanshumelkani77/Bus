@@ -140,15 +140,6 @@ async function updateTripLocation(req, res) {
     
     await trip.save();
 
-    // Emit real-time location update via Socket.IO
-    const io = req.app.get('io');
-    if (io) {
-      io.to(`trip-${tripId}`).emit('location-update', {
-        tripId,
-        currentLocation: trip.currentLocation
-      });
-    }
-
     return res.json({ message: 'Location updated', currentLocation: trip.currentLocation });
   } catch (e) {
     console.error('Update location error', e);
@@ -189,93 +180,6 @@ async function getActiveTrips(req, res) {
   }
 }
 
-// GET /trips/search?src=SRC&des=DES - Search trips by source and destination
-async function searchTrips(req, res) {
-  try {
-    const { src, des } = req.query;
-    
-    if (!src || !des) {
-      return res.status(400).json({ message: 'Source (src) and destination (des) are required' });
-    }
-
-    // Search for ongoing trips matching source and destination
-    const trips = await Trip.find({ 
-      source: { $regex: new RegExp(src, 'i') }, // Case insensitive search
-      destination: { $regex: new RegExp(des, 'i') },
-      status: 'Ongoing'
-    })
-    .populate('bus', 'busNumber totalSeats')
-    .populate('driver', 'name phone')
-    .select('source destination startTime totalSeats occupiedSeats currentLocation bus driver route');
-
-    // Calculate available seats and add estimated arrival time
-    const tripsWithDetails = trips.map(trip => {
-      const availableSeats = trip.totalSeats - trip.occupiedSeats;
-      
-      return {
-        _id: trip._id,
-        busNumber: trip.bus?.busNumber || 'N/A',
-        driverName: trip.driver?.name || 'N/A',
-        driverPhone: trip.driver?.phone || 'N/A',
-        source: trip.source,
-        destination: trip.destination,
-        startTime: trip.startTime,
-        estimatedArrival: new Date(trip.startTime.getTime() + 2 * 60 * 60 * 1000), // Estimated 2 hours from start
-        availableSeats,
-        totalSeats: trip.totalSeats,
-        currentLocation: trip.currentLocation,
-        route: trip.route
-      };
-    });
-
-    return res.json({ trips: tripsWithDetails });
-  } catch (e) {
-    console.error('Search trips error', e);
-    res.status(500).json({ message: 'Failed to search trips' });
-  }
-}
-
-// GET /trips/:id - Get trip details by ID
-async function getTripDetails(req, res) {
-  try {
-    const { id } = req.params;
-    
-    const trip = await Trip.findById(id)
-      .populate('bus', 'busNumber totalSeats')
-      .populate('driver', 'name phone');
-
-    if (!trip) {
-      return res.status(404).json({ message: 'Trip not found' });
-    }
-
-    const availableSeats = trip.totalSeats - trip.occupiedSeats;
-    
-    const tripDetails = {
-      _id: trip._id,
-      busNumber: trip.bus?.busNumber || 'N/A',
-      driverName: trip.driver?.name || 'N/A',
-      driverPhone: trip.driver?.phone || 'N/A',
-      source: trip.source,
-      destination: trip.destination,
-      startTime: trip.startTime,
-      endTime: trip.endTime,
-      estimatedArrival: new Date(trip.startTime.getTime() + 2 * 60 * 60 * 1000),
-      availableSeats,
-      totalSeats: trip.totalSeats,
-      occupiedSeats: trip.occupiedSeats,
-      status: trip.status,
-      currentLocation: trip.currentLocation,
-      route: trip.route,
-      locationHistory: trip.locationHistory
-    };
-
-    return res.json({ trip: tripDetails });
-  } catch (e) {
-    console.error('Get trip details error', e);
-    res.status(500).json({ message: 'Failed to get trip details' });
-  }
-}
-
 module.exports = { 
   createTrip, 
   getDriverTrips, 
@@ -283,7 +187,5 @@ module.exports = {
   completeTrip, 
   updateTripLocation, 
   getTripLocation,
-  getActiveTrips,
-  searchTrips,
-  getTripDetails 
+  getActiveTrips 
 };

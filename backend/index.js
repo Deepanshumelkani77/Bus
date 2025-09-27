@@ -1,17 +1,9 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const http = require("http");
-const socketIo = require("socket.io");
+
 
 const app = express();
-const server = http.createServer(app);
-const io = socketIo(server, {
-  cors: {
-    origin: "http://localhost:5173",
-    methods: ["GET", "POST"]
-  }
-});
 
 // Middleware
 app.use(express.json());
@@ -48,29 +40,7 @@ async function start() {
     await mongoose.connect(mongoUri);
     console.log("✅ MongoDB Connected");
 
-    // Socket.IO connection handling
-    io.on('connection', (socket) => {
-      console.log('Client connected:', socket.id);
-      
-      socket.on('join-trip', (tripId) => {
-        socket.join(`trip-${tripId}`);
-        console.log(`Client ${socket.id} joined trip ${tripId}`);
-      });
-      
-      socket.on('leave-trip', (tripId) => {
-        socket.leave(`trip-${tripId}`);
-        console.log(`Client ${socket.id} left trip ${tripId}`);
-      });
-      
-      socket.on('disconnect', () => {
-        console.log('Client disconnected:', socket.id);
-      });
-    });
-
-    // Make io available to routes
-    app.set('io', io);
-
-    server.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+    app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
   } catch (err) {
     console.error("❌ Server startup error:", err);
     process.exit(1);
