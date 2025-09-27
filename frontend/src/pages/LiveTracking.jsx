@@ -13,6 +13,7 @@ const LiveTracking = () => {
   const [error, setError] = useState(null);
   const [socket, setSocket] = useState(null);
   const [lastUpdate, setLastUpdate] = useState(null);
+  const [mapLoading, setMapLoading] = useState(true);
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const busMarkerRef = useRef(null);
@@ -39,6 +40,31 @@ const LiveTracking = () => {
     loadTripDetails();
   }, [tripId]);
 
+  // Wait for Google Maps API to load
+  useEffect(() => {
+    let attempts = 0;
+    const maxAttempts = 50; // 5 seconds max wait
+    
+    const checkGoogleMaps = () => {
+      attempts++;
+      
+      if (window.google && window.google.maps && window.google.maps.geometry && trip) {
+        console.log('Google Maps API loaded, initializing map...');
+        initializeMap(trip);
+        setMapLoading(false);
+      } else if (trip && attempts < maxAttempts) {
+        setTimeout(checkGoogleMaps, 100);
+      } else if (attempts >= maxAttempts) {
+        console.error('Google Maps API failed to load after 5 seconds');
+        setError('Failed to load Google Maps. Please refresh the page.');
+      }
+    };
+    
+    if (trip) {
+      checkGoogleMaps();
+    }
+  }, [trip]);
+
   const loadTripDetails = async () => {
     try {
       setLoading(true);
@@ -48,8 +74,7 @@ const LiveTracking = () => {
       setTrip(tripData);
       setBusLocation(tripData.currentLocation);
       
-      // Initialize map after trip data is loaded
-      setTimeout(() => initializeMap(tripData), 100);
+      // Map will be initialized by the Google Maps useEffect
       
     } catch (error) {
       console.error('Error loading trip details:', error);
@@ -60,7 +85,12 @@ const LiveTracking = () => {
   };
 
   const initializeMap = (tripData) => {
-    if (!window.google || !mapRef.current) return;
+    if (!window.google || !window.google.maps || !mapRef.current) {
+      console.log('Google Maps API not ready or map ref not available');
+      return;
+    }
+
+    console.log('Initializing map with trip data:', tripData);
 
     const map = new window.google.maps.Map(mapRef.current, {
       zoom: 12,
@@ -339,11 +369,22 @@ const LiveTracking = () => {
                   </div>
                 </div>
               </div>
-              <div 
-                ref={mapRef}
-                className="w-full h-96 lg:h-[600px] bg-gray-50"
-                style={{ minHeight: '500px' }}
-              />
+              <div className="relative">
+                <div 
+                  ref={mapRef}
+                  className="w-full h-96 lg:h-[600px] bg-gray-50"
+                  style={{ minHeight: '500px' }}
+                />
+                {mapLoading && (
+                  <div className="absolute inset-0 bg-gray-50 flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mx-auto mb-4"></div>
+                      <p className="text-slate-600 font-medium">Loading map...</p>
+                      <p className="text-slate-500 text-sm mt-1">Initializing Google Maps</p>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -467,12 +508,6 @@ const LiveTracking = () => {
         </div>
       </div>
 
-      {/* Google Maps Script */}
-      <script
-        src={`https://maps.googleapis.com/maps/api/js?key=AIzaSyB3WtPB3oxkeJZ7rqjYjEwjdoHUmUyeEYE&libraries=geometry`}
-        async
-        defer
-      ></script>
     </div>
   );
 };
