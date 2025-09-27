@@ -149,18 +149,33 @@ const LiveTracking = () => {
     // Poll every second for location updates
     const interval = setInterval(async () => {
       try {
-        const response = await axios.get(`http://localhost:2000/smart-trips/trip-details/${tripId}`);
-        const tripData = response.data.trip;
+        // First try to get location from trips endpoint
+        const locationResponse = await axios.get(`http://localhost:2000/trips/${tripId}/location`);
         
-        if (tripData.currentLocation) {
-          console.log('Polling: New location received:', tripData.currentLocation);
-          setBusLocation(tripData.currentLocation);
+        if (locationResponse.data.currentLocation) {
+          console.log('Polling: New location received from trips endpoint:', locationResponse.data.currentLocation);
+          setBusLocation(locationResponse.data.currentLocation);
           setLastUpdate(new Date());
-          updateBusMarkerOnMap(tripData.currentLocation);
+          updateBusMarkerOnMap(locationResponse.data.currentLocation);
           
           // Calculate ETA if user location is available
           if (userLocation) {
-            calculateETA(tripData.currentLocation, userLocation);
+            calculateETA(locationResponse.data.currentLocation, userLocation);
+          }
+        } else {
+          // Fallback to smart-trips endpoint for trip details
+          const tripResponse = await axios.get(`http://localhost:2000/smart-trips/trip-details/${tripId}`);
+          const tripData = tripResponse.data.trip;
+          
+          if (tripData.currentLocation) {
+            console.log('Polling: Fallback location received:', tripData.currentLocation);
+            setBusLocation(tripData.currentLocation);
+            setLastUpdate(new Date());
+            updateBusMarkerOnMap(tripData.currentLocation);
+            
+            if (userLocation) {
+              calculateETA(tripData.currentLocation, userLocation);
+            }
           }
         }
       } catch (error) {
@@ -453,11 +468,31 @@ const LiveTracking = () => {
   const fetchCurrentLocation = async () => {
     try {
       console.log('Manually fetching current location...');
+      
+      // Try trips endpoint first
+      try {
+        const locationResponse = await axios.get(`http://localhost:2000/trips/${tripId}/location`);
+        if (locationResponse.data.currentLocation) {
+          console.log('Manual fetch: Location received from trips endpoint:', locationResponse.data.currentLocation);
+          setBusLocation(locationResponse.data.currentLocation);
+          setLastUpdate(new Date());
+          updateBusMarkerOnMap(locationResponse.data.currentLocation);
+          
+          if (userLocation) {
+            calculateETA(locationResponse.data.currentLocation, userLocation);
+          }
+          return;
+        }
+      } catch (tripsError) {
+        console.log('Trips endpoint failed, trying smart-trips fallback');
+      }
+      
+      // Fallback to smart-trips endpoint
       const response = await axios.get(`http://localhost:2000/smart-trips/trip-details/${tripId}`);
       const tripData = response.data.trip;
       
       if (tripData.currentLocation) {
-        console.log('Manual fetch: Location received:', tripData.currentLocation);
+        console.log('Manual fetch: Location received from smart-trips:', tripData.currentLocation);
         setBusLocation(tripData.currentLocation);
         setLastUpdate(new Date());
         updateBusMarkerOnMap(tripData.currentLocation);

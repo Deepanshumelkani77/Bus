@@ -91,13 +91,11 @@ export default function TripsScreen() {
         'http://10.65.103.156:2000/trips/location',
         {
           tripId,
-          location: {
-            latitude: location.latitude,
-            longitude: location.longitude,
-            timestamp: location.timestamp,
-            speed: location.speed,
-            heading: location.heading,
-          },
+          latitude: location.latitude,
+          longitude: location.longitude,
+          timestamp: location.timestamp,
+          speed: location.speed,
+          heading: location.heading,
         },
         {
           headers: {
@@ -106,6 +104,7 @@ export default function TripsScreen() {
           },
         }
       );
+      console.log('Location sent successfully:', { lat: location.latitude, lng: location.longitude });
     } catch (error) {
       console.error('Send location error:', error);
       // Don't show alert for location errors to avoid spam

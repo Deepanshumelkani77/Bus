@@ -107,43 +107,58 @@ async function completeTrip(req, res) {
 // body: { tripId, location: { latitude, longitude, timestamp, speed?, heading? } }
 async function updateTripLocation(req, res) {
   try {
-    const { tripId, location } = req.body;
+    const { tripId, latitude, longitude, speed, heading, timestamp } = req.body;
     
-    if (!tripId || !location || !location.latitude || !location.longitude) {
-      return res.status(400).json({ message: 'tripId and location coordinates are required' });
+    if (!tripId || !latitude || !longitude) {
+      return res.status(400).json({ message: 'Trip ID, latitude, and longitude required' });
     }
 
-    const trip = await Trip.findById(tripId);
-    if (!trip) return res.status(404).json({ message: 'Trip not found' });
-    
-    if (trip.status !== 'Ongoing') {
-      return res.status(400).json({ message: 'Trip is not ongoing' });
+    const trip = await Trip.findByIdAndUpdate(
+      tripId,
+      {
+        $set: { 
+          currentLocation: {
+            latitude,
+            longitude,
+            speed: speed || 0,
+            heading: heading || 0,
+            timestamp: timestamp || Date.now()
+          }
+        },
+        $push: { 
+          locationHistory: { 
+            $each: [{
+              latitude,
+              longitude,
+              speed: speed || 0,
+              heading: heading || 0,
+              timestamp: timestamp || Date.now()
+            }], 
+            $slice: -100 // keep last 100 locations
+          } 
+        }
+      },
+      { new: true }
+    );
+
+    if (!trip) {
+      return res.status(404).json({ message: 'Trip not found' });
     }
 
-    // Update trip with current location
-    trip.currentLocation = {
-      latitude: location.latitude,
-      longitude: location.longitude,
-      timestamp: location.timestamp || Date.now(),
-      speed: location.speed || 0,
-      heading: location.heading || 0,
-    };
-    
-    // Add to location history (keep last 100 locations)
-    if (!trip.locationHistory) trip.locationHistory = [];
-    trip.locationHistory.push(trip.currentLocation);
-    
-    // Keep only last 100 locations to prevent document size issues
-    if (trip.locationHistory.length > 100) {
-      trip.locationHistory = trip.locationHistory.slice(-100);
+    // Emit real-time location update via socket.io if available
+    if (req.app.get('io')) {
+      req.app.get('io').emit('bus-location-update', {
+        tripId: trip._id,
+        location: trip.currentLocation,
+        busNumber: trip.bus?.busNumber,
+        timestamp: new Date().toISOString()
+      });
     }
-    
-    await trip.save();
 
-    return res.json({ message: 'Location updated', currentLocation: trip.currentLocation });
+    return res.json({ success: true, location: trip.currentLocation });
   } catch (e) {
     console.error('Update location error', e);
-    res.status(500).json({ message: 'Failed to update location' });
+    res.status(500).json({ success: false, message: e.message });
   }
 }
 
