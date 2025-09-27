@@ -20,21 +20,24 @@ const Navbar = () => {
 
           {/* Desktop Menu */}
           <div className="hidden lg:flex items-center gap-8">
-            <Link to="/" className="text-gray-600 hover:text-slate-800 font-medium transition-colors">
+            <Link to="/" className="text-gray-600 hover:text-navy-600 font-medium transition-colors">
               Home
             </Link>
-            <Link to="/track" className="text-gray-600 hover:text-slate-800 font-medium transition-colors">
+            <Link to="/smart-search" className="text-gray-600 hover:text-navy-600 font-medium transition-colors">
+              Find Bus
+            </Link>
+            <Link to="/track" className="text-gray-600 hover:text-navy-600 font-medium transition-colors">
               Track Bus
             </Link>
-            <Link to="/routes" className="text-gray-600 hover:text-slate-800 font-medium transition-colors">
+            <Link to="/routes" className="text-gray-600 hover:text-navy-600 font-medium transition-colors">
               Routes
             </Link>
-            <Link to="/about" className="text-gray-600 hover:text-slate-800 font-medium transition-colors">
+            <Link to="/about" className="text-gray-600 hover:text-navy-600 font-medium transition-colors">
               About
             </Link>
             <Link 
               to="/login" 
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-2.5 rounded-full font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
+              className="bg-gradient-to-r from-navy-600 to-navy-700 text-white px-6 py-2.5 rounded-full font-semibold hover:from-navy-700 hover:to-navy-800 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
             >
               Login
             </Link>
@@ -54,21 +57,24 @@ const Navbar = () => {
         {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="lg:hidden border-t border-gray-200 py-4 space-y-4 bg-white">
-            <Link to="/" className="block text-gray-600 hover:text-slate-800 font-medium transition-colors" onClick={() => setIsMenuOpen(false)}>
+            <Link to="/" className="block text-gray-600 hover:text-navy-600 font-medium transition-colors" onClick={() => setIsMenuOpen(false)}>
               Home
             </Link>
-            <Link to="/track" className="block text-gray-600 hover:text-slate-800 font-medium transition-colors" onClick={() => setIsMenuOpen(false)}>
+            <Link to="/smart-search" className="block text-gray-600 hover:text-navy-600 font-medium transition-colors" onClick={() => setIsMenuOpen(false)}>
+              Find Bus
+            </Link>
+            <Link to="/track" className="block text-gray-600 hover:text-navy-600 font-medium transition-colors" onClick={() => setIsMenuOpen(false)}>
               Track Bus
             </Link>
-            <Link to="/routes" className="block text-gray-600 hover:text-slate-800 font-medium transition-colors" onClick={() => setIsMenuOpen(false)}>
+            <Link to="/routes" className="block text-gray-600 hover:text-navy-600 font-medium transition-colors" onClick={() => setIsMenuOpen(false)}>
               Routes
             </Link>
-            <Link to="/about" className="block text-gray-600 hover:text-slate-800 font-medium transition-colors" onClick={() => setIsMenuOpen(false)}>
+            <Link to="/about" className="block text-gray-600 hover:text-navy-600 font-medium transition-colors" onClick={() => setIsMenuOpen(false)}>
               About
             </Link>
             <Link 
               to="/login" 
-              className="inline-block bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-2.5 rounded-full font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 shadow-lg mt-2"
+              className="inline-block bg-gradient-to-r from-navy-600 to-navy-700 text-white px-6 py-2.5 rounded-full font-semibold hover:from-navy-700 hover:to-navy-800 transition-all duration-300 shadow-lg mt-2"
               onClick={() => setIsMenuOpen(false)}
             >
               Login
