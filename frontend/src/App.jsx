@@ -4,7 +4,7 @@ import Navbar from './components/Navbar';
 import Welcome from './pages/Welcome';
 import Login from './pages/Login';
 import Home from './pages/Home';
-import Track from './pages/Track';
+
 import RoutesPage from './pages/Routes';
 import About from './pages/About';
 import SmartTripSearch from './pages/SmartTripSearch';
@@ -25,7 +25,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/home" element={<Home />} />
         <Route path="/smart-search" element={<SmartTripSearch />} />
-        <Route path="/track" element={<Track />} />
+       
         <Route path="/routes" element={<RoutesPage />} />
         <Route path="/about" element={<About />} />
         <Route path="/live-tracking/:tripId" element={<LiveTracking />} />

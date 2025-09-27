@@ -37,8 +37,7 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-white overflow-hidden">
-      <Navbar />
-      <Header />
+   
       
       
       {/* Hero Section */}
