@@ -5,6 +5,7 @@ import img4 from "./img4.jpeg";
 import img5 from "./img5.jpeg";
 import bangaloreBusRental from "./Bangalore Bus Rental.jpeg";
 import electricBusManufacturers from "./Electric bus manufacturers in India.jpeg";
+import bus from "./bus.png";
 
 export const assets = {
     img1,
@@ -13,5 +14,6 @@ export const assets = {
     img4,
     img5,
     bangaloreBusRental,
-    electricBusManufacturers
+    electricBusManufacturers,
+    bus
 };
