@@ -139,7 +139,7 @@ const SmartTripSearch = () => {
           <button
             onClick={handleSearch}
             disabled={!source || !destination || isSearching}
-            className="w-full bg-gradient-to-r from-navy-600 to-navy-700 hover:from-navy-700 hover:to-navy-800 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300 flex items-center justify-center space-x-3 shadow-navy hover:shadow-navy-lg disabled:cursor-not-allowed transform hover:scale-[1.02] disabled:hover:scale-100"
+            className="w-full bg-orange-600 hover:from-navy-700 hover:to-navy-800 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300 flex items-center justify-center space-x-3 shadow-navy hover:shadow-navy-lg disabled:cursor-not-allowed transform hover:scale-[1.02] disabled:hover:scale-100"
           >
             {isSearching ? (
               <>
