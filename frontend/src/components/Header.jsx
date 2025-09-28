@@ -17,7 +17,7 @@ export default function Header() {
   }, []);
 
   return (
-    <div className="relative w-full h-[90vh]  mx-auto overflow-hidden  shadow-lg">
+    <div className=" bg-white relative w-full h-[30vh] sm:h-[60vh] md:h-[60vh] lg:h-[100vh] mx-auto overflow-hidden shadow-lg">
       {/* Images */}
       <div
         className="flex transition-transform duration-700 ease-in-out"
@@ -28,38 +28,18 @@ export default function Header() {
             key={index}
             src={img}
             alt="slider"
-            className="w-full flex-shrink-0 object-cover"
+            className="w-full h-full mt-5 flex-shrink-0 object-contain object-center"
           />
         ))}
       </div>
 
-      {/* Prev button */}
-      <button
-        onClick={() =>
-          setCurrent(current === 0 ? images.length - 1 : current - 1)
-        }
-        className="absolute top-1/2 left-3 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black"
-      >
-        ❮
-      </button>
-
-      {/* Next button */}
-      <button
-        onClick={() =>
-          setCurrent(current === images.length - 1 ? 0 : current + 1)
-        }
-        className="absolute top-1/2 right-3 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black"
-      >
-        ❯
-      </button>
-
       {/* Dots navigation */}
-      <div className="absolute bottom-3 w-full flex justify-center gap-2">
+      <div className="absolute bottom-2 sm:bottom-3 w-full flex justify-center gap-1.5 sm:gap-2">
         {images.map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrent(index)}
-            className={`h-3 w-3 rounded-full ${
+            className={`h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full ${
               current === index ? "bg-white" : "bg-gray-400"
             }`}
           />
