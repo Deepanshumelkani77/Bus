@@ -53,7 +53,7 @@ const Navbar = () => {
 
           {/* Center Navigation */}
           <div className="hidden lg:flex items-center gap-8 absolute left-1/2 transform -translate-x-1/2">
-            <Link to="/home" className="relative text-slate-300 hover:text-white font-semibold transition-all duration-300 group">
+            <Link to="/" className="relative text-slate-300 hover:text-white font-semibold transition-all duration-300 group">
               <span>Home</span>
               <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-white to-slate-200 group-hover:w-full transition-all duration-300"></div>
             </Link>
