@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import io from 'socket.io-client';
-import { MapPin, Clock, Users, Bus, Navigation, ArrowLeft, RefreshCw, AlertCircle } from 'lucide-react';
+import { MapPin, Clock, Users, Bus, Navigation, ArrowLeft, RefreshCw, AlertCircle, Maximize2, Minimize2, Zap, Star } from 'lucide-react';
+import Navbar from '../components/Navbar';
 
 const LiveTracking = () => {
   const { tripId } = useParams();
@@ -16,6 +17,18 @@ const LiveTracking = () => {
   const [mapLoading, setMapLoading] = useState(true);
   const [userLocation, setUserLocation] = useState(null);
   const [locationPolling, setLocationPolling] = useState(null);
+  const [isMapFullscreen, setIsMapFullscreen] = useState(false);
+
+  const toggleFullscreen = () => {
+    setIsMapFullscreen(!isMapFullscreen);
+    // Trigger map resize after fullscreen toggle
+    setTimeout(() => {
+      if (mapInstanceRef.current) {
+        window.google.maps.event.trigger(mapInstanceRef.current, 'resize');
+      }
+    }, 300);
+  };
+
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const busMarkerRef = useRef(null);
@@ -583,67 +596,68 @@ const LiveTracking = () => {
     <div className="min-h-screen bg-white">
       {/* Header */}
       <div className="bg-white shadow-lg border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-6">
-              <button
-                onClick={() => window.history.back()}
-                className="p-3 hover:bg-gray-100 rounded-2xl transition-all duration-200 hover:shadow-md"
-              >
-                <ArrowLeft className="h-6 w-6 text-gray-600" />
-              </button>
-              <div className="flex items-center space-x-4">
-                <div className="bg-gradient-to-r from-navy-600 to-navy-700 p-4 rounded-2xl shadow-lg">
-                  <Bus className="h-8 w-8 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">
-                    Bus {trip?.bus?.busNumber} - Live Tracking
-                  </h1>
-                  <div className="flex items-center space-x-3 mt-1">
-                    <p className="text-gray-600 font-medium">{trip?.bus?.plateNumber}</p>
-                    <div className="flex items-center space-x-2 bg-green-50 px-3 py-1 rounded-full">
-                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                      <span className="text-green-700 font-medium text-sm">Live</span>
-                    </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 lg:py-6">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+          <div className="flex items-center space-x-4 lg:space-x-6">
+            <button
+              onClick={() => window.history.back()}
+              className="p-2 lg:p-3 hover:bg-gray-100 rounded-xl lg:rounded-2xl transition-all duration-200 hover:shadow-md"
+            >
+              <ArrowLeft className="h-5 w-5 lg:h-6 lg:w-6 text-gray-600" />
+            </button>
+            <div className="flex items-center space-x-3 lg:space-x-4">
+              <div className="bg-gradient-to-r from-navy-600 to-navy-700 p-3 lg:p-4 rounded-xl lg:rounded-2xl shadow-lg">
+                <Bus className="h-6 w-6 lg:h-8 lg:w-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-lg lg:text-2xl font-bold text-gray-900">
+                  Bus {trip?.bus?.busNumber} - Live Tracking
+                </h1>
+                <div className="flex items-center space-x-2 lg:space-x-3 mt-1">
+                  <p className="text-sm lg:text-base text-gray-600 font-medium">{trip?.bus?.plateNumber}</p>
+                  <div className="flex items-center space-x-1 lg:space-x-2 bg-green-50 px-2 lg:px-3 py-1 rounded-full">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span className="text-green-700 font-medium text-xs lg:text-sm">Live</span>
                   </div>
                 </div>
               </div>
             </div>
-            <div className="flex items-center space-x-3">
-              <div className="text-right mr-4">
-                <div className="text-sm text-gray-500">Last Updated</div>
-                <div className="font-semibold text-gray-900">
-                  {formatLastUpdate(lastUpdate)}
-                </div>
+          </div>
+          <div className="flex flex-col lg:flex-row lg:items-center space-y-3 lg:space-y-0 lg:space-x-3">
+            <div className="text-left lg:text-right lg:mr-4 order-2 lg:order-1">
+              <div className="text-xs lg:text-sm text-gray-500">Last Updated</div>
+              <div className="font-semibold text-sm lg:text-base text-gray-900">
+                {formatLastUpdate(lastUpdate)}
               </div>
+            </div>
+              <div className="flex flex-wrap gap-2 lg:gap-3 order-1 lg:order-2">
               <button
                 onClick={centerMapOnBus}
-                className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
+                className="flex items-center space-x-1 lg:space-x-2 bg-green-600 hover:bg-green-700 text-white px-3 lg:px-4 py-2 rounded-lg lg:rounded-xl transition-all duration-200 shadow-md hover:shadow-lg text-sm lg:text-base"
                 title="Center on Bus"
               >
-                <Bus className="h-4 w-4" />
-                <span className="font-medium">Center Bus</span>
+                <Bus className="h-3 w-3 lg:h-4 lg:w-4" />
+                <span className="font-medium hidden sm:inline">Center Bus</span>
               </button>
               <button
                 onClick={fitMapToShowAll}
-                className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
+                className="flex items-center space-x-1 lg:space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-3 lg:px-4 py-2 rounded-lg lg:rounded-xl transition-all duration-200 shadow-md hover:shadow-lg text-sm lg:text-base"
                 title="Show All Locations"
               >
-                <MapPin className="h-4 w-4" />
-                <span className="font-medium">Fit All</span>
+                <MapPin className="h-3 w-3 lg:h-4 lg:w-4" />
+                <span className="font-medium hidden sm:inline">Fit All</span>
               </button>
               <button
                 onClick={fetchCurrentLocation}
-                className="flex items-center space-x-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
+                className="flex items-center space-x-1 lg:space-x-2 bg-purple-600 hover:bg-purple-700 text-white px-3 lg:px-4 py-2 rounded-lg lg:rounded-xl transition-all duration-200 shadow-md hover:shadow-lg text-sm lg:text-base"
                 title="Fetch Latest Location"
               >
-                <MapPin className="h-4 w-4" />
-                <span className="font-medium">Update Location</span>
+                <MapPin className="h-3 w-3 lg:h-4 lg:w-4" />
+                <span className="font-medium hidden sm:inline">Update</span>
               </button>
               <button
                 onClick={locationPolling ? stopLocationPolling : startLocationPolling}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg ${
+                className={`flex items-center space-x-1 lg:space-x-2 px-3 lg:px-4 py-2 rounded-lg lg:rounded-xl transition-all duration-200 shadow-md hover:shadow-lg text-sm lg:text-base ${
                   locationPolling 
                     ? 'bg-red-600 hover:bg-red-700 text-white' 
                     : 'bg-green-600 hover:bg-green-700 text-white'
@@ -653,58 +667,76 @@ const LiveTracking = () => {
                 <div className={`w-2 h-2 rounded-full ${
                   locationPolling ? 'bg-red-300 animate-pulse' : 'bg-green-300'
                 }`}></div>
-                <span className="font-medium">
+                <span className="font-medium hidden sm:inline">
                   {locationPolling ? 'Stop Live' : 'Start Live'}
                 </span>
               </button>
               <button
                 onClick={refreshData}
-                className="flex items-center space-x-3 bg-gradient-to-r from-navy-600 to-navy-700 hover:from-navy-700 hover:to-navy-800 text-white px-6 py-3 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
+                className="flex items-center space-x-2 lg:space-x-3 bg-gradient-to-r from-navy-600 to-navy-700 hover:from-navy-700 hover:to-navy-800 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-xl lg:rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02] text-sm lg:text-base"
               >
-                <RefreshCw className="h-5 w-5" />
+                <RefreshCw className="h-4 w-4 lg:h-5 lg:w-5" />
                 <span className="font-semibold">Refresh</span>
               </button>
+            </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 lg:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
           {/* Map */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-3xl shadow-navy-lg border border-gray-100 overflow-hidden">
-              <div className="p-6 border-b border-gray-100">
+          <div className={`${isMapFullscreen ? 'fixed inset-0 z-50 bg-white' : 'lg:col-span-2'}`}>
+            <div className={`bg-white ${isMapFullscreen ? 'h-full' : 'rounded-2xl lg:rounded-3xl shadow-navy-lg border border-gray-100'} overflow-hidden`}>
+              <div className={`${isMapFullscreen ? 'p-4' : 'p-4 lg:p-6'} border-b border-gray-100`}>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="bg-navy-100 p-2 rounded-xl">
-                      <MapPin className="h-6 w-6 text-navy-600" />
+                  <div className="flex items-center space-x-2 lg:space-x-3">
+                    <div className="bg-navy-100 p-1.5 lg:p-2 rounded-lg lg:rounded-xl">
+                      <MapPin className="h-4 w-4 lg:h-6 lg:w-6 text-navy-600" />
                     </div>
                     <div>
-                      <h2 className="text-xl font-bold text-gray-900">Live Location Tracking</h2>
-                      <p className="text-gray-600">Real-time bus position with route visualization</p>
+                      <h2 className="text-lg lg:text-xl font-bold text-gray-900">Live Location Tracking</h2>
+                      <p className="text-sm lg:text-base text-gray-600 hidden sm:block">Real-time bus position with route visualization</p>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-3 bg-green-50 px-4 py-2 rounded-full">
-                    <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                    <span className="text-green-700 font-semibold text-sm">
-                      Updated {formatLastUpdate(lastUpdate)}
-                    </span>
+                  <div className="flex items-center space-x-2 lg:space-x-3">
+                    <div className="flex items-center space-x-2 bg-green-50 px-2 lg:px-4 py-1 lg:py-2 rounded-full">
+                      <div className="w-2 lg:w-3 h-2 lg:h-3 bg-green-500 rounded-full animate-pulse"></div>
+                      <span className="text-green-700 font-semibold text-xs lg:text-sm hidden sm:inline">
+                        Updated {formatLastUpdate(lastUpdate)}
+                      </span>
+                    </div>
+                    <button
+                      onClick={toggleFullscreen}
+                      className="p-2 hover:bg-gray-100 rounded-lg transition-all duration-200"
+                      title={isMapFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+                    >
+                      {isMapFullscreen ? (
+                        <Minimize2 className="h-4 w-4 lg:h-5 lg:w-5 text-gray-600" />
+                      ) : (
+                        <Maximize2 className="h-4 w-4 lg:h-5 lg:w-5 text-gray-600" />
+                      )}
+                    </button>
                   </div>
                 </div>
               </div>
               <div className="relative">
                 <div 
                   ref={mapRef}
-                  className="w-full h-96 lg:h-[600px] bg-gray-50"
-                  style={{ minHeight: '500px' }}
+                  className={`w-full bg-gray-50 ${
+                    isMapFullscreen 
+                      ? 'h-[calc(100vh-120px)]' 
+                      : 'h-64 sm:h-80 lg:h-96 xl:h-[600px]'
+                  }`}
+                  style={{ minHeight: isMapFullscreen ? 'calc(100vh - 120px)' : '300px' }}
                 />
                 {mapLoading && (
                   <div className="absolute inset-0 bg-gray-50 flex items-center justify-center">
                     <div className="text-center">
-                      <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mx-auto mb-4"></div>
-                      <p className="text-slate-600 font-medium">Loading map...</p>
-                      <p className="text-slate-500 text-sm mt-1">Initializing Google Maps</p>
+                      <div className="animate-spin rounded-full h-8 w-8 lg:h-12 lg:w-12 border-4 border-blue-500 border-t-transparent mx-auto mb-4"></div>
+                      <p className="text-slate-600 font-medium text-sm lg:text-base">Loading map...</p>
+                      <p className="text-slate-500 text-xs lg:text-sm mt-1">Initializing Google Maps</p>
                     </div>
                   </div>
                 )}
@@ -713,71 +745,71 @@ const LiveTracking = () => {
           </div>
 
           {/* Trip Info */}
-          <div className="space-y-6">
+          <div className={`space-y-4 lg:space-y-6 ${isMapFullscreen ? 'hidden' : ''}`}>
             {/* Route Info */}
-            <div className="bg-white rounded-3xl shadow-navy-lg border border-gray-100 p-6">
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="bg-blue-100 p-2 rounded-xl">
-                  <Navigation className="h-5 w-5 text-blue-600" />
+            <div className="bg-white rounded-2xl lg:rounded-3xl shadow-navy-lg border border-gray-100 p-4 lg:p-6">
+              <div className="flex items-center space-x-2 lg:space-x-3 mb-4 lg:mb-6">
+                <div className="bg-blue-100 p-1.5 lg:p-2 rounded-lg lg:rounded-xl">
+                  <Navigation className="h-4 w-4 lg:h-5 lg:w-5 text-blue-600" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900">Route Information</h3>
+                <h3 className="text-lg lg:text-xl font-bold text-gray-900">Route Information</h3>
               </div>
-              <div className="space-y-6">
-                <div className="bg-gray-50 rounded-2xl p-4">
-                  <div className="flex items-center space-x-3 mb-2">
-                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                    <div className="text-sm font-semibold text-gray-600">DEPARTURE</div>
+              <div className="space-y-4 lg:space-y-6">
+                <div className="bg-gray-50 rounded-xl lg:rounded-2xl p-3 lg:p-4">
+                  <div className="flex items-center space-x-2 lg:space-x-3 mb-2">
+                    <div className="w-2 lg:w-3 h-2 lg:h-3 bg-green-500 rounded-full"></div>
+                    <div className="text-xs lg:text-sm font-semibold text-gray-600">DEPARTURE</div>
                   </div>
-                  <div className="font-bold text-gray-900 text-lg">{trip?.source}</div>
+                  <div className="font-bold text-gray-900 text-base lg:text-lg">{trip?.source}</div>
                 </div>
                 <div className="flex justify-center">
-                  <div className="border-l-2 border-dashed border-gray-300 h-8"></div>
+                  <div className="border-l-2 border-dashed border-gray-300 h-6 lg:h-8"></div>
                 </div>
-                <div className="bg-gray-50 rounded-2xl p-4">
-                  <div className="flex items-center space-x-3 mb-2">
-                    <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                    <div className="text-sm font-semibold text-gray-600">DESTINATION</div>
+                <div className="bg-gray-50 rounded-xl lg:rounded-2xl p-3 lg:p-4">
+                  <div className="flex items-center space-x-2 lg:space-x-3 mb-2">
+                    <div className="w-2 lg:w-3 h-2 lg:h-3 bg-red-500 rounded-full"></div>
+                    <div className="text-xs lg:text-sm font-semibold text-gray-600">DESTINATION</div>
                   </div>
-                  <div className="font-bold text-gray-900 text-lg">{trip?.destination}</div>
+                  <div className="font-bold text-gray-900 text-base lg:text-lg">{trip?.destination}</div>
                 </div>
               </div>
             </div>
 
             {/* Bus Status */}
-            <div className="bg-white rounded-3xl shadow-navy-lg border border-gray-100 p-6">
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="bg-green-100 p-2 rounded-xl">
-                  <Bus className="h-5 w-5 text-green-600" />
+            <div className="bg-white rounded-2xl lg:rounded-3xl shadow-navy-lg border border-gray-100 p-4 lg:p-6">
+              <div className="flex items-center space-x-2 lg:space-x-3 mb-4 lg:mb-6">
+                <div className="bg-green-100 p-1.5 lg:p-2 rounded-lg lg:rounded-xl">
+                  <Bus className="h-4 w-4 lg:h-5 lg:w-5 text-green-600" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900">Bus Status</h3>
+                <h3 className="text-lg lg:text-xl font-bold text-gray-900">Bus Status</h3>
               </div>
-              <div className="grid grid-cols-1 gap-4">
-                <div className="bg-gray-50 rounded-2xl p-4">
+              <div className="grid grid-cols-1 gap-3 lg:gap-4">
+                <div className="bg-gray-50 rounded-xl lg:rounded-2xl p-3 lg:p-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-600 font-medium">Status</span>
+                    <span className="text-sm lg:text-base text-gray-600 font-medium">Status</span>
                     <div className="flex items-center space-x-2">
-                      <div className={`w-3 h-3 rounded-full ${
+                      <div className={`w-2 lg:w-3 h-2 lg:h-3 rounded-full ${
                         trip?.status === 'Ongoing' ? 'bg-green-500' : 'bg-yellow-500'
                       }`}></div>
-                      <span className="font-bold text-gray-900 capitalize">{trip?.status}</span>
+                      <span className="font-bold text-sm lg:text-base text-gray-900 capitalize">{trip?.status}</span>
                     </div>
                   </div>
                 </div>
-                <div className="bg-gray-50 rounded-2xl p-4">
+                <div className="bg-gray-50 rounded-xl lg:rounded-2xl p-3 lg:p-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-600 font-medium">Available Seats</span>
+                    <span className="text-sm lg:text-base text-gray-600 font-medium">Available Seats</span>
                     <div className="text-right">
-                      <div className="font-bold text-gray-900 text-lg">
+                      <div className="font-bold text-gray-900 text-base lg:text-lg">
                         {trip?.totalSeats - trip?.occupiedSeats}
                       </div>
-                      <div className="text-sm text-gray-500">of {trip?.totalSeats} total</div>
+                      <div className="text-xs lg:text-sm text-gray-500">of {trip?.totalSeats} total</div>
                     </div>
                   </div>
                 </div>
-                <div className="bg-gray-50 rounded-2xl p-4">
+                <div className="bg-gray-50 rounded-xl lg:rounded-2xl p-3 lg:p-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-600 font-medium">Driver</span>
-                    <span className="font-bold text-gray-900">{trip?.driver?.name || 'N/A'}</span>
+                    <span className="text-sm lg:text-base text-gray-600 font-medium">Driver</span>
+                    <span className="font-bold text-sm lg:text-base text-gray-900">{trip?.driver?.name || 'N/A'}</span>
                   </div>
                 </div>
               </div>
@@ -785,23 +817,23 @@ const LiveTracking = () => {
 
             {/* ETA Information */}
             {eta && (
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-3xl shadow-navy-lg border border-blue-100 p-6">
-                <div className="flex items-center space-x-3 mb-6">
-                  <div className="bg-blue-100 p-2 rounded-xl">
-                    <Clock className="h-5 w-5 text-blue-600" />
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl lg:rounded-3xl shadow-navy-lg border border-blue-100 p-4 lg:p-6">
+                <div className="flex items-center space-x-2 lg:space-x-3 mb-4 lg:mb-6">
+                  <div className="bg-blue-100 p-1.5 lg:p-2 rounded-lg lg:rounded-xl">
+                    <Clock className="h-4 w-4 lg:h-5 lg:w-5 text-blue-600" />
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900">Estimated Arrival</h3>
+                  <h3 className="text-lg lg:text-xl font-bold text-gray-900">Estimated Arrival</h3>
                 </div>
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-blue-600 mb-2">
+                  <div className="text-3xl lg:text-4xl font-bold text-blue-600 mb-2">
                     {Math.round(eta.duration / 60)} min
                   </div>
-                  <div className="text-sm text-blue-500 font-medium mb-4">
+                  <div className="text-xs lg:text-sm text-blue-500 font-medium mb-3 lg:mb-4">
                     Distance: {(eta.distance / 1000).toFixed(1)} km
                   </div>
-                  <div className="bg-white rounded-2xl p-4 border border-blue-200">
-                    <div className="text-sm text-gray-600 mb-1">Bus will reach your location at</div>
-                    <div className="font-bold text-gray-900">
+                  <div className="bg-white rounded-xl lg:rounded-2xl p-3 lg:p-4 border border-blue-200">
+                    <div className="text-xs lg:text-sm text-gray-600 mb-1">Bus will reach your location at</div>
+                    <div className="font-bold text-sm lg:text-base text-gray-900">
                       {new Date(Date.now() + eta.duration * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                     </div>
                   </div>
@@ -811,43 +843,43 @@ const LiveTracking = () => {
 
             {/* Current Location */}
             {busLocation && (
-              <div className="bg-white rounded-3xl shadow-navy-lg border border-gray-100 p-6">
-                <div className="flex items-center space-x-3 mb-6">
-                  <div className="bg-purple-100 p-2 rounded-xl">
-                    <MapPin className="h-5 w-5 text-purple-600" />
+              <div className="bg-white rounded-2xl lg:rounded-3xl shadow-navy-lg border border-gray-100 p-4 lg:p-6">
+                <div className="flex items-center space-x-2 lg:space-x-3 mb-4 lg:mb-6">
+                  <div className="bg-purple-100 p-1.5 lg:p-2 rounded-lg lg:rounded-xl">
+                    <MapPin className="h-4 w-4 lg:h-5 lg:w-5 text-purple-600" />
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900">Current Location</h3>
+                  <h3 className="text-lg lg:text-xl font-bold text-gray-900">Current Location</h3>
                 </div>
-                <div className="grid grid-cols-1 gap-4">
-                  <div className="bg-gray-50 rounded-2xl p-4">
+                <div className="grid grid-cols-1 gap-3 lg:gap-4">
+                  <div className="bg-gray-50 rounded-xl lg:rounded-2xl p-3 lg:p-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-gray-600 font-medium">Latitude</span>
-                      <span className="font-mono text-sm font-bold text-gray-900">
+                      <span className="text-sm lg:text-base text-gray-600 font-medium">Latitude</span>
+                      <span className="font-mono text-xs lg:text-sm font-bold text-gray-900">
                         {busLocation.latitude.toFixed(6)}
                       </span>
                     </div>
                   </div>
-                  <div className="bg-gray-50 rounded-2xl p-4">
+                  <div className="bg-gray-50 rounded-xl lg:rounded-2xl p-3 lg:p-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-gray-600 font-medium">Longitude</span>
-                      <span className="font-mono text-sm font-bold text-gray-900">
+                      <span className="text-sm lg:text-base text-gray-600 font-medium">Longitude</span>
+                      <span className="font-mono text-xs lg:text-sm font-bold text-gray-900">
                         {busLocation.longitude.toFixed(6)}
                       </span>
                     </div>
                   </div>
-                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-4 border border-blue-100">
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl lg:rounded-2xl p-3 lg:p-4 border border-blue-100">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
                         <div className="bg-blue-100 p-1 rounded-lg">
-                          <Navigation className="h-4 w-4 text-blue-600" />
+                          <Navigation className="h-3 w-3 lg:h-4 lg:w-4 text-blue-600" />
                         </div>
-                        <span className="text-blue-800 font-semibold">Speed</span>
+                        <span className="text-sm lg:text-base text-blue-800 font-semibold">Speed</span>
                       </div>
                       <div className="text-right">
-                        <div className="text-2xl font-bold text-blue-600">
+                        <div className="text-xl lg:text-2xl font-bold text-blue-600">
                           {busLocation.speed || 0}
                         </div>
-                        <div className="text-sm text-blue-500 font-medium">km/h</div>
+                        <div className="text-xs lg:text-sm text-blue-500 font-medium">km/h</div>
                       </div>
                     </div>
                   </div>
