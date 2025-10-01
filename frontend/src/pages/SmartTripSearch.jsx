@@ -89,15 +89,15 @@ const SmartTripSearch = () => {
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-slate-600/10 rounded-full blur-3xl animate-pulse delay-500"></div>
         </div>
         
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-5">
+        <div className="relative max-w-7xl mx-auto px-2 sm:px-2 lg:px-8 py-2 sm:py-5 lg:py-5">
           <div className="text-center">
             <div className="flex items-center justify-center mb-6">
               {/* BusTrac Logo (matches Login.jsx styling) */}
              
             </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white mb-6">
+            <h1 className=" hidden md:block lg:block text-4xl sm:text-5xl lg:text-6xl font-black text-white mb-6">
               Smart Bus{' '}
-              <span className="bg-gradient-to-r from-teal-400 via-sky-400 to-teal-400 bg-clip-text text-transparent">
+              <span className="text-white bg-clip-text text-transparent">
                 Finder
               </span>
             </h1>
