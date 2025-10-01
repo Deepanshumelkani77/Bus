@@ -81,7 +81,7 @@ const SmartTripSearch = () => {
       
       
       {/* Hero Section */}
-      <div className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
+      <div className="relative bg-blue-600 overflow-hidden">
         {/* Animated Background Elements */}
         <div className="absolute inset-0">
           <div className="absolute top-20 left-10 w-72 h-72 bg-teal-500/10 rounded-full blur-3xl animate-pulse"></div>
@@ -89,12 +89,11 @@ const SmartTripSearch = () => {
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-slate-600/10 rounded-full blur-3xl animate-pulse delay-500"></div>
         </div>
         
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-5">
           <div className="text-center">
             <div className="flex items-center justify-center mb-6">
-              <div className="bg-gradient-to-r from-teal-500 to-sky-500 p-4 rounded-3xl shadow-2xl">
-                <Bus className="h-12 w-12 text-white" />
-              </div>
+              {/* BusTrac Logo (matches Login.jsx styling) */}
+             
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white mb-6">
               Smart Bus{' '}
@@ -102,19 +101,10 @@ const SmartTripSearch = () => {
                 Finder
               </span>
             </h1>
-            <p className="text-xl sm:text-2xl text-slate-300 font-medium max-w-3xl mx-auto mb-8">
+            <p className="text-xl sm:text-2xl text-white font-medium max-w-3xl mx-auto mb-8">
               Discover buses on your route with live tracking & precise ETAs
             </p>
-            <div className="flex items-center justify-center space-x-6">
-              <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">
-                <div className="w-3 h-3 bg-teal-400 rounded-full animate-pulse"></div>
-                <span className="text-teal-300 font-semibold text-sm">Live Tracking Active</span>
-              </div>
-              <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">
-                <Zap className="h-4 w-4 text-sky-400" />
-                <span className="text-sky-300 font-semibold text-sm">Real-time ETAs</span>
-              </div>
-            </div>
+            
           </div>
         </div>
       </div>
@@ -280,7 +270,7 @@ const SmartTripSearch = () => {
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 sm:gap-10">
+              <div className="grid grid-cols-1 gap-8 sm:gap-10">
                 {matchingTrips.map((trip) => (
                   <BusCard key={trip.tripId} trip={trip} source={source} />
                 ))}
