@@ -117,7 +117,7 @@ const Login = () => {
       
       <div className="relative h-full flex">
         {/* Left Side - Hero Section (Hidden on mobile, visible on laptop) */}
-        <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
+        <div className="hidden lg:flex lg:w-1/2 bg-[#0F172A]  relative overflow-hidden">
           {/* Animated Background Elements */}
           <div className="absolute inset-0">
             <div className="absolute w-96 h-96 rounded-full bg-teal-400/10 -top-20 -left-20 animate-pulse"></div>
@@ -128,7 +128,7 @@ const Login = () => {
           <div className="relative z-10 flex flex-col justify-center px-12 xl:px-16 text-white">
             <div className={`transform transition-all duration-1000 ${isVisible ? 'translate-x-0 opacity-100' : '-translate-x-10 opacity-0'}`}>
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-14 h-14 xl:w-16 xl:h-16 bg-gradient-to-br from-teal-400 to-sky-400 rounded-2xl flex items-center justify-center shadow-2xl">
+                <div className="w-14 h-14 xl:w-16 xl:h-16 bg-gradient-to-br from-teal-400 to-sky-400 rounded-4xl flex items-center justify-center shadow-2xl">
                   <svg className="w-8 h-8 xl:w-9 xl:h-9 text-white" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M4 16c0 .88.39 1.67 1 2.22V20a1 1 0 001 1h1a1 1 0 001-1v-1h8v1a1 1 0 001 1h1a1 1 0 001-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/>
                   </svg>
@@ -300,7 +300,7 @@ const Login = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`w-full bg-gradient-to-r from-teal-500 to-sky-500 text-white py-3 sm:py-4 rounded-xl font-bold text-base sm:text-lg shadow-lg hover:from-teal-600 hover:to-sky-600 transition-all duration-300 mt-6 ${loading ? 'opacity-70 cursor-not-allowed' : 'hover:shadow-xl transform hover:-translate-y-1'}`}
+                  className={`w-full bg-[#0F172A] text-white py-3 sm:py-4 rounded-xl font-bold text-base sm:text-lg shadow-lg hover:from-teal-600 hover:to-sky-600 transition-all duration-300 mt-6 ${loading ? 'opacity-70 cursor-not-allowed' : 'hover:shadow-xl transform hover:-translate-y-1'}`}
                 >
                   {loading ? (
                     <div className="flex items-center justify-center gap-2">

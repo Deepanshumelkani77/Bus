@@ -32,8 +32,8 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-gradient-to-r from-slate-900 to-slate-900  border-b border-slate-700/50 sticky top-0 z-50 shadow-2xl">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav className="bg-[#0F172A] border-b border-slate-700/50 sticky top-0 z-50 shadow-2xl">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 ">
         <div className="flex justify-between items-center h-16 lg:h-18">
         
           {/* Enhanced Logo - Same as Home.jsx */}
