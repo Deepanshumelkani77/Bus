@@ -89,7 +89,7 @@ const SmartTripSearch = () => {
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-slate-600/10 rounded-full blur-3xl animate-pulse delay-500"></div>
         </div>
         
-        <div className="relative max-w-7xl mx-auto px-2 sm:px-2 lg:px-8 py-2 sm:py-5 lg:py-5">
+        <div className="relative max-w-7xl mx-auto px-2 sm:px-2 lg:px-8 ">
           <div className="text-center">
             <div className="flex items-center justify-center mb-6">
               {/* BusTrac Logo (matches Login.jsx styling) */}
@@ -138,7 +138,7 @@ const SmartTripSearch = () => {
                   icon={MapPin}
                   onPlaceSelect={setSource}
                   value={source?.address || ''}
-                  className="w-full p-4 sm:p-5 pl-12 sm:pl-14 border-2 border-teal-200 rounded-2xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all duration-300 text-base sm:text-lg font-medium bg-teal-50/80 backdrop-blur-sm group-hover:border-teal-300"
+                  className="w-full p-4 sm:p-5 pl-12 sm:pl-14 border-2  border-teal-200 rounded-2xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all duration-300 text-base sm:text-lg font-medium bg-teal-50/80 backdrop-blur-sm group-hover:border-teal-300"
                 />
                 <div className="absolute left-4 sm:left-5 top-1/2 transform -translate-y-1/2">
                   <div className="w-3 h-3 sm:w-4 sm:h-4 bg-teal-500 rounded-full animate-pulse"></div>
@@ -172,7 +172,7 @@ const SmartTripSearch = () => {
             <button
               onClick={handleSearch}
               disabled={!source || !destination || isSearching}
-              className="group relative inline-flex items-center justify-center px-8 sm:px-12 py-4 sm:py-5 text-lg sm:text-xl font-black text-white bg-slate-900 rounded-2xl shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+              className="group relative inline-flex items-center justify-center px-8 sm:px-12 py-4 sm:py-5 text-lg sm:text-xl font-black text-white bg-[#0F172A] rounded-2xl shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 overflow-hidden  disabled:cursor-not-allowed disabled:hover:scale-100"
             >
               <div className="absolute inset-0 bg-slate-900  group-hover:opacity-100 transition-opacity duration-300"></div>
               <span className="relative flex items-center gap-3">
