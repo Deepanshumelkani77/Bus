@@ -77,16 +77,16 @@ const SmartTripSearch = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200">
+    <div className="min-h-screen bg-gradient-to-br from-white via-slate-50 to-white">
       
       
       {/* Hero Section */}
-      <div className="relative bg-blue-600 overflow-hidden">
+      <div className="relative bg-gradient-to-br from-[#0F172A] via-slate-900 to-slate-800 overflow-hidden">
         {/* Animated Background Elements */}
         <div className="absolute inset-0">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-teal-500/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-sky-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-slate-600/10 rounded-full blur-3xl animate-pulse delay-500"></div>
+          <div className="hidden sm:block absolute top-20 left-10 w-72 h-72 bg-teal-500/15 rounded-full blur-3xl animate-pulse"></div>
+          <div className="hidden sm:block absolute bottom-20 right-10 w-96 h-96 bg-sky-500/15 rounded-full blur-3xl animate-pulse delay-1000"></div>
+          <div className="hidden md:block absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl animate-pulse delay-500"></div>
         </div>
         
         <div className="relative max-w-7xl mx-auto px-2 sm:px-2 lg:px-8 ">
@@ -109,9 +109,9 @@ const SmartTripSearch = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-16">
         {/* Search Form */}
-        <div className="bg-white/90 backdrop-blur-2xl border border-white/30 rounded-3xl shadow-2xl p-8 sm:p-10 lg:p-12 mb-12 hover:shadow-3xl transition-all duration-500">
+        <div className="bg-white/90 backdrop-blur-2xl border border-slate-200 rounded-3xl shadow-2xl p-6 sm:p-10 lg:p-12 mb-10 sm:mb-12 hover:shadow-3xl transition-all duration-500">
           <div className="text-center mb-10">
             <h2 className="text-3xl sm:text-4xl font-black text-slate-800 mb-4">
               Where are you{' '}
@@ -124,7 +124,7 @@ const SmartTripSearch = () => {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 mb-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-10 mb-8 sm:mb-10">
             <div className="space-y-4">
               <div className="flex items-center space-x-3 mb-4">
                 <div className="w-6 h-6 bg-gradient-to-r from-teal-500 to-teal-600 rounded-lg flex items-center justify-center">
@@ -138,7 +138,7 @@ const SmartTripSearch = () => {
                   icon={MapPin}
                   onPlaceSelect={setSource}
                   value={source?.address || ''}
-                  className="w-full p-4 sm:p-5 pl-12 sm:pl-14 border-2  border-teal-200 rounded-2xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all duration-300 text-base sm:text-lg font-medium bg-teal-50/80 backdrop-blur-sm group-hover:border-teal-300"
+                  className="w-full p-4 sm:p-5 pl-12 sm:pl-14 border-2  border-teal-200 rounded-2xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all duration-300 text-base sm:text-lg font-medium bg-white/80 backdrop-blur-sm group-hover:border-teal-300"
                 />
                 <div className="absolute left-4 sm:left-5 top-1/2 transform -translate-y-1/2">
                   <div className="w-3 h-3 sm:w-4 sm:h-4 bg-teal-500 rounded-full animate-pulse"></div>
@@ -159,7 +159,7 @@ const SmartTripSearch = () => {
                   icon={Navigation}
                   onPlaceSelect={setDestination}
                   value={destination?.address || ''}
-                  className="w-full p-4 sm:p-5 pl-12 sm:pl-14 border-2 border-sky-200 rounded-2xl focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all duration-300 text-base sm:text-lg font-medium bg-sky-50/80 backdrop-blur-sm group-hover:border-sky-300"
+                  className="w-full p-4 sm:p-5 pl-12 sm:pl-14 border-2 border-sky-200 rounded-2xl focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all duration-300 text-base sm:text-lg font-medium bg-white/80 backdrop-blur-sm group-hover:border-sky-300"
                 />
                 <div className="absolute left-4 sm:left-5 top-1/2 transform -translate-y-1/2">
                   <div className="w-3 h-3 sm:w-4 sm:h-4 bg-sky-500 rounded-full animate-pulse"></div>
@@ -172,9 +172,8 @@ const SmartTripSearch = () => {
             <button
               onClick={handleSearch}
               disabled={!source || !destination || isSearching}
-              className="group relative inline-flex items-center justify-center px-8 sm:px-12 py-4 sm:py-5 text-lg sm:text-xl font-black text-white bg-[#0F172A] rounded-2xl shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 overflow-hidden  disabled:cursor-not-allowed disabled:hover:scale-100"
+              className="group relative inline-flex items-center justify-center px-6 sm:px-12 py-3.5 sm:py-5 text-lg sm:text-xl font-black text-white rounded-2xl shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 overflow-hidden disabled:cursor-not-allowed disabled:hover:scale-100 bg-gradient-to-r from-sky-600 to-teal-600"
             >
-              <div className="absolute inset-0 bg-slate-900  group-hover:opacity-100 transition-opacity duration-300"></div>
               <span className="relative flex items-center gap-3">
                 {isSearching ? (
                   <>
@@ -207,8 +206,8 @@ const SmartTripSearch = () => {
 
         {/* Search Results */}
         {searchPerformed && (
-          <div className="space-y-10">
-            <div className="bg-white/90 backdrop-blur-2xl border border-white/30 rounded-3xl shadow-2xl p-8 hover:shadow-3xl transition-all duration-500">
+          <div className="space-y-8 sm:space-y-10">
+            <div className="bg-white/90 backdrop-blur-2xl border border-white/30 rounded-3xl shadow-2xl p-6 sm:p-8 hover:shadow-3xl transition-all duration-500">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
                 <div className="flex items-center space-x-4">
                   <div className="bg-gradient-to-r from-slate-700 to-slate-800 p-4 rounded-2xl shadow-lg">
@@ -235,7 +234,7 @@ const SmartTripSearch = () => {
             </div>
 
             {matchingTrips.length === 0 ? (
-              <div className="bg-white/90 backdrop-blur-2xl border border-white/30 rounded-3xl shadow-2xl p-12 sm:p-16 text-center hover:shadow-3xl transition-all duration-500">
+              <div className="bg-white/90 backdrop-blur-2xl border border-white/30 rounded-3xl shadow-2xl p-8 sm:p-16 text-center hover:shadow-3xl transition-all duration-500">
                 <div className="bg-gradient-to-br from-slate-100 to-slate-200 rounded-full p-8 w-32 h-32 mx-auto mb-8 shadow-inner">
                   <Bus className="h-16 w-16 text-slate-400 mx-auto" />
                 </div>
@@ -270,7 +269,7 @@ const SmartTripSearch = () => {
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-8 sm:gap-10">
+              <div className="grid grid-cols-1 gap-6 sm:gap-10">
                 {matchingTrips.map((trip) => (
                   <BusCard key={trip.tripId} trip={trip} source={source} />
                 ))}
@@ -322,12 +321,12 @@ const BusCard = ({ trip, source }) => {
   };
 
   return (
-    <div className="bg-white/90 backdrop-blur-2xl border border-white/30 rounded-3xl shadow-2xl overflow-hidden hover:shadow-3xl transition-all duration-500 transform hover:scale-[1.02]">
+    <div className="bg-white/90 backdrop-blur-2xl border border-slate-200 rounded-3xl shadow-2xl overflow-hidden hover:shadow-3xl transition-all duration-500 transform hover:scale-[1.02] ring-1 ring-slate-900/5">
       {/* Header */}
-      <div className="bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 p-6 sm:p-8">
+      <div className="bg-gradient-to-r from-sky-600 via-teal-600 to-sky-600 p-6 sm:p-8">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-white">
           <div className="flex items-center space-x-4">
-            <div className="bg-white/20 p-3 rounded-2xl backdrop-blur-sm shadow-lg">
+            <div className="bg-white/20 p-3 rounded-2xl backdrop-blur-sm shadow-lg ring-1 ring-white/20">
               <Bus className="h-7 w-7" />
             </div>
             <div className="text-center sm:text-left">
@@ -335,7 +334,7 @@ const BusCard = ({ trip, source }) => {
               <div className="flex flex-col sm:flex-row items-center space-y-1 sm:space-y-0 sm:space-x-3">
                 <p className="text-slate-200 text-sm font-semibold">{trip.bus?.plateNumber}</p>
                 {trip.createdByDriver && (
-                  <div className="bg-gradient-to-r from-teal-400 to-sky-400 text-slate-900 text-xs font-black px-3 py-1 rounded-full shadow-lg">
+                  <div className="bg-white/90 text-slate-900 text-[11px] font-extrabold px-3 py-1 rounded-full shadow">
                     LIVE DRIVER
                   </div>
                 )}
@@ -348,6 +347,11 @@ const BusCard = ({ trip, source }) => {
               {trip.availableSeats}
             </div>
             <div className="text-xs text-slate-300">of {trip.totalSeats} total</div>
+            {currentETA && (
+              <div className="mt-2 inline-flex items-center gap-2 text-[11px] font-semibold bg-white/15 px-2.5 py-1 rounded-full ring-1 ring-white/20">
+                <Clock className="w-3.5 h-3.5" /> ETA {formatETA(currentETA)}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -387,7 +391,7 @@ const BusCard = ({ trip, source }) => {
             <button
               onClick={refreshETA}
               disabled={isLoadingETA}
-              className="bg-white text-teal-600 hover:text-teal-700 text-sm font-bold disabled:opacity-50 px-4 py-2 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-teal-200 hover:border-teal-300"
+              className="bg-white text-teal-600 hover:text-teal-700 text-sm font-bold disabled:opacity-50 px-4 py-2 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-teal-200 hover:border-teal-300 ring-1 ring-teal-500/10"
             >
               {isLoadingETA ? 'Updating...' : 'Refresh'}
             </button>
@@ -444,12 +448,11 @@ const BusCard = ({ trip, source }) => {
         {/* Action Button */}
         <button
           onClick={handleTrackBus}
-          className="group w-full bg-gradient-to-r from-slate-700 via-teal-600 to-sky-600 hover:from-slate-800 hover:via-teal-700 hover:to-sky-700 text-white font-black py-5 px-8 rounded-2xl transition-all duration-300 flex items-center justify-center space-x-4 shadow-2xl hover:shadow-3xl transform hover:scale-[1.02] relative overflow-hidden"
+          className="group w-full bg-gradient-to-r from-sky-600 to-teal-600 hover:from-sky-500 hover:to-teal-500 text-white font-black py-5 px-8 rounded-2xl transition-all duration-300 flex items-center justify-center space-x-4 shadow-2xl hover:shadow-3xl transform hover:scale-[1.02]"
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          <MapPin className="h-7 w-7 group-hover:scale-110 transition-transform duration-300 relative z-10" />
-          <span className="text-lg sm:text-xl relative z-10">Track Live Location</span>
-          <ArrowRight className="h-6 w-6 group-hover:translate-x-1 transition-transform duration-300 relative z-10" />
+          <MapPin className="h-7 w-7 group-hover:scale-110 transition-transform duration-300" />
+          <span className="text-lg sm:text-xl">Track Live Location</span>
+          <ArrowRight className="h-6 w-6 group-hover:translate-x-1 transition-transform duration-300" />
         </button>
       </div>
     </div>
