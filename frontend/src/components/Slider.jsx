@@ -28,8 +28,8 @@ const Slider = ({
   const animationDuration = `${speedSeconds}s`
 
   return (
-    <section className="w-full bg-white">
-      <div className="max-w-8xl mx-auto px-4 sm:px-6">
+    <section className="w-full bg-gradient-to-b from-white via-slate-50 to-white">
+      <div className="max-w-9xl mx-auto px-4 sm:px-6">
         {showHeader && (
           <div className="py-4">
             <h3 className="text-lg sm:text-xl font-bold text-slate-900">{title}</h3>
@@ -37,7 +37,7 @@ const Slider = ({
         )}
 
         {/* Decorative gradient backdrop */}
-        <div className={`relative w-full overflow-hidden ${height} rounded-2xl ring-1 ring-slate-900/5 shadow-md`}>
+        <div className={`relative w-full overflow-hidden ${height} rounded-3xl ring-1 ring-slate-900/5 shadow-lg bg-white/60 backdrop-blur-[2px]` }>
           <div className="pointer-events-none absolute -top-20 -left-10 h-48 w-48 rounded-full bg-gradient-to-br from-sky-400/20 via-teal-400/20 to-indigo-400/20 blur-3xl" />
           <div className="pointer-events-none absolute -bottom-24 -right-16 h-56 w-56 rounded-full bg-gradient-to-br from-amber-400/20 via-orange-400/20 to-sky-400/20 blur-3xl" />
 
@@ -63,11 +63,11 @@ const Slider = ({
             onMouseLeave={() => setIsHovering(false)}
           >
             {[...imgs, ...imgs].map((src, idx) => (
-              <div key={idx} className="relative shrink-0 h-full aspect-[16/10] overflow-hidden rounded-xl bg-white ring-1 ring-slate-900/10 shadow">
+              <div key={idx} className="relative shrink-0 h-full aspect-[16/10] overflow-hidden rounded-2xl bg-white ring-1 ring-slate-900/10 ring-offset-1 ring-offset-slate-100 shadow-md hover:shadow-xl transition-shadow">
                 <img
                   src={src}
                   alt={`slide-${idx}`}
-                  className="h-full w-full object-cover transition-transform duration-300 ease-out hover:scale-[1.04]"
+                  className="h-full w-full object-cover transition-transform duration-300 ease-out hover:scale-[1.05]"
                   loading={idx < imgs.length ? 'eager' : 'lazy'}
                 />
               </div>

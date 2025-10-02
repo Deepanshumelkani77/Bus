@@ -4,6 +4,7 @@ import Why from '../components/Why'
 import Video from '../components/Video'
 import Slider from '../components/Slider'
 import City from '../components/City'
+import Footer from '../components/Footer'
 
 const Home = () => {
   return (
@@ -13,6 +14,7 @@ const Home = () => {
      
       <Slider />
       <City/>
+    
       
     </div>
   )

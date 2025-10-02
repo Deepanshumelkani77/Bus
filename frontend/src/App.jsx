@@ -4,7 +4,7 @@ import Navbar from './components/Navbar';
 
 import Login from './pages/Login';
 import Home from './pages/Home';
-
+import Footer from './components/Footer';
 
 import About from './pages/About';
 import SmartTripSearch from './pages/SmartTripSearch';
@@ -29,6 +29,7 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/live-tracking/:tripId" element={<LiveTracking />} />
       </Routes>
+        <Footer />
     </div>
   );
 }
