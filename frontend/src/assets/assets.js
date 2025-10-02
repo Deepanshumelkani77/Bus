@@ -9,6 +9,8 @@ import bus from "./bus.png";
 import i1 from "./i1.png";
 import i2 from "./i2.png";
 import i3 from "./i3.png";
+import vid1 from "./vid1.mp4";
+import vid2 from "./vid2.mp4";
 
 export const assets = {
     img1,
@@ -21,5 +23,7 @@ export const assets = {
     bus,
     i1,
     i2,
-    i3
+    i3,
+    vid1,
+    vid2,
 };
