@@ -38,6 +38,17 @@ const Navbar = () => {
 
   const isActive = (path) => location.pathname === path;
 
+  // Lock body scroll when sidebar is open on mobile
+  useEffect(() => {
+    if (isMenuOpen) {
+      const original = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = original;
+      };
+    }
+  }, [isMenuOpen]);
+
   const handleLogout = () => {
     logout(); // Use logout function from AppContext
     setIsProfileOpen(false);
@@ -216,89 +227,117 @@ const Navbar = () => {
           </button>
         </div>
 
-        {/* Mobile Menu */}
-        {isMenuOpen && (
-          <div className="lg:hidden border-t border-slate-700/50 py-4 space-y-2 bg-slate-800/95 backdrop-blur-xl">
-            <Link 
-              to="/" 
-              className="block px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-700/50 font-semibold transition-all duration-200 rounded-lg" 
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Home
-            </Link>
-            <Link 
-              to="/smart-search" 
-              className="block px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-700/50 font-semibold transition-all duration-200 rounded-lg" 
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Find Bus
-            </Link>
-            <Link 
-              to="/track" 
-              className="block px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-700/50 font-semibold transition-all duration-200 rounded-lg" 
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Track Bus
-            </Link>
-            <Link 
-              to="/routes" 
-              className="block px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-700/50 font-semibold transition-all duration-200 rounded-lg" 
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Routes
-            </Link>
-            
-            {isAuthenticated() ? (
-              <div className="pt-4 border-t border-slate-700/50 mt-4">
-                <div className="flex items-center gap-3 px-4 py-3 mb-2">
-                  <div className="w-8 h-8 bg-gradient-to-br from-slate-600 to-slate-700 rounded-lg flex items-center justify-center shadow-lg border border-slate-500/50">
-                    <User className="w-4 h-4 text-white" />
+        {/* Mobile Sidebar (Left slide-in) */}
+        <div className={`lg:hidden fixed inset-0 z-40 ${isMenuOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}>
+          {/* Backdrop */}
+          <div
+            className={`absolute inset-0 bg-black/40 transition-opacity duration-300 ${isMenuOpen ? 'opacity-100' : 'opacity-0'}`}
+            onClick={() => setIsMenuOpen(false)}
+          />
+
+          {/* Sidebar Panel */}
+          <aside
+            className={`absolute left-0 top-0 h-full w-80 max-w-[85vw] bg-slate-800/95 backdrop-blur-xl border-r border-slate-700/50 shadow-2xl transform transition-transform duration-300 ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}
+          >
+            <div className="flex items-center justify-between px-4 h-16 border-b border-slate-700/50">
+              <div className="flex items-center gap-2 text-white font-bold">
+                <span className="inline-flex w-8 h-8 items-center justify-center rounded-lg bg-slate-900 border border-slate-700/50">
+                  <Bus className="w-4 h-4" />
+                </span>
+                BusTrac
+              </div>
+              <button
+                onClick={() => setIsMenuOpen(false)}
+                className="p-2 text-slate-300 hover:text-white hover:bg-slate-700/50 rounded-lg"
+                aria-label="Close menu"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <nav className="py-3">
+              <Link
+                to="/"
+                className="block px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-700/50 font-semibold transition-all duration-200"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Home
+              </Link>
+              <Link
+                to="/smart-search"
+                className="block px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-700/50 font-semibold transition-all duration-200"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Find Bus
+              </Link>
+              <Link
+                to="/track"
+                className="block px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-700/50 font-semibold transition-all duration-200"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Track Bus
+              </Link>
+              <Link
+                to="/routes"
+                className="block px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-700/50 font-semibold transition-all duration-200"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Routes
+              </Link>
+
+              {isAuthenticated() ? (
+                <div className="pt-4 border-t border-slate-700/50 mt-4">
+                  <div className="flex items-center gap-3 px-4 py-3 mb-2">
+                    <div className="w-8 h-8 bg-gradient-to-br from-slate-600 to-slate-700 rounded-lg flex items-center justify-center shadow-lg border border-slate-500/50">
+                      <User className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <div className="font-semibold text-white">{user?.name || 'User'}</div>
+                      <div className="text-sm text-slate-300">{user?.email || 'user@example.com'}</div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="font-semibold text-white">{user?.name || 'User'}</div>
-                    <div className="text-sm text-slate-300">{user?.email || 'user@example.com'}</div>
-                  </div>
+                  <Link
+                    to="/profile"
+                    className="block px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-700/50 font-semibold transition-all duration-200"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    My Profile
+                  </Link>
+                  <Link
+                    to="/settings"
+                    className="block px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-700/50 font-semibold transition-all duration-200"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Settings
+                  </Link>
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setIsMenuOpen(false);
+                    }}
+                    className="block w-full text-left px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-900/20 font-semibold transition-all duration-200"
+                  >
+                    Logout
+                  </button>
                 </div>
-                <Link 
-                  to="/profile" 
-                  className="block px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-700/50 font-semibold transition-all duration-200 rounded-lg" 
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  My Profile
-                </Link>
-                <Link 
-                  to="/settings" 
-                  className="block px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-700/50 font-semibold transition-all duration-200 rounded-lg" 
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Settings
-                </Link>
-                <button
-                  onClick={() => {
-                    handleLogout();
-                    setIsMenuOpen(false);
-                  }}
-                  className="block w-full text-left px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-900/20 font-semibold transition-all duration-200 rounded-lg"
-                >
-                  Logout
-                </button>
-              </div>
-            ) : (
-              <div className="pt-4 border-t border-slate-700/50 mt-4">
-                <Link 
-                  to="/login" 
-                  className="block bg-gradient-to-r from-slate-600 to-slate-700 text-white px-4 py-3 rounded-xl font-semibold hover:from-slate-500 hover:to-slate-600 transition-all duration-300 shadow-lg text-center border border-slate-500/50"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Login
-                </Link>
-              </div>
-            )}
-          </div>
-        )}
+              ) : (
+                <div className="pt-4 border-t border-slate-700/50 mt-4 px-4">
+                  <Link
+                    to="/login"
+                    className="block w-full bg-gradient-to-r from-slate-600 to-slate-700 text-white px-4 py-3 rounded-xl font-semibold hover:from-slate-500 hover:to-slate-600 transition-all duration-300 shadow-lg text-center border border-slate-500/50"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Login
+                  </Link>
+                </div>
+              )}
+            </nav>
+          </aside>
+        </div>
       </div>
     </nav>
   );
-};
+}
+;
 
 export default Navbar;
