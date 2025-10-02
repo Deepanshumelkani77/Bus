@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Bus, User, LogOut, Settings, Menu, X } from 'lucide-react';
 import { AppContext } from '../context/AppContext';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const profileRef = useRef(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Get user data and logout function from AppContext
   const { user, logout, isAuthenticated } = useContext(AppContext);
@@ -26,14 +28,26 @@ const Navbar = () => {
     };
   }, []);
 
+  // Add subtle shadow/blur on scroll
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const isActive = (path) => location.pathname === path;
+
   const handleLogout = () => {
     logout(); // Use logout function from AppContext
     setIsProfileOpen(false);
   };
 
   return (
-    <nav className="bg-[#0F172A] border-b border-slate-700/50 sticky top-0 z-50 shadow-2xl">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 ">
+    <nav className={`sticky top-0 z-50 border-b border-slate-700/50 transition-colors duration-300 ${
+      scrolled ? 'bg-[#0F172A] backdrop-blur-md shadow-xl' : 'bg-[#0F172A] shadow-2xl'
+    }`}>
+      <div className="w-full mx-auto px-4 sm:px-6 ">
         <div className="flex justify-between items-center h-16 lg:h-18">
         
           {/* Enhanced Logo - Same as Home.jsx */}
@@ -52,27 +66,35 @@ const Navbar = () => {
           </Link>
 
           {/* Center Navigation */}
-          <div className="hidden lg:flex items-center gap-8 absolute left-1/2 transform -translate-x-1/2">
-            <Link to="/" className="relative text-slate-300 hover:text-white font-semibold transition-all duration-300 group">
+          <div className=" text-xl hidden lg:flex items-center gap-20 absolute left-1/2 transform -translate-x-1/2">
+            <Link to="/" className={`relative font-semibold transition-all duration-300 group ${isActive('/') ? 'text-white' : 'text-slate-300 hover:text-white'}`}>
               <span>Home</span>
-              <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-white to-slate-200 group-hover:w-full transition-all duration-300"></div>
+              <div className={`absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-white to-slate-200 transition-all duration-300 ${isActive('/') ? 'w-full' : 'w-0 group-hover:w-full'}`}></div>
             </Link>
-            <Link to="/smart-search" className="relative text-slate-300 hover:text-white font-semibold transition-all duration-300 group">
+            <Link to="/smart-search" className={`relative font-semibold transition-all duration-300 group ${isActive('/smart-search') ? 'text-white' : 'text-slate-300 hover:text-white'}`}>
               <span>Find Bus</span>
-              <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-white to-slate-200 group-hover:w-full transition-all duration-300"></div>
+              <div className={`absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-white to-slate-200 transition-all duration-300 ${isActive('/smart-search') ? 'w-full' : 'w-0 group-hover:w-full'}`}></div>
             </Link>
-            <Link to="/track" className="relative text-slate-300 hover:text-white font-semibold transition-all duration-300 group">
+            <Link to="/track" className={`relative font-semibold transition-all duration-300 group ${isActive('/track') ? 'text-white' : 'text-slate-300 hover:text-white'}`}>
               <span>Track Bus</span>
-              <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-white to-slate-200 group-hover:w-full transition-all duration-300"></div>
+              <div className={`absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-white to-slate-200 transition-all duration-300 ${isActive('/track') ? 'w-full' : 'w-0 group-hover:w-full'}`}></div>
             </Link>
-            <Link to="/routes" className="relative text-slate-300 hover:text-white font-semibold transition-all duration-300 group">
+            <Link to="/routes" className={`relative font-semibold transition-all duration-300 group ${isActive('/routes') ? 'text-white' : 'text-slate-300 hover:text-white'}`}>
               <span>Routes</span>
-              <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-white to-slate-200 group-hover:w-full transition-all duration-300"></div>
+              <div className={`absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-white to-slate-200 transition-all duration-300 ${isActive('/routes') ? 'w-full' : 'w-0 group-hover:w-full'}`}></div>
             </Link>
           </div>
 
           {/* Right Side - Profile Section */}
-          <div className="hidden lg:flex items-center">
+          <div className="hidden lg:flex items-center gap-3">
+            {/* Simple CTA */}
+            <Link
+              to="/smart-search"
+              className="hidden xl:inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-sky-600 to-teal-600 text-white font-semibold border border-white/10 hover:from-sky-500 hover:to-teal-500 transition-all duration-300 shadow"
+            >
+              <Bus className="w-4 h-4" />
+              Find Bus
+            </Link>
             <div className="relative" ref={profileRef}>
               <button
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
