@@ -13,6 +13,13 @@ const images=[assets.i1,assets.i2,assets.i3]
   const [current, setCurrent] = useState(0)
   const [isHovering, setIsHovering] = useState(false)
   const [touchStartX, setTouchStartX] = useState(null)
+  const [isPlaying, setIsPlaying] = useState(true) // auto-slide on by default
+
+  // Optional captions (simple defaults; you can customize later)
+  const captions = useMemo(
+    () => new Array(fallbackImages.length).fill(''),
+    [fallbackImages.length]
+  )
 
   const next = () => setCurrent((prev) => (prev + 1) % fallbackImages.length)
     
@@ -21,16 +28,26 @@ const images=[assets.i1,assets.i2,assets.i3]
   // Gentle auto-slide every 5s, pause on hover
   useEffect(() => {
     if (fallbackImages.length <= 1) return
+    if (!isPlaying) return
     if (isHovering) return
     const id = setInterval(() => {
       setCurrent((prev) => (prev + 1) % fallbackImages.length)
     }, 5000)
     return () => clearInterval(id)
-  }, [fallbackImages.length, isHovering])
+  }, [fallbackImages.length, isHovering, isPlaying])
 
   return (
     <div
-      className=" bg-pink-200 w-full mx-auto select-none h-[35vh] md:h-[60vh] lg:h-[95vh] "
+      className="  w-full mx-auto select-none h-[35vh] md:h-[60vh] lg:h-[95vh] "
+      role="region"
+      aria-roledescription="carousel"
+      aria-label="Header image slider"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'ArrowLeft') prev()
+        else if (e.key === 'ArrowRight') next()
+        else if (e.key === ' ' || e.key === 'Spacebar' || e.key === 'Enter') setIsPlaying((p) => !p)
+      }}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
@@ -51,6 +68,7 @@ const images=[assets.i1,assets.i2,assets.i3]
             }
             setTouchStartX(null)
           }}
+          onClick={() => next()}
         >
           {/* Maintain aspect ratio on small screens, grow on larger */}
           <div className="aspect-[16/9] sm:h-56 md:h-72 lg:h-[420px] xl:h-[520px]">
@@ -66,6 +84,12 @@ const images=[assets.i1,assets.i2,assets.i3]
                 loading={idx === current ? 'eager' : 'lazy'}
               />
             ))}
+            {/* Caption overlay (minimal) */}
+            {captions[current] && (
+              <div className="absolute inset-x-0 bottom-0 bg-black/35 text-white text-xs sm:text-sm md:text-base px-3 sm:px-4 py-2">
+                {captions[current]}
+              </div>
+            )}
           </div>
 
           {/* Prev/Next Controls (minimal styling) */}
@@ -87,6 +111,21 @@ const images=[assets.i1,assets.i2,assets.i3]
               >
                 ›
               </button>
+
+              {/* Play/Pause toggle */}
+              <button
+                type="button"
+                onClick={() => setIsPlaying((p) => !p)}
+                aria-label={isPlaying ? 'Pause slideshow' : 'Play slideshow'}
+                className="absolute right-2 top-2 rounded-full bg-black/40 text-white px-2 py-1 text-xs sm:text-sm hover:bg-black/50"
+              >
+                {isPlaying ? 'Pause' : 'Play'}
+              </button>
+
+              {/* Counter */}
+              <div className="absolute left-2 top-2 rounded bg-black/40 text-white px-2 py-1 text-xs sm:text-sm">
+                {current + 1} / {fallbackImages.length}
+              </div>
             </>
           )}
         </div>
