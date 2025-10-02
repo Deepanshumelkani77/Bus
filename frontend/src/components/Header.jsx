@@ -12,6 +12,7 @@ const images=[assets.i1,assets.i2,assets.i3]
 
   const [current, setCurrent] = useState(0)
   const [isHovering, setIsHovering] = useState(false)
+  const [touchStartX, setTouchStartX] = useState(null)
 
   const next = () => setCurrent((prev) => (prev + 1) % fallbackImages.length)
     
@@ -29,16 +30,30 @@ const images=[assets.i1,assets.i2,assets.i3]
 
   return (
     <div
-      className="w-full mx-auto select-none"
+      className=" bg-pink-200 w-full mx-auto select-none h-[35vh] md:h-[60vh] lg:h-[95vh] "
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
       {/* Slider container */}
-      <div className="relative w-full max-w-5xl mx-auto">
+      <div className="relative w-full ">
         {/* Image area - responsive ratio with gentle fade */}
-        <div className="relative w-full overflow-hidden rounded-xl bg-gray-100">
+        <div
+          className="relative w-full overflow-hidden  bg-gray-100 h-[35vh] md:h-[60vh] lg:h-[90vh]"
+          onTouchStart={(e) => setTouchStartX(e.touches[0].clientX)}
+          onTouchEnd={(e) => {
+            if (touchStartX === null) return
+            const diff = e.changedTouches[0].clientX - touchStartX
+            const threshold = 50 // minimal swipe distance
+            if (diff > threshold) {
+              prev()
+            } else if (diff < -threshold) {
+              next()
+            }
+            setTouchStartX(null)
+          }}
+        >
           {/* Maintain aspect ratio on small screens, grow on larger */}
-          <div className="aspect-[16/9] md:h-[420px]">
+          <div className="aspect-[16/9] sm:h-56 md:h-72 lg:h-[420px] xl:h-[520px]">
             {fallbackImages.map((src, idx) => (
               <img
                 key={idx}
@@ -60,7 +75,7 @@ const images=[assets.i1,assets.i2,assets.i3]
                 type="button"
                 aria-label="Previous slide"
                 onClick={prev}
-                className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-black/40 text-white p-2 hover:bg-black/50 focus:outline-none"
+                className="absolute left-2 sm:left-3 md:left-4 top-1/2 -translate-y-1/2 rounded-full bg-black/40 text-white p-1.5 sm:p-2 md:p-3 hover:bg-black/50 focus:outline-none text-base sm:text-xl md:text-2xl"
               >
                 ‹
               </button>
@@ -68,7 +83,7 @@ const images=[assets.i1,assets.i2,assets.i3]
                 type="button"
                 aria-label="Next slide"
                 onClick={next}
-                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-black/40 text-white p-2 hover:bg-black/50 focus:outline-none"
+                className="absolute right-2 sm:right-3 md:right-4 top-1/2 -translate-y-1/2 rounded-full bg-black/40 text-white p-1.5 sm:p-2 md:p-3 hover:bg-black/50 focus:outline-none text-base sm:text-xl md:text-2xl"
               >
                 ›
               </button>
@@ -78,15 +93,17 @@ const images=[assets.i1,assets.i2,assets.i3]
 
         {/* Dots indicators */}
         {fallbackImages.length > 1 && (
-          <div className="mt-3 flex items-center justify-center gap-2">
+          <div className="mt-2 sm:mt-3 flex items-center justify-center gap-1.5 sm:gap-2">
             {fallbackImages.map((_, idx) => (
               <button
                 key={idx}
                 aria-label={`Go to slide ${idx + 1}`}
                 onClick={() => setCurrent(idx)}
                 className={
-                  'h-2.5 w-2.5 rounded-full transition-colors ' +
-                  (idx === current ? 'bg-gray-800' : 'bg-gray-300 hover:bg-gray-400')
+                  'rounded-full transition-colors ' +
+                  (idx === current
+                    ? 'bg-gray-800 h-2 w-2 sm:h-2.5 sm:w-2.5'
+                    : 'bg-gray-300 hover:bg-gray-400 h-2 w-2 sm:h-2.5 sm:w-2.5')
                 }
               />
             ))}
