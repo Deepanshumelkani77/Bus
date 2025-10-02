@@ -11,7 +11,7 @@ const Why = () => {
       <div className="max-w-8xl mx-auto px-4 sm:px-6 py-10 sm:py-14 relative">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto">
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900">Why choose BusTrac?</h2>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900">Why choose BusTrac?</h2>
           <p className="mt-3 text-slate-600">Plan smarter journeys with live routes, traffic‑aware ETAs, and a clean, modern experience across devices.</p>
         </div>
 
@@ -23,8 +23,8 @@ const Why = () => {
             <span className="inline-flex p-3 rounded-2xl bg-blue-600 text-white shadow ring-1 ring-white/20">
               <Clock className="w-6 h-6" />
             </span>
-            <h3 className="mt-5 font-bold text-xl text-slate-900">Traffic‑aware ETAs</h3>
-            <p className="text-slate-600 text-sm mt-2 leading-relaxed">Arrivals update in real time so you can reach the stop right on time.</p>
+            <h3 className="mt-5 font-bold text-xl lg:text-3xl text-slate-900">Traffic‑aware ETAs</h3>
+            <p className="text-slate-600 text-sm lg:text-xl mt-2 leading-relaxed">Arrivals update in real time so you can reach the stop right on time.</p>
           </div>
 
           {/* Live tracking */}
@@ -33,8 +33,8 @@ const Why = () => {
             <span className="inline-flex p-3 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-600 text-white shadow ring-1 ring-white/20">
               <MapPin className="w-6 h-6" />
             </span>
-            <h3 className="mt-5 font-bold text-xl text-slate-900">Live bus tracking</h3>
-            <p className="text-slate-600 text-sm mt-2 leading-relaxed">Follow buses on the map, view route polylines and pickup proximity.</p>
+            <h3 className="mt-5 font-bold text-xl lg:text-3xl text-slate-900">Live bus tracking</h3>
+            <p className="text-slate-600 text-sm lg:text-xl mt-2 leading-relaxed">Follow buses on the map, view route polylines and pickup proximity.</p>
           </div>
 
           {/* Secure & reliable */}
@@ -43,8 +43,8 @@ const Why = () => {
             <span className="inline-flex p-3 rounded-2xl bg-green-600 text-white shadow ring-1 ring-white/20">
               <Shield className="w-6 h-6" />
             </span>
-            <h3 className="mt-5 font-bold text-xl text-slate-900">Secure & reliable</h3>
-            <p className="text-slate-600 text-sm mt-2 leading-relaxed">Protected accounts and stable real‑time connectivity powered by Socket.io.</p>
+            <h3 className="mt-5 font-bold text-xl lg:text-3xl text-slate-900">Secure & reliable</h3>
+            <p className="text-slate-600 text-sm lg:text-xl mt-2 leading-relaxed">Protected accounts and stable real‑time connectivity powered by Socket.io.</p>
           </div>
 
           {/* Beautiful on any device */}
@@ -53,8 +53,8 @@ const Why = () => {
             <span className="inline-flex p-3 rounded-2xl bg-gradient-to-br from-cyan-600 to-teal-600 text-white shadow ring-1 ring-white/20">
               <Smartphone className="w-6 h-6" />
             </span>
-            <h3 className="mt-5 font-bold text-xl text-slate-900">Beautiful on any device</h3>
-            <p className="text-slate-600 text-sm mt-2 leading-relaxed">Thoughtful, responsive UI that looks great on phones, tablets and laptops.</p>
+            <h3 className="mt-5 font-bold text-xl lg:text-3xl text-slate-900">Beautiful on any device</h3>
+            <p className="text-slate-600 text-sm lg:text-xl mt-2 leading-relaxed">Thoughtful, responsive UI that looks great on phones, tablets and laptops.</p>
           </div>
         </div>
 
@@ -62,20 +62,20 @@ const Why = () => {
         <div className="mt-12 rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-md ring-1 ring-slate-900/5">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
             <div>
-              <div className="text-3xl font-extrabold text-slate-900">1s</div>
-              <div className="text-xs text-slate-600">Live updates</div>
+              <div className="text-2xl lg:text-6xl font-extrabold text-slate-900">1s</div>
+              <div className="text-xs lg:text-lg text-slate-600">Live updates</div>
             </div>
             <div>
-              <div className="text-3xl font-extrabold text-slate-900">100+</div>
-              <div className="text-xs text-slate-600">Routes</div>
+              <div className="text-2xl lg:text-6xl font-extrabold text-slate-900">100+</div>
+              <div className="text-xs lg:text-lg text-slate-600">Routes</div>
             </div>
             <div>
-              <div className="text-3xl font-extrabold text-slate-900">1.5km</div>
-              <div className="text-xs text-slate-600">Smart buffer</div>
+              <div className="text-2xl lg:text-6xl font-extrabold text-slate-900">1.5km</div>
+              <div className="text-xs lg:text-lg text-slate-600">Smart buffer</div>
             </div>
             <div>
-              <div className="text-3xl font-extrabold text-slate-900">24/7</div>
-              <div className="text-xs text-slate-600">Always on</div>
+              <div className="text-2xl lg:text-6xl font-extrabold text-slate-900">24/7</div>
+              <div className="text-xs lg:text-lg text-slate-600">Always on</div>
             </div>
           </div>
           <div className="mt-6 flex items-center justify-center">
