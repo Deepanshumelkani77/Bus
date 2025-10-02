@@ -1,7 +1,12 @@
 import React from 'react'
 import { useEffect, useMemo, useState } from 'react'
+import {assets} from '../assets/assets'
 
-const Header = ({ images = [] }) => {
+
+const Header = () => {
+
+const images=[assets.i1,assets.i2,assets.i3]
+
   // Fallback to a simple placeholder from public if no images are provided yet
   const fallbackImages = useMemo(() => (images && images.length > 0 ? images : ['/vite.svg']), [images])
 
