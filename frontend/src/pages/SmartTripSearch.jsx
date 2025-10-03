@@ -117,7 +117,7 @@ const SmartTripSearch = () => {
           <div className="text-center mb-10">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-800 mb-4">
               Where are you{' '}
-              <span className="bg-gradient-to-r from-slate-700 via-teal-600 to-sky-600 bg-clip-text text-transparent">
+              <span className="">
                 going?
               </span>
             </h2>
