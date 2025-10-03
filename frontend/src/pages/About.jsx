@@ -46,7 +46,7 @@
               { label: 'Avg ETA Refresh', value: '1s' },
               { label: 'Uptime', value: '99.9%' },
             ].map((s) => (
-              <div key={s.label} className="rounded-2xl bg-white/80 ring-1 ring-white/10 p-4 ">
+              <div key={s.label} className="rounded-2xl bg-white/90 ring-1 ring-white/10 p-4 ">
                 <div className="text-2xl sm:text-3xl lg:text-4xl font-extrabold">{s.value}</div>
                 <div className="text-xs sm:text-sm lg:text-base text-black-300">{s.label}</div>
               </div>
@@ -56,11 +56,11 @@
       </section>
 
       {/* Mission */}
-      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+      <section className="relative max-w-8xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-center">
           <div className="lg:col-span-3">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900">Our mission</h2>
-            <p className="mt-3 text-slate-600 text-base sm:text-lg lg:text-xl">
+            <h2 className="text-2xl sm:text-3xl lg:text-5xl font-extrabold text-slate-900">Our mission</h2>
+            <p className="mt-3 text-slate-600 text-base sm:text-lg lg:text-2xl">
               Make public transport effortless by giving passengers live, trustworthy information.
               We connect real driver trips with intelligent routing and delightful design—so you can
               reach the stop right on time.
@@ -68,16 +68,16 @@
             <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex items-start gap-3 rounded-2xl p-4 bg-gradient-to-r from-slate-50 to-slate-100 border border-slate-200">
                 <span className="inline-flex p-2 rounded-xl bg-blue-600 text-white"><Clock className="w-5 h-5"/></span>
-                <div>
-                  <div className="font-bold text-slate-900 lg:text-xl">Traffic‑aware ETAs</div>
-                  <div className="text-sm lg:text-base text-slate-600">Live times refined with traffic data</div>
+                <div className=" ">
+                  <div className="font-bold text-slate-900 lg:text-2xl lg:mb-5">Traffic‑aware ETAs</div>
+                  <div className="text-sm lg:text-xl text-slate-600">Live times refined with traffic data</div>
                 </div>
               </div>
               <div className="flex items-start gap-3 rounded-2xl p-4 bg-gradient-to-r from-slate-50 to-slate-100 border border-slate-200">
                 <span className="inline-flex p-2 rounded-xl bg-orange-500 text-white"><Shield className="w-5 h-5"/></span>
                 <div>
-                  <div className="font-bold text-slate-900 lg:text-xl">Secure & reliable</div>
-                  <div className="text-sm lg:text-base text-slate-600">Role‑based auth, JWT, and robust infra</div>
+                  <div className="font-bold text-slate-900 lg:text-2xl lg:mb-5">Secure & reliable</div>
+                  <div className="text-sm lg:text-xl text-slate-600">Role‑based auth, JWT, and robust infra</div>
                 </div>
               </div>
             </div>
