@@ -123,10 +123,10 @@
       </section>
 
       {/* CTA strip */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-16">
+      <section className="max-w-8xl mx-auto px-4 sm:px-6 pb-16">
         <div className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-md ring-1 ring-slate-900/5 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div>
-            <div className="text-slate-900 font-extrabold text-2xl lg:text-3xl">Ready to explore live buses?</div>
+            <div className="text-slate-900 font-extrabold text-2xl lg:text-3xl lg:mb-5">Ready to explore live buses?</div>
             <div className="text-slate-600 lg:text-lg">Find a matching trip and track it in real time.</div>
           </div>
           <a href="/smart-search" className="inline-flex items-center gap-3 px-6 py-3 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold shadow hover:shadow-lg transition-all">
