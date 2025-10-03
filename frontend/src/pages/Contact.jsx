@@ -51,7 +51,7 @@ const Contact = () => {
               <span className="inline-flex p-3 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow ring-1 ring-white/20">
                 {React.createElement(c.icon, { className: 'w-5 h-5' })}
               </span>
-              <div className="mt-4 font-bold text-lg lg:text-xl text-slate-900">{c.title}</div>
+              <div className="mt-4 font-bold text-lg lg:text-2xl text-slate-900">{c.title}</div>
               <div className="text-slate-700 lg:text-lg">{c.value}</div>
               <div className="text-slate-500 text-sm lg:text-base">{c.sub}</div>
             </a>
