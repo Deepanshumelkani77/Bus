@@ -102,7 +102,7 @@
       </section>
 
       {/* Values grid */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-8 sm:pb-12">
+      <section className="max-w-8xl mx-auto px-4 sm:px-6 pb-8 sm:pb-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[
             { icon: MapPin, title: 'Built for cities', desc: 'Precise locations, polylines, and pickup proximity.' },
@@ -115,8 +115,8 @@
               <span className="inline-flex p-3 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow ring-1 ring-white/20">
                 {React.createElement(c.icon, { className: 'w-5 h-5' })}
               </span>
-              <h3 className="mt-4 font-bold text-lg lg:text-xl text-slate-900">{c.title}</h3>
-              <p className="text-slate-600 text-sm lg:text-base mt-1 leading-relaxed">{c.desc}</p>
+              <h3 className="mt-4 font-bold text-lg lg:text-2xl text-slate-900">{c.title}</h3>
+              <p className="text-slate-600 text-sm lg:text-xl mt-1 leading-relaxed">{c.desc}</p>
             </div>
           ))}
         </div>
