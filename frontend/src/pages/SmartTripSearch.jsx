@@ -322,8 +322,8 @@ const BusCard = ({ trip, source }) => {
 
   return (
     <div className="bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
-      <div className="p-3 sm:p-5">
-        <div className="flex items-start sm:items-center gap-3 sm:gap-6">
+      <div className="p-4 sm:p-5">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
           {/* Left badge */}
           <div className="shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-slate-800 text-white flex flex-col items-center justify-center shadow">
             <Bus className="w-6 h-6" />
@@ -331,9 +331,9 @@ const BusCard = ({ trip, source }) => {
           </div>
 
           {/* Middle content */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 w-full">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-              <h3 className="text-lg sm:text-xl lg:text-2xl font-extrabold text-slate-900 truncate">
+              <h3 className="text-xl sm:text-xl lg:text-2xl font-extrabold text-slate-900 truncate mt-1 sm:mt-0">
                 {trip.title || `Bus ${trip.bus?.busNumber || ''}`}
               </h3>
               {/* Seats small on desktop, move to right sidebar on mobile? keep here small */}
@@ -344,8 +344,18 @@ const BusCard = ({ trip, source }) => {
               </div>
             </div>
 
-            {/* Route line */}
-            <div className="mt-2 sm:mt-3 flex items-center gap-3 text-sm sm:text-base text-slate-700">
+            {/* Route: stacked on mobile, inline on desktop */}
+            <div className="mt-3 sm:hidden space-y-2 text-slate-700">
+              <div className="flex items-center gap-2 text-base">
+                <span className="w-2.5 h-2.5 rounded-full bg-sky-600"></span>
+                <span className="font-medium truncate">{trip.source}</span>
+              </div>
+              <div className="flex items-center gap-2 text-base">
+                <span className="w-2.5 h-2.5 rounded-full bg-orange-500"></span>
+                <span className="font-medium truncate">{trip.destination}</span>
+              </div>
+            </div>
+            <div className="hidden sm:flex items-center gap-3 text-sm sm:text-base text-slate-700 mt-2">
               <span className="inline-flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-sky-600"></span>
                 <span className="font-medium truncate max-w-[9rem] sm:max-w-[16rem]">{trip.source}</span>
@@ -358,9 +368,9 @@ const BusCard = ({ trip, source }) => {
             </div>
 
             {/* Meta row */}
-            <div className="mt-2 sm:mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs sm:text-sm text-slate-600">
+            <div className="mt-3 sm:mt-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm sm:text-sm text-slate-600">
               <span className="inline-flex items-center gap-2">
-                <Clock className="w-4 h-4" />
+                <Clock className="w-5 h-5 text-slate-700" />
                 <span className="font-semibold">{formatETA(currentETA)}</span>
               </span>
               {currentETA?.distance?.text && (
@@ -370,7 +380,7 @@ const BusCard = ({ trip, source }) => {
                 </span>
               )}
               <span className="inline-flex items-center gap-2 sm:hidden">
-                <Users className="w-4 h-4" />
+                <Users className="w-5 h-5 text-slate-700" />
                 <span className="font-semibold">{trip.availableSeats}</span>
                 <span className="text-slate-400">/ {trip.totalSeats} seats</span>
               </span>
@@ -388,31 +398,43 @@ const BusCard = ({ trip, source }) => {
           </div>
 
           {/* Right sidebar */}
-          <div className="shrink-0 flex flex-col items-end gap-2 sm:gap-3">
-            <span className="text-[10px] sm:text-xs text-slate-500">Next arrival</span>
-            <div className="text-xl sm:text-2xl font-extrabold text-orange-500 leading-none">
-              {formatETA(currentETA)}
+          {/* Right sidebar (desktop) / Arrival row (mobile) */}
+          <div className="w-full sm:w-auto">
+            {/* Mobile: inline row under content */}
+            <div className="flex sm:hidden items-center justify-between mt-5">
+              <div>
+                <span className="text-xs text-slate-500 block">Next arrival</span>
+                <div className="text-4xl font-extrabold text-orange-500 leading-none mt-1">
+                  {formatETA(currentETA)}
+                </div>
+              </div>
+              <button
+                onClick={handleTrackBus}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-orange-500 text-white text-base font-semibold shadow-lg shadow-orange-200 hover:bg-orange-600 transition-colors"
+              >
+                Track
+                <ArrowRight className="w-4 h-4" />
+              </button>
             </div>
-            <button
-              onClick={handleTrackBus}
-              className="mt-1 inline-flex items-center gap-2 px-3 py-2 sm:px-4 rounded-xl bg-orange-500 text-white text-sm sm:text-base font-semibold shadow hover:bg-orange-600 transition-colors"
-            >
-              Track
-              <ArrowRight className="w-4 h-4" />
-            </button>
+
+            {/* Desktop: stacked right column */}
+            <div className="hidden sm:flex sm:flex-col sm:items-end sm:gap-3">
+              <span className="text-xs text-slate-500">Next arrival</span>
+              <div className="text-2xl font-extrabold text-orange-500 leading-none">
+                {formatETA(currentETA)}
+              </div>
+              <button
+                onClick={handleTrackBus}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-500 text-white text-base font-semibold shadow hover:bg-orange-600 transition-colors"
+              >
+                Track
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
-
-      {/* Mobile: full-width track button */}
-      <div className="sm:hidden px-3 pb-3">
-        <button
-          onClick={handleTrackBus}
-          className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-orange-500 text-white text-sm font-semibold shadow hover:bg-orange-600 transition-colors"
-        >
-          <MapPin className="w-5 h-5" /> Track live location
-        </button>
-      </div>
+      {/* Removed extra mobile full-width CTA; integrated into inline row above */}
     </div>
   );
 };
