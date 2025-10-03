@@ -46,9 +46,9 @@
               { label: 'Avg ETA Refresh', value: '1s' },
               { label: 'Uptime', value: '99.9%' },
             ].map((s) => (
-              <div key={s.label} className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-4">
+              <div key={s.label} className="rounded-2xl bg-white/80 ring-1 ring-white/10 p-4 ">
                 <div className="text-2xl sm:text-3xl lg:text-4xl font-extrabold">{s.value}</div>
-                <div className="text-xs sm:text-sm lg:text-base text-slate-300">{s.label}</div>
+                <div className="text-xs sm:text-sm lg:text-base text-black-300">{s.label}</div>
               </div>
             ))}
           </div>
