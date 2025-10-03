@@ -86,12 +86,12 @@ const Navbar = () => {
               <span>Find Bus</span>
               <div className={`absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-white to-slate-200 transition-all duration-300 ${isActive('/smart-search') ? 'w-full' : 'w-0 group-hover:w-full'}`}></div>
             </Link>
-            <Link to="/track" className={`relative font-semibold transition-all duration-300 group ${isActive('/track') ? 'text-white' : 'text-slate-300 hover:text-white'}`}>
-              <span>Track Bus</span>
+            <Link to="/about" className={`relative font-semibold transition-all duration-300 group ${isActive('/about') ? 'text-white' : 'text-slate-300 hover:text-white'}`}>
+              <span>About</span>
               <div className={`absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-white to-slate-200 transition-all duration-300 ${isActive('/track') ? 'w-full' : 'w-0 group-hover:w-full'}`}></div>
             </Link>
-            <Link to="/routes" className={`relative font-semibold transition-all duration-300 group ${isActive('/routes') ? 'text-white' : 'text-slate-300 hover:text-white'}`}>
-              <span>Routes</span>
+            <Link to="/contact" className={`relative font-semibold transition-all duration-300 group ${isActive('/contact') ? 'text-white' : 'text-slate-300 hover:text-white'}`}>
+              <span>Contact</span>
               <div className={`absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-white to-slate-200 transition-all duration-300 ${isActive('/routes') ? 'w-full' : 'w-0 group-hover:w-full'}`}></div>
             </Link>
           </div>
@@ -271,18 +271,18 @@ const Navbar = () => {
                 Find Bus
               </Link>
               <Link
-                to="/track"
+                to="/about"
                 className="block px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-700/50 font-semibold transition-all duration-200"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Track Bus
+              About
               </Link>
               <Link
-                to="/routes"
+                to="/contact"
                 className="block px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-700/50 font-semibold transition-all duration-200"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Routes
+               Contact
               </Link>
 
               {isAuthenticated() ? (

@@ -1,14 +1,13 @@
 import React from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
-
 import Login from './pages/Login';
 import Home from './pages/Home';
 import Footer from './components/Footer';
-
 import About from './pages/About';
 import SmartTripSearch from './pages/SmartTripSearch';
 import LiveTracking from './pages/LiveTracking';
+import Contact from './pages/Contact';
 
 function App() {
   const location = useLocation();
@@ -25,7 +24,7 @@ function App() {
         <Route path="/login" element={<Login />} />
  
         <Route path="/smart-search" element={<SmartTripSearch />} />
-       
+       <Route path="/contact" element={<Contact />} />
         <Route path="/about" element={<About />} />
         <Route path="/live-tracking/:tripId" element={<LiveTracking />} />
       </Routes>
