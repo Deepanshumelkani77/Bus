@@ -159,7 +159,7 @@ const SmartPlacesAutocomplete = ({
           onKeyDown={handleKeyDown}
           onFocus={() => query.length >= 2 && setShowSuggestions(true)}
           placeholder={placeholder}
-          className="w-full pl-12 pr-12 py-4 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-navy-100 focus:border-navy-500 bg-white text-gray-900 placeholder-gray-500 transition-all duration-300 shadow-sm hover:shadow-lg hover:border-gray-300 text-lg font-medium"
+          className="w-full pl-12 pr-12 py-4 border-2 border-gray-200 rounded-2xl   bg-white text-gray-900 placeholder-gray-500 transition-all duration-300 shadow-sm hover:shadow-lg hover:border-gray-300 text-lg font-medium"
         />
         
         {query && (
