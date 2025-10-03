@@ -172,7 +172,7 @@ const SmartTripSearch = () => {
             <button
               onClick={handleSearch}
               disabled={!source || !destination || isSearching}
-              className="group relative inline-flex items-center justify-center px-6 sm:px-12 py-3.5 sm:py-5 text-lg sm:text-xl font-black text-white rounded-2xl shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 overflow-hidden disabled:cursor-not-allowed disabled:hover:scale-100 bg-orange-500"
+              className="group relative inline-flex items-center justify-center px-6 sm:px-12 py-3.5 sm:py-5 text-lg sm:text-xl font-black text-white rounded-2xl shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 overflow-hidden disabled:cursor-not-allowed disabled:hover:scale-100 bg-blue-500"
             >
               <span className="relative flex items-center gap-3">
                 {isSearching ? (
