@@ -38,7 +38,7 @@ const images=[assets.i1,assets.i2,assets.i3]
 
   return (
     <div
-      className="  w-full mx-auto select-none h-[35vh] md:h-[60vh] lg:h-[95vh] "
+      className="relative w-full mx-auto select-none h-[35vh] md:h-[60vh] lg:h-[95vh] overflow-hidden bg-gradient-to-br from-[#0F172A] via-slate-900 to-slate-800"
       role="region"
       aria-roledescription="carousel"
       aria-label="Header image slider"
@@ -51,8 +51,25 @@ const images=[assets.i1,assets.i2,assets.i3]
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
+      {/* Background Pattern (lighter so blobs stand out) */}
+      <div className="absolute inset-0 opacity-20">
+        <div
+          className="w-full h-full"
+          style={{
+            backgroundImage:
+              "url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23e2e8f0\' fill-opacity=\'0.4\'%3E%3Ccircle cx=\'7\' cy=\'7\' r=\'1\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')",
+          }}
+        />
+      </div>
+
+      {/* Animated Background Blobs (above slider for visibility) */}
+      <div className="pointer-events-none absolute inset-0 z-20">
+        <div className="absolute w-72 h-72 md:w-96 md:h-96 rounded-full bg-blue-500/25 -top-20 -left-20 animate-pulse" />
+        <div className="absolute w-64 h-64 md:w-80 md:h-80 rounded-full bg-indigo-500/25 top-1/3 -right-16 md:-right-20 animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute w-56 h-56 md:w-64 md:h-64 rounded-full bg-orange-500/20 bottom-10 left-1/4 animate-pulse" style={{ animationDelay: '2s' }} />
+      </div>
       {/* Slider container */}
-      <div className="relative w-full ">
+      <div className="relative z-10 w-full ">
         {/* Image area - responsive ratio with gentle fade */}
         <div
           className="relative w-full overflow-hidden  bg-gray-100 h-[35vh] md:h-[60vh] lg:h-[90vh]"

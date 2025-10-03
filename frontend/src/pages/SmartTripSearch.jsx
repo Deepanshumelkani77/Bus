@@ -82,6 +82,16 @@ const SmartTripSearch = () => {
       
       {/* Hero Section */}
       <div className="relative bg-gradient-to-br from-[#0F172A] via-slate-900 to-slate-800 overflow-hidden">
+        {/* Background Pattern (match About/Contact) */}
+        <div className="absolute inset-0 opacity-30">
+          <div
+            className="w-full h-full"
+            style={{
+              backgroundImage:
+                "url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23e2e8f0\' fill-opacity=\'0.4\'%3E%3Ccircle cx=\'7\' cy=\'7\' r=\'1\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')",
+            }}
+          />
+        </div>
         {/* Animated Background Elements */}
         <div className="absolute inset-0">
           <div className="hidden sm:block absolute top-20 left-10 w-72 h-72 bg-teal-500/15 rounded-full blur-3xl animate-pulse"></div>
@@ -89,22 +99,14 @@ const SmartTripSearch = () => {
           <div className="hidden md:block absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl animate-pulse delay-500"></div>
         </div>
         
-        <div className="relative max-w-7xl mx-auto px-2 sm:px-2 lg:px-8 ">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
           <div className="text-center">
-            <div className="flex items-center justify-center mb-6">
-              {/* BusTrac Logo (matches Login.jsx styling) */}
-             
-            </div>
-            <h1 className=" hidden md:block lg:block text-4xl sm:text-5xl lg:text-6xl font-black text-white mb-6">
-              Smart Bus{' '}
-              <span className="text-white bg-clip-text text-transparent">
-                Finder
-              </span>
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white mb-4">
+              Smart Bus Finder
             </h1>
-            <p className="text-xl sm:text-2xl text-white font-medium max-w-3xl mx-auto mb-8">
+            <p className="text-xl sm:text-2xl text-white font-medium max-w-3xl mx-auto">
               Discover buses on your route with live tracking & precise ETAs
             </p>
-            
           </div>
         </div>
       </div>
