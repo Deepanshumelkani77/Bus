@@ -332,12 +332,12 @@ const BusCard = ({ trip, source }) => {
 
           {/* Middle content */}
           <div className="flex-1 min-w-0">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-              <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 truncate">
+            <div className="flex flex-col  sm:flex-row sm:items-center sm:justify-between ">
+              <h3 className="text-lg sm:text-xl lg:text-3xl font-extrabold text-slate-900 truncate">
                 {trip.title || `Bus ${trip.bus?.busNumber || ''}`}
               </h3>
               {/* Seats small on desktop, move to right sidebar on mobile? keep here small */}
-              <div className="hidden sm:flex items-center gap-2 text-sm text-slate-500">
+              <div className="hidden sm:flex items-center gap-2 text-lg text-slate-500">
                 <Users className="w-4 h-4" />
                 <span className="font-semibold">{trip.availableSeats}</span>
                 <span className="text-slate-400">/ {trip.totalSeats} seats</span>
@@ -345,7 +345,7 @@ const BusCard = ({ trip, source }) => {
             </div>
 
             {/* Route line */}
-            <div className="mt-1 flex items-center gap-3 text-sm text-slate-700">
+            <div className="mt-8 flex items-center gap-3 text-lg text-slate-700">
               <span className="inline-flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-sky-600"></span>
                 <span className="font-medium truncate max-w-[9rem] sm:max-w-[16rem]">{trip.source}</span>
@@ -358,7 +358,7 @@ const BusCard = ({ trip, source }) => {
             </div>
 
             {/* Meta row */}
-            <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-600">
+            <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-600">
               <span className="inline-flex items-center gap-2">
                 <Clock className="w-4 h-4" />
                 <span className="font-semibold">{formatETA(currentETA)}</span>
@@ -388,14 +388,14 @@ const BusCard = ({ trip, source }) => {
           </div>
 
           {/* Right sidebar */}
-          <div className="shrink-0 flex flex-col items-end gap-2">
-            <span className="text-xs text-slate-500">Next arrival</span>
+          <div className="shrink-0 flex flex-col items-end gap-8">
+            <span className="text-lg text-slate-500">Next arrival</span>
             <div className="text-2xl sm:text-3xl font-extrabold text-orange-500 leading-none">
               {formatETA(currentETA)}
             </div>
             <button
               onClick={handleTrackBus}
-              className="mt-1 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-500 text-white text-sm font-semibold shadow hover:bg-orange-600 transition-colors"
+              className="mt-1 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-500 text-white text-lg font-semibold shadow hover:bg-orange-600 transition-colors"
             >
               Track
               <ArrowRight className="w-4 h-4" />
