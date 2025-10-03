@@ -88,9 +88,9 @@
                 <span className="inline-flex w-10 h-10 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white ring-1 ring-slate-900/10">
                   <Sparkles className="w-5 h-5" />
                 </span>
-                <div className="text-slate-900 font-bold">What makes us different</div>
+                <div className="text-slate-900 lg:text-2xl font-bold">What makes us different</div>
               </div>
-              <ul className="mt-4 space-y-3 text-sm lg:text-base text-slate-700">
+              <ul className="mt-4 space-y-3 text-sm lg:text-xl text-slate-700">
                 <li className="flex items-start gap-2"><span className="mt-2 w-1.5 h-1.5 rounded-full bg-teal-600"/> Real driver‑created trips, not dummy data</li>
                 <li className="flex items-start gap-2"><span className="mt-2 w-1.5 h-1.5 rounded-full bg-sky-600"/> Smart route matching with buffer zones</li>
                 <li className="flex items-start gap-2"><span className="mt-2 w-1.5 h-1.5 rounded-full bg-indigo-600"/> Socket.io live updates every second</li>
