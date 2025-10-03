@@ -83,7 +83,7 @@ const SmartTripSearch = () => {
       {/* Hero Section */}
       <div className="relative bg-gradient-to-br from-[#0F172A] via-slate-900 to-slate-800 overflow-hidden">
         {/* Background Pattern (match About/Contact) */}
-        <div className="absolute inset-0 opacity-30">
+        <div className="absolute inset-0 opacity-20 sm:opacity-30 md:opacity-40">
           <div
             className="w-full h-full"
             style={{
@@ -94,9 +94,9 @@ const SmartTripSearch = () => {
         </div>
         {/* Animated Background Elements */}
         <div className="absolute inset-0">
-          <div className="hidden sm:block absolute top-20 left-10 w-72 h-72 bg-teal-500/15 rounded-full blur-3xl animate-pulse"></div>
-          <div className="hidden sm:block absolute bottom-20 right-10 w-96 h-96 bg-sky-500/15 rounded-full blur-3xl animate-pulse delay-1000"></div>
-          <div className="hidden md:block absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl animate-pulse delay-500"></div>
+          <div className="hidden sm:block absolute top-20 left-10 w-72 h-72 bg-teal-500/25 rounded-full blur-xl saturate-150 animate-pulse"></div>
+          <div className="hidden sm:block absolute bottom-20 right-10 w-96 h-96 bg-sky-500/25 rounded-full blur-xl saturate-150 animate-pulse delay-1000"></div>
+          <div className="hidden md:block absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-indigo-500/20 rounded-full blur-xl saturate-150 animate-pulse delay-500"></div>
         </div>
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
