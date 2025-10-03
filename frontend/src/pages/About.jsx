@@ -6,10 +6,22 @@
     <div className="min-h-screen bg-gradient-to-b from-white via-slate-50 to-white">
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-to-br from-[#0F172A] via-slate-900 to-slate-800">
-        {/* Soft glows */}
+        {/* Background Pattern (same style as Login.jsx) */}
+        <div className="absolute inset-0 opacity-30">
+          <div
+            className="w-full h-full"
+            style={{
+              backgroundImage:
+                "url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23e2e8f0\' fill-opacity=\'0.4\'%3E%3Ccircle cx=\'7\' cy=\'7\' r=\'1\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')",
+            }}
+          />
+        </div>
+
+        {/* Animated Background Elements (match Login.jsx blobs) */}
         <div className="pointer-events-none absolute inset-0">
-          <div className="hidden sm:block absolute -top-24 left-10 h-72 w-72 rounded-full bg-blue-500/20 blur-3xl" />
-          <div className="hidden sm:block absolute -bottom-24 right-10 h-80 w-80 rounded-full bg-orange-500/20 blur-3xl" />
+          <div className="absolute w-96 h-96 rounded-full bg-teal-400/10 -top-20 -left-20 animate-pulse" />
+          <div className="absolute w-80 h-80 rounded-full bg-sky-400/10 top-1/3 -right-20 animate-pulse" style={{ animationDelay: '1s' }} />
+          <div className="absolute w-64 h-64 rounded-full bg-purple-400/10 bottom-20 left-1/4 animate-pulse" style={{ animationDelay: '2s' }} />
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
