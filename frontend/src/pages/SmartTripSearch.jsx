@@ -331,8 +331,9 @@ const BusCard = ({ trip, source }) => {
           </div>
 
           {/* Middle content */}
-          <div className="flex-1 min-w-0 w-full">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+          <div className="flex-1   min-w-0 w-full">
+
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 lg:mb-8">
               <h3 className="text-xl sm:text-xl lg:text-2xl font-extrabold text-slate-900 truncate mt-1 sm:mt-0">
                 {trip.title || `Bus ${trip.bus?.busNumber || ''}`}
               </h3>
@@ -345,7 +346,7 @@ const BusCard = ({ trip, source }) => {
             </div>
 
             {/* Route: stacked on mobile, inline on desktop */}
-            <div className="mt-3 sm:hidden space-y-2 text-slate-700">
+            <div className="mt-3  sm:hidden  space-y-2 text-slate-700">
               <div className="flex items-center gap-2 text-base">
                 <span className="w-2.5 h-2.5 rounded-full bg-sky-600"></span>
                 <span className="font-medium truncate">{trip.source}</span>
@@ -368,7 +369,7 @@ const BusCard = ({ trip, source }) => {
             </div>
 
             {/* Meta row */}
-            <div className="mt-3 sm:mt-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm sm:text-sm text-slate-600">
+            <div className="mt-3 sm:mt-3 lg:mt-8  flex flex-wrap items-center gap-x-6 gap-y-2 text-sm sm:text-sm text-slate-600">
               <span className="inline-flex items-center gap-2">
                 <Clock className="w-5 h-5 text-slate-700" />
                 <span className="font-semibold">{formatETA(currentETA)}</span>
@@ -399,9 +400,9 @@ const BusCard = ({ trip, source }) => {
 
           {/* Right sidebar */}
           {/* Right sidebar (desktop) / Arrival row (mobile) */}
-          <div className="w-full sm:w-auto">
+          <div className=" w-full sm:w-auto">
             {/* Mobile: inline row under content */}
-            <div className="flex sm:hidden items-center justify-between mt-5">
+            <div className="flex  sm:hidden items-center justify-between mt-5">
               <div>
                 <span className="text-xs text-slate-500 block">Next arrival</span>
                 <div className="text-4xl font-extrabold text-orange-500 leading-none mt-1">
@@ -418,7 +419,7 @@ const BusCard = ({ trip, source }) => {
             </div>
 
             {/* Desktop: stacked right column */}
-            <div className="hidden sm:flex sm:flex-col sm:items-end sm:gap-3">
+            <div className="hidden sm:flex sm:flex-col sm:items-end sm:gap-3 lg:gap-8">
               <span className="text-xs text-slate-500">Next arrival</span>
               <div className="text-2xl font-extrabold text-orange-500 leading-none">
                 {formatETA(currentETA)}
