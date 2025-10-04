@@ -18,6 +18,7 @@ const LiveTracking = () => {
   const [userLocation, setUserLocation] = useState(null);
   const [locationPolling, setLocationPolling] = useState(null);
   const [isMapFullscreen, setIsMapFullscreen] = useState(false);
+  const [isUpdatingEta, setIsUpdatingEta] = useState(false);
 
   const toggleFullscreen = () => {
     setIsMapFullscreen(!isMapFullscreen);
@@ -408,6 +409,19 @@ const LiveTracking = () => {
       }
     } catch (error) {
       console.error('Error calculating ETA:', error);
+    }
+  };
+
+  // Manual refresh for ETA similar to SmartTripSearch
+  const refreshETA = async () => {
+    if (!busLocation || !userLocation) return;
+    try {
+      setIsUpdatingEta(true);
+      await calculateETA(busLocation, userLocation);
+    } catch (e) {
+      // already logged inside calculateETA
+    } finally {
+      setIsUpdatingEta(false);
     }
   };
 
@@ -816,30 +830,47 @@ const LiveTracking = () => {
             </div>
 
             {/* ETA Information */}
-            {eta && (
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl lg:rounded-3xl shadow-navy-lg border border-blue-100 p-4 lg:p-6">
-                <div className="flex items-center space-x-2 lg:space-x-3 mb-4 lg:mb-6">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl lg:rounded-3xl shadow-navy-lg border border-blue-100 p-4 lg:p-6">
+              <div className="flex items-center justify-between mb-4 lg:mb-6">
+                <div className="flex items-center space-x-2 lg:space-x-3">
                   <div className="bg-blue-100 p-1.5 lg:p-2 rounded-lg lg:rounded-xl">
                     <Clock className="h-4 w-4 lg:h-5 lg:w-5 text-blue-600" />
                   </div>
-                  <h3 className="text-lg lg:text-xl font-bold text-gray-900">Estimated Arrival</h3>
+                  <h3 className="text-lg lg:text-xl font-bold text-gray-900">ETA to Pickup</h3>
                 </div>
-                <div className="text-center">
-                  <div className="text-3xl lg:text-4xl font-bold text-blue-600 mb-2">
-                    {Math.round(eta.duration / 60)} min
-                  </div>
+                <button
+                  onClick={refreshETA}
+                  disabled={isUpdatingEta || !busLocation || !userLocation}
+                  className="bg-white text-blue-600 hover:text-blue-700 text-xs lg:text-sm font-semibold disabled:opacity-50 px-3 lg:px-4 py-1.5 lg:py-2 rounded-xl shadow border border-blue-200 hover:border-blue-300 transition-all"
+                >
+                  {isUpdatingEta ? 'Updating...' : 'Refresh'}
+                </button>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl lg:text-4xl font-bold text-blue-600 mb-2">
+                  {eta ? `${Math.round(eta.duration / 60)} min` : 'Calculating...'}
+                </div>
+                {eta && (
                   <div className="text-xs lg:text-sm text-blue-500 font-medium mb-3 lg:mb-4">
                     Distance: {(eta.distance / 1000).toFixed(1)} km
                   </div>
-                  <div className="bg-white rounded-xl lg:rounded-2xl p-3 lg:p-4 border border-blue-200">
-                    <div className="text-xs lg:text-sm text-gray-600 mb-1">Bus will reach your location at</div>
-                    <div className="font-bold text-sm lg:text-base text-gray-900">
-                      {new Date(Date.now() + eta.duration * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                    </div>
+                )}
+                <div className="bg-white rounded-xl lg:rounded-2xl p-3 lg:p-4 border border-blue-200">
+                  <div className="text-xs lg:text-sm text-gray-600 mb-1">Bus will reach your location {eta ? 'at' : 'soon'}</div>
+                  <div className="font-bold text-sm lg:text-base text-gray-900">
+                    {eta
+                      ? new Date(Date.now() + eta.duration * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                      : '—'}
                   </div>
                 </div>
+                {lastUpdate && (
+                  <div className="mt-3 inline-flex items-center gap-2 text-[11px] lg:text-xs font-semibold bg-blue-100/60 px-3 py-1 rounded-full border border-blue-200">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                    Live ETA Updates
+                  </div>
+                )}
               </div>
-            )}
+            </div>
 
             {/* Current Location */}
             {busLocation && (
