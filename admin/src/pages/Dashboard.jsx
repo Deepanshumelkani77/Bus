@@ -8,6 +8,7 @@ const Dashboard = () => {
   const [buses, setBuses] = useState([])
   const [cities, setCities] = useState([])
   const [lastRefresh, setLastRefresh] = useState(null)
+  const [autoRefresh, setAutoRefresh] = useState(true)
 
   const API_BASE = useMemo(() => 'http://localhost:2000', [])
 
@@ -31,11 +32,24 @@ const Dashboard = () => {
     }
   }
 
+  // Initial load
   useEffect(() => {
     fetchData()
-    const id = setInterval(fetchData, 5000) // auto-refresh every 5s
-    return () => clearInterval(id)
   }, [])
+
+  // Auto-refresh loop; can be toggled via header control
+  useEffect(() => {
+    if (!autoRefresh) return
+    const id = setInterval(fetchData, 5000)
+    return () => clearInterval(id)
+  }, [autoRefresh])
+
+  const handleManualRefresh = async () => {
+    setLoading(true)
+    await fetchData()
+  }
+
+  const toggleAutoRefresh = () => setAutoRefresh(prev => !prev)
 
   const kpis = useMemo(() => {
     const totalActive = activeTrips.length
@@ -74,15 +88,22 @@ const Dashboard = () => {
     }))
   }, [activeTrips])
 
+  const isInitialLoading = loading && activeTrips.length === 0 && buses.length === 0 && cities.length === 0
+
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6">
+    <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6" aria-busy={loading}>
       {error && (
-        <div className="mb-4 rounded-2xl border border-orange-200 bg-orange-50 p-3 text-sm text-orange-800">
-          {error}
+        <div className="mb-4 rounded-2xl border border-orange-200 bg-orange-50 p-3 text-sm text-orange-800" role="alert">
+          <div className="flex items-center justify-between gap-3">
+            <span>{error}</span>
+            <button onClick={handleManualRefresh} className="inline-flex items-center gap-1.5 rounded-lg border border-orange-300 bg-white/60 px-2.5 py-1 text-xs font-semibold text-orange-700 hover:bg-white">
+              Retry
+            </button>
+          </div>
         </div>
       )}
       {loading && (
-        <div className="mb-4 rounded-2xl border border-slate-200 bg-white p-4 flex items-center gap-3 text-slate-700">
+        <div className="mb-4 rounded-2xl border border-slate-200 bg-white p-4 flex items-center gap-3 text-slate-700" role="status" aria-live="polite">
           <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-600 border-t-transparent"></div>
           Loading live data...
         </div>
@@ -109,15 +130,27 @@ const Dashboard = () => {
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">Dashboard</h1>
             <p className="text-slate-600">Overview of trips, buses and drivers</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <button className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 text-white font-semibold shadow hover:shadow-lg transition-all">
               <span className="text-sm">New Trip</span>
             </button>
             <button className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50">
               <span className="text-sm">Manage Buses</span>
             </button>
+            <button onClick={handleManualRefresh} disabled={loading} title="Refresh now" className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-60">
+              {loading ? (
+                <span className="animate-spin rounded-full h-4 w-4 border-2 border-slate-500 border-t-transparent" />
+              ) : (
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v6h6M20 20v-6h-6M5.64 18.36A9 9 0 0012 21a9 9 0 008.94-7M18.36 5.64A9 9 0 0012 3 9 9 0 003.06 10"/></svg>
+              )}
+              <span className="text-sm">Refresh</span>
+            </button>
+            <button onClick={toggleAutoRefresh} aria-pressed={autoRefresh} className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl border text-slate-700 text-sm font-semibold transition-colors ${autoRefresh ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-white border-slate-200 hover:bg-slate-50'}`}>
+              <span className={`inline-block w-2 h-2 rounded-full ${autoRefresh ? 'bg-emerald-500' : 'bg-slate-300'}`} />
+              {autoRefresh ? 'Auto Refresh On' : 'Auto Refresh Off'}
+            </button>
             {lastRefresh && (
-              <span className="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-200">
+              <span className="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-200" title="Time since last update">
                 Updated {Math.max(1, Math.floor((new Date() - lastRefresh)/1000))}s ago
               </span>
             )}
@@ -145,53 +178,86 @@ const Dashboard = () => {
       </div>
 
       {/* Organization Metrics */}
-      <section className="grid [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))] gap-6 mb-8">
-        {[
-          { label: 'Total Buses', value: String(orgStats.totalBuses), accent: 'from-slate-50 to-white', iconBg: 'bg-slate-100', iconText: 'text-slate-700', iconBorder: 'border-slate-200' },
-          { label: 'Active Buses', value: String(orgStats.activeBuses), accent: 'from-green-50 to-emerald-50', iconBg: 'bg-emerald-50', iconText: 'text-emerald-700', iconBorder: 'border-emerald-200' },
-          { label: 'Inactive Buses', value: String(orgStats.inactiveBuses), accent: 'from-rose-50 to-red-50', iconBg: 'bg-rose-50', iconText: 'text-rose-700', iconBorder: 'border-rose-200' },
-          { label: 'Assigned Drivers', value: String(orgStats.assignedDrivers), accent: 'from-blue-50 to-indigo-50', iconBg: 'bg-blue-50', iconText: 'text-blue-700', iconBorder: 'border-blue-200' },
-          { label: 'Active Drivers', value: String(orgStats.activeDrivers), accent: 'from-teal-50 to-cyan-50', iconBg: 'bg-teal-50', iconText: 'text-teal-700', iconBorder: 'border-teal-200' },
-          { label: 'Cities', value: String(orgStats.totalCities), accent: 'from-violet-50 to-indigo-50', iconBg: 'bg-violet-50', iconText: 'text-violet-700', iconBorder: 'border-violet-200' },
-        ].map((k) => (
-          <div key={k.label} className={`group rounded-3xl border border-slate-200 bg-white p-6 sm:p-7 ring-1 ring-slate-900/5 shadow-md hover:shadow-xl transition-all duration-300 relative overflow-hidden hover:-translate-y-0.5 min-h-[120px]`}>
-            <div className={`absolute -top-12 -right-12 w-40 h-40 rounded-full bg-gradient-to-br ${k.accent} blur-3xl`} />
-            <div className="relative flex items-center gap-4">
-              <span className={`inline-flex items-center justify-center w-12 h-12 rounded-2xl ${k.iconBg} ${k.iconText} border ${k.iconBorder}`}>
-                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12h18M3 6h18M3 18h18"/></svg>
-              </span>
-              <div>
-                <div className="text-4xl font-extrabold text-slate-900 leading-tight">{k.value}</div>
-                <div className="text-sm text-slate-600">{k.label}</div>
+      {isInitialLoading ? (
+        <section className="grid [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))] gap-6 mb-8">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-7 ring-1 ring-slate-900/5 shadow-md min-h-[120px]">
+              <div className="animate-pulse flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-slate-100 border border-slate-200" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-7 w-24 bg-slate-100 rounded-md" />
+                  <div className="h-4 w-32 bg-slate-100 rounded-md" />
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </section>
+          ))}
+        </section>
+      ) : (
+        <section className="grid [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))] gap-6 mb-8">
+          {[
+            { label: 'Total Buses', value: String(orgStats.totalBuses), accent: 'from-slate-50 to-white', iconBg: 'bg-slate-100', iconText: 'text-slate-700', iconBorder: 'border-slate-200' },
+            { label: 'Active Buses', value: String(orgStats.activeBuses), accent: 'from-green-50 to-emerald-50', iconBg: 'bg-emerald-50', iconText: 'text-emerald-700', iconBorder: 'border-emerald-200' },
+            { label: 'Inactive Buses', value: String(orgStats.inactiveBuses), accent: 'from-rose-50 to-red-50', iconBg: 'bg-rose-50', iconText: 'text-rose-700', iconBorder: 'border-rose-200' },
+            { label: 'Assigned Drivers', value: String(orgStats.assignedDrivers), accent: 'from-blue-50 to-indigo-50', iconBg: 'bg-blue-50', iconText: 'text-blue-700', iconBorder: 'border-blue-200' },
+            { label: 'Active Drivers', value: String(orgStats.activeDrivers), accent: 'from-teal-50 to-cyan-50', iconBg: 'bg-teal-50', iconText: 'text-teal-700', iconBorder: 'border-teal-200' },
+            { label: 'Cities', value: String(orgStats.totalCities), accent: 'from-violet-50 to-indigo-50', iconBg: 'bg-violet-50', iconText: 'text-violet-700', iconBorder: 'border-violet-200' },
+          ].map((k) => (
+            <div key={k.label} className={`group rounded-3xl border border-slate-200 bg-white p-6 sm:p-7 ring-1 ring-slate-900/5 shadow-md hover:shadow-xl transition-all duration-300 relative overflow-hidden hover:-translate-y-0.5 min-h-[120px]`}>
+              <div className={`absolute -top-12 -right-12 w-40 h-40 rounded-full bg-gradient-to-br ${k.accent} blur-3xl`} />
+              <div className="relative flex items-center gap-4">
+                <span className={`inline-flex items-center justify-center w-12 h-12 rounded-2xl ${k.iconBg} ${k.iconText} border ${k.iconBorder}`}>
+                  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12h18M3 6h18M3 18h18"/></svg>
+                </span>
+                <div>
+                  <div className="text-4xl font-extrabold text-slate-900 leading-tight">{k.value}</div>
+                  <div className="text-sm text-slate-600">{k.label}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </section>
+      )}
 
       {/* KPI Cards */}
-      <section className="grid [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))] gap-6 mb-8">
-        {[
-          { label: 'Active Trips', value: String(kpis.totalActive), accent: 'from-blue-50 to-indigo-50', iconBg: 'bg-indigo-50', iconText: 'text-indigo-700', iconBorder: 'border-indigo-200', pill: 'bg-indigo-600' },
-          { label: 'Buses Online', value: String(kpis.onlineBuses), accent: 'from-teal-50 to-emerald-50', iconBg: 'bg-emerald-50', iconText: 'text-emerald-700', iconBorder: 'border-emerald-200', pill: 'bg-emerald-600' },
-          { label: 'Avg ETA Refresh', value: kpis.avgEtaRefresh, accent: 'from-sky-50 to-cyan-50', iconBg: 'bg-sky-50', iconText: 'text-sky-700', iconBorder: 'border-sky-200', pill: 'bg-sky-600' },
-          { label: 'Incidents', value: String(kpis.incidents), accent: 'from-amber-50 to-orange-50', iconBg: 'bg-amber-50', iconText: 'text-amber-700', iconBorder: 'border-amber-200', pill: 'bg-orange-500' }
-        ].map((k) => (
-          <div key={k.label} className={`group rounded-3xl border border-slate-200 bg-white p-6 sm:p-7 ring-1 ring-slate-900/5 shadow-md hover:shadow-xl transition-all duration-300 relative overflow-hidden hover:-translate-y-0.5 min-h-[140px]`}>
-            <div className={`absolute -top-14 -right-14 w-48 h-48 rounded-full bg-gradient-to-br ${k.accent} blur-3xl`} />
-            <div className="relative flex items-center gap-4">
-              <span className={`inline-flex items-center justify-center w-12 h-12 rounded-2xl ${k.iconBg} ${k.iconText} border ${k.iconBorder}`}>
-                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v8m-4-4h8"/></svg>
-              </span>
-              <div>
-                <div className="text-4xl font-extrabold text-slate-900 leading-tight">{k.value}</div>
-                <div className="text-sm text-slate-600">{k.label}</div>
-                <span className={`mt-3 inline-flex px-2 py-0.5 rounded-full text-white text-[11px] font-semibold ${k.pill}`}>Live</span>
+      {isInitialLoading ? (
+        <section className="grid [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))] gap-6 mb-8">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-7 ring-1 ring-slate-900/5 shadow-md min-h-[140px]">
+              <div className="animate-pulse flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-slate-100 border border-slate-200" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-8 w-28 bg-slate-100 rounded-md" />
+                  <div className="h-4 w-24 bg-slate-100 rounded-md" />
+                  <div className="h-5 w-16 bg-slate-100 rounded-full" />
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </section>
+          ))}
+        </section>
+      ) : (
+        <section className="grid [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))] gap-6 mb-8">
+          {[
+            { label: 'Active Trips', value: String(kpis.totalActive), accent: 'from-blue-50 to-indigo-50', iconBg: 'bg-indigo-50', iconText: 'text-indigo-700', iconBorder: 'border-indigo-200', pill: 'bg-indigo-600' },
+            { label: 'Buses Online', value: String(kpis.onlineBuses), accent: 'from-teal-50 to-emerald-50', iconBg: 'bg-emerald-50', iconText: 'text-emerald-700', iconBorder: 'border-emerald-200', pill: 'bg-emerald-600' },
+            { label: 'Avg ETA Refresh', value: kpis.avgEtaRefresh, accent: 'from-sky-50 to-cyan-50', iconBg: 'bg-sky-50', iconText: 'text-sky-700', iconBorder: 'border-sky-200', pill: 'bg-sky-600' },
+            { label: 'Incidents', value: String(kpis.incidents), accent: 'from-amber-50 to-orange-50', iconBg: 'bg-amber-50', iconText: 'text-amber-700', iconBorder: 'border-amber-200', pill: 'bg-orange-500' }
+          ].map((k) => (
+            <div key={k.label} className={`group rounded-3xl border border-slate-200 bg-white p-6 sm:p-7 ring-1 ring-slate-900/5 shadow-md hover:shadow-xl transition-all duration-300 relative overflow-hidden hover:-translate-y-0.5 min-h-[140px]`}>
+              <div className={`absolute -top-14 -right-14 w-48 h-48 rounded-full bg-gradient-to-br ${k.accent} blur-3xl`} />
+              <div className="relative flex items-center gap-4">
+                <span className={`inline-flex items-center justify-center w-12 h-12 rounded-2xl ${k.iconBg} ${k.iconText} border ${k.iconBorder}`}>
+                  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v8m-4-4h8"/></svg>
+                </span>
+                <div>
+                  <div className="text-4xl font-extrabold text-slate-900 leading-tight">{k.value}</div>
+                  <div className="text-sm text-slate-600">{k.label}</div>
+                  <span className={`mt-3 inline-flex px-2 py-0.5 rounded-full text-white text-[11px] font-semibold ${autoRefresh ? k.pill : 'bg-slate-500'}`}>{autoRefresh ? 'Live' : 'Paused'}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </section>
+      )}
 
       {/* Main Grid */}
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -199,13 +265,15 @@ const Dashboard = () => {
         <div className="lg:col-span-2 rounded-3xl border border-slate-200 bg-white p-6 shadow ring-1 ring-slate-900/5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-bold text-slate-900">Live Metrics</h2>
-            <span className="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold border border-blue-100">1s updates</span>
+            <span className={`inline-flex items-center gap-2 px-2 py-1 rounded-full text-xs font-semibold border ${autoRefresh ? 'bg-blue-50 text-blue-700 border-blue-100' : 'bg-slate-100 text-slate-600 border-slate-200'}`} title="Auto updates reflect live tracking">
+              {autoRefresh ? 'Auto updates' : 'Paused'}
+            </span>
           </div>
           <div className="h-64 sm:h-72 lg:h-80 rounded-2xl bg-gradient-to-b from-slate-50 to-white border border-slate-200 relative overflow-hidden">
             {/* grid pattern */}
             <div className="absolute inset-0 opacity-40" style={{ backgroundImage: 'linear-gradient(to right, rgba(226,232,240,0.5) 1px, transparent 1px), linear-gradient(to bottom, rgba(226,232,240,0.5) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
             {/* simple bars */}
-            <div className="relative z-10 h-full flex items-end gap-3 px-4">
+            <div className={`relative z-10 h-full flex items-end gap-3 px-4 ${loading ? 'animate-pulse' : ''}`}>
               {[40, 70, 55, 85, 62, 90, 50, 76, 68, 92].map((h, i) => (
                 <div key={i} className="flex-1 max-w-[24px] bg-blue-100 rounded-t-xl overflow-hidden">
                   <div className="w-full bg-blue-600" style={{ height: `${h}%` }} />
@@ -245,33 +313,46 @@ const Dashboard = () => {
           <button className="text-sm font-semibold text-blue-700 hover:text-blue-800">View all</button>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full text-sm">
-            <thead>
-              <tr className="text-left text-slate-600">
-                <th className="py-2 pr-4">Bus</th>
-                <th className="py-2 pr-4">Route</th>
-                <th className="py-2 pr-4">Status</th>
-                <th className="py-2 pr-4">ETA</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200">
-              {recentTrips.map((r, i) => (
-                <tr key={i} className="text-slate-800 hover:bg-slate-50/70">
-                  <td className="py-3 pr-4 font-semibold">{r.bus}</td>
-                  <td className="py-3 pr-4">{r.route}</td>
-                  <td className="py-3 pr-4">
-                    <span className={`px-2 py-1 rounded-full text-[11px] font-bold ${r.status === 'Ongoing' ? 'bg-green-50 text-green-700 border border-green-100' : r.status === 'Completed' ? 'bg-slate-100 text-slate-700 border border-slate-200' : 'bg-orange-50 text-orange-700 border border-orange-100'}`}>{r.status}</span>
-                  </td>
-                  <td className="py-3 pr-4 font-semibold">{r.eta}</td>
-                </tr>
+          {isInitialLoading ? (
+            <div className="space-y-2">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="animate-pulse grid grid-cols-4 gap-4">
+                  <div className="h-5 bg-slate-100 rounded w-24" />
+                  <div className="h-5 bg-slate-100 rounded w-48" />
+                  <div className="h-5 bg-slate-100 rounded w-20" />
+                  <div className="h-5 bg-slate-100 rounded w-16" />
+                </div>
               ))}
-              {(!recentTrips || recentTrips.length === 0) && (
-                <tr>
-                  <td className="py-6 text-slate-500" colSpan={4}>No active trips yet.</td>
+            </div>
+          ) : (
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="text-left text-slate-600">
+                  <th className="py-2 pr-4">Bus</th>
+                  <th className="py-2 pr-4">Route</th>
+                  <th className="py-2 pr-4">Status</th>
+                  <th className="py-2 pr-4">ETA</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-200">
+                {recentTrips.map((r, i) => (
+                  <tr key={i} className="text-slate-800 hover:bg-slate-50/70">
+                    <td className="py-3 pr-4 font-semibold">{r.bus}</td>
+                    <td className="py-3 pr-4">{r.route}</td>
+                    <td className="py-3 pr-4">
+                      <span className={`${r.status === 'Ongoing' ? 'bg-green-50 text-green-700 border border-green-100' : r.status === 'Completed' ? 'bg-slate-100 text-slate-700 border border-slate-200' : 'bg-orange-50 text-orange-700 border border-orange-100'} px-2 py-1 rounded-full text-[11px] font-bold`}>{r.status}</span>
+                    </td>
+                    <td className="py-3 pr-4 font-semibold">{r.eta}</td>
+                  </tr>
+                ))}
+                {(!recentTrips || recentTrips.length === 0) && (
+                  <tr>
+                    <td className="py-6 text-slate-500" colSpan={4}>No active trips yet.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
       </section>
 
