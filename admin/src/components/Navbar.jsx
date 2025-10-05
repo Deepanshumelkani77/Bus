@@ -6,7 +6,7 @@ const Navbar = () => {
   }
 
   return (
-    <header className="sticky top-0 z-40 bg-[#0F172A] border-b border-slate-700/60 shadow-sm">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-[#0F172A] border-b border-slate-700/60 shadow-sm">
       <div className="w-full mx-auto h-[10vh] px-3 sm:px-4 lg:px-6 flex items-center justify-between">
         {/* Left: Menu (mobile) + Logo */}
         <div className="flex items-center gap-3">

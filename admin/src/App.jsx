@@ -11,7 +11,7 @@ const App = () => {
 <Navbar />
 <Sidebar />
 
-<main className="top-[10vh] lg:ml-[25%] ">
+<main className="mt-[10vh] lg:ml-[25%] ">
   <Routes>
     <Route path="/" element={<Dashboard />} />
   </Routes>

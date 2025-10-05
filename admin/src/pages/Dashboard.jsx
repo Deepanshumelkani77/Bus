@@ -125,24 +125,43 @@ const Dashboard = () => {
         </div>
       </section>
 
+      {/* Quick Filters */}
+      <div className="mb-6 flex flex-wrap items-center gap-2">
+        <span className="text-slate-500 text-sm font-semibold mr-2">Filters:</span>
+        <button className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 text-xs font-semibold">
+          All Cities <span className="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-slate-100 text-slate-700">{orgStats.totalCities}</span>
+        </button>
+        <button className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 text-xs font-semibold">
+          Active Buses <span className="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-white/70 text-green-700">{orgStats.activeBuses}</span>
+        </button>
+        <button className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 text-xs font-semibold">
+          Inactive Buses <span className="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-slate-100 text-slate-700">{orgStats.inactiveBuses}</span>
+        </button>
+        {orgStats.avgEtaMins !== null && (
+          <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-blue-200 bg-blue-50 text-blue-700 text-xs font-semibold">
+            Avg ETA {orgStats.avgEtaMins}m
+          </span>
+        )}
+      </div>
+
       {/* Organization Metrics */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6 mb-8">
+      <section className="grid [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))] gap-6 mb-8">
         {[
-          { label: 'Total Buses', value: String(orgStats.totalBuses), accent: 'from-slate-50 to-white', pill: 'bg-slate-700' },
-          { label: 'Active Buses', value: String(orgStats.activeBuses), accent: 'from-green-50 to-white', pill: 'bg-green-600' },
-          { label: 'Inactive Buses', value: String(orgStats.inactiveBuses), accent: 'from-slate-50 to-white', pill: 'bg-slate-600' },
-          { label: 'Assigned Drivers', value: String(orgStats.assignedDrivers), accent: 'from-blue-50 to-white', pill: 'bg-blue-600' },
-          { label: 'Active Drivers', value: String(orgStats.activeDrivers), accent: 'from-teal-50 to-white', pill: 'bg-teal-600' },
-          { label: 'Cities', value: String(orgStats.totalCities), accent: 'from-indigo-50 to-white', pill: 'bg-indigo-600' },
+          { label: 'Total Buses', value: String(orgStats.totalBuses), accent: 'from-slate-50 to-white', iconBg: 'bg-slate-100', iconText: 'text-slate-700', iconBorder: 'border-slate-200' },
+          { label: 'Active Buses', value: String(orgStats.activeBuses), accent: 'from-green-50 to-emerald-50', iconBg: 'bg-emerald-50', iconText: 'text-emerald-700', iconBorder: 'border-emerald-200' },
+          { label: 'Inactive Buses', value: String(orgStats.inactiveBuses), accent: 'from-rose-50 to-red-50', iconBg: 'bg-rose-50', iconText: 'text-rose-700', iconBorder: 'border-rose-200' },
+          { label: 'Assigned Drivers', value: String(orgStats.assignedDrivers), accent: 'from-blue-50 to-indigo-50', iconBg: 'bg-blue-50', iconText: 'text-blue-700', iconBorder: 'border-blue-200' },
+          { label: 'Active Drivers', value: String(orgStats.activeDrivers), accent: 'from-teal-50 to-cyan-50', iconBg: 'bg-teal-50', iconText: 'text-teal-700', iconBorder: 'border-teal-200' },
+          { label: 'Cities', value: String(orgStats.totalCities), accent: 'from-violet-50 to-indigo-50', iconBg: 'bg-violet-50', iconText: 'text-violet-700', iconBorder: 'border-violet-200' },
         ].map((k) => (
-          <div key={k.label} className={`group rounded-3xl border border-slate-200 bg-white p-6 sm:p-7 ring-1 ring-slate-900/5 shadow-md hover:shadow-xl transition-all duration-300 relative overflow-hidden hover:-translate-y-0.5`}>
+          <div key={k.label} className={`group rounded-3xl border border-slate-200 bg-white p-6 sm:p-7 ring-1 ring-slate-900/5 shadow-md hover:shadow-xl transition-all duration-300 relative overflow-hidden hover:-translate-y-0.5 min-h-[120px]`}>
             <div className={`absolute -top-12 -right-12 w-40 h-40 rounded-full bg-gradient-to-br ${k.accent} blur-3xl`} />
             <div className="relative flex items-center gap-4">
-              <span className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 border border-blue-100">
+              <span className={`inline-flex items-center justify-center w-12 h-12 rounded-2xl ${k.iconBg} ${k.iconText} border ${k.iconBorder}`}>
                 <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12h18M3 6h18M3 18h18"/></svg>
               </span>
               <div>
-                <div className="text-3xl font-extrabold text-slate-900 leading-tight">{k.value}</div>
+                <div className="text-4xl font-extrabold text-slate-900 leading-tight">{k.value}</div>
                 <div className="text-sm text-slate-600">{k.label}</div>
               </div>
             </div>
@@ -151,17 +170,17 @@ const Dashboard = () => {
       </section>
 
       {/* KPI Cards */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+      <section className="grid [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))] gap-6 mb-8">
         {[
-          { label: 'Active Trips', value: String(kpis.totalActive), accent: 'from-blue-50 to-indigo-50', pill: 'bg-blue-600' },
-          { label: 'Buses Online', value: String(kpis.onlineBuses), accent: 'from-teal-50 to-cyan-50', pill: 'bg-teal-600' },
-          { label: 'Avg ETA Refresh', value: kpis.avgEtaRefresh, accent: 'from-sky-50 to-blue-50', pill: 'bg-sky-600' },
-          { label: 'Incidents', value: String(kpis.incidents), accent: 'from-amber-50 to-orange-50', pill: 'bg-orange-500' }
+          { label: 'Active Trips', value: String(kpis.totalActive), accent: 'from-blue-50 to-indigo-50', iconBg: 'bg-indigo-50', iconText: 'text-indigo-700', iconBorder: 'border-indigo-200', pill: 'bg-indigo-600' },
+          { label: 'Buses Online', value: String(kpis.onlineBuses), accent: 'from-teal-50 to-emerald-50', iconBg: 'bg-emerald-50', iconText: 'text-emerald-700', iconBorder: 'border-emerald-200', pill: 'bg-emerald-600' },
+          { label: 'Avg ETA Refresh', value: kpis.avgEtaRefresh, accent: 'from-sky-50 to-cyan-50', iconBg: 'bg-sky-50', iconText: 'text-sky-700', iconBorder: 'border-sky-200', pill: 'bg-sky-600' },
+          { label: 'Incidents', value: String(kpis.incidents), accent: 'from-amber-50 to-orange-50', iconBg: 'bg-amber-50', iconText: 'text-amber-700', iconBorder: 'border-amber-200', pill: 'bg-orange-500' }
         ].map((k) => (
-          <div key={k.label} className={`group rounded-3xl border border-slate-200 bg-white p-6 sm:p-7 ring-1 ring-slate-900/5 shadow-md hover:shadow-xl transition-all duration-300 relative overflow-hidden hover:-translate-y-0.5`}>
+          <div key={k.label} className={`group rounded-3xl border border-slate-200 bg-white p-6 sm:p-7 ring-1 ring-slate-900/5 shadow-md hover:shadow-xl transition-all duration-300 relative overflow-hidden hover:-translate-y-0.5 min-h-[140px]`}>
             <div className={`absolute -top-14 -right-14 w-48 h-48 rounded-full bg-gradient-to-br ${k.accent} blur-3xl`} />
             <div className="relative flex items-center gap-4">
-              <span className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 border border-blue-100">
+              <span className={`inline-flex items-center justify-center w-12 h-12 rounded-2xl ${k.iconBg} ${k.iconText} border ${k.iconBorder}`}>
                 <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v8m-4-4h8"/></svg>
               </span>
               <div>
@@ -182,7 +201,7 @@ const Dashboard = () => {
             <h2 className="font-bold text-slate-900">Live Metrics</h2>
             <span className="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold border border-blue-100">1s updates</span>
           </div>
-          <div className="h-56 sm:h-64 lg:h-72 rounded-2xl bg-gradient-to-b from-slate-50 to-white border border-slate-200 relative overflow-hidden">
+          <div className="h-64 sm:h-72 lg:h-80 rounded-2xl bg-gradient-to-b from-slate-50 to-white border border-slate-200 relative overflow-hidden">
             {/* grid pattern */}
             <div className="absolute inset-0 opacity-40" style={{ backgroundImage: 'linear-gradient(to right, rgba(226,232,240,0.5) 1px, transparent 1px), linear-gradient(to bottom, rgba(226,232,240,0.5) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
             {/* simple bars */}
@@ -237,7 +256,7 @@ const Dashboard = () => {
             </thead>
             <tbody className="divide-y divide-slate-200">
               {recentTrips.map((r, i) => (
-                <tr key={i} className="text-slate-800">
+                <tr key={i} className="text-slate-800 hover:bg-slate-50/70">
                   <td className="py-3 pr-4 font-semibold">{r.bus}</td>
                   <td className="py-3 pr-4">{r.route}</td>
                   <td className="py-3 pr-4">
@@ -257,13 +276,16 @@ const Dashboard = () => {
       </section>
 
       {/* Quick Actions */}
-      <section className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+      <section className="mt-6 grid [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))] gap-6">
         {[
           { label: 'Add New Driver', accent: 'from-blue-600 to-indigo-600', text: 'text-white' },
           { label: 'Create Route', accent: 'from-sky-500 to-teal-600', text: 'text-white' },
           { label: 'Broadcast Notice', accent: 'from-orange-500 to-amber-600', text: 'text-white' },
         ].map((a) => (
-          <button key={a.label} className={`rounded-2xl px-5 py-4 font-semibold shadow-lg hover:shadow-xl transition-all bg-gradient-to-r ${a.accent} ${a.text}`}>
+          <button key={a.label} className={`group rounded-2xl px-5 py-5 font-semibold shadow-md hover:shadow-xl transition-all bg-gradient-to-r ${a.accent} ${a.text} text-left flex items-center gap-3`}>
+            <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white/20">
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v8m-4-4h8"/></svg>
+            </span>
             {a.label}
           </button>
         ))}
