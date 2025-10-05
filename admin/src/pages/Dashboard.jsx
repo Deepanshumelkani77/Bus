@@ -1,8 +1,71 @@
-import React from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
+import axios from 'axios'
 
 const Dashboard = () => {
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [activeTrips, setActiveTrips] = useState([])
+  const [buses, setBuses] = useState([])
+  const [lastRefresh, setLastRefresh] = useState(null)
+
+  const API_BASE = useMemo(() => 'http://localhost:2000', [])
+
+  const fetchData = async () => {
+    try {
+      setError('')
+      // Parallel requests
+      const [tripsRes, busesRes] = await Promise.all([
+        axios.get(`${API_BASE}/trips/active`),
+        axios.get(`${API_BASE}/buses`),
+      ])
+      setActiveTrips(tripsRes?.data?.trips || tripsRes?.data || [])
+      setBuses(busesRes?.data?.buses || busesRes?.data || [])
+      setLastRefresh(new Date())
+    } catch (e) {
+      setError(e?.response?.data?.message || e.message || 'Failed to load data')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchData()
+    const id = setInterval(fetchData, 5000) // auto-refresh every 5s
+    return () => clearInterval(id)
+  }, [])
+
+  const kpis = useMemo(() => {
+    const totalActive = activeTrips.length
+    const onlineBuses = new Set(activeTrips.map(t => t?.bus?._id || t?.bus)).size || (buses?.filter(b => b?.status === 'Online')?.length || 0)
+    // Derive avg ETA refresh (mocked to 1s since socket/polling is ~1s in system)
+    const avgEtaRefresh = '1s'
+    const incidents = 0
+    return { totalActive, onlineBuses, avgEtaRefresh, incidents }
+  }, [activeTrips, buses])
+
+  const recentTrips = useMemo(() => {
+    // Map active trips to table rows (limit 8)
+    return (activeTrips || []).slice(0, 8).map(t => ({
+      bus: t?.bus?.plateNumber || t?.bus?.busNumber || '—',
+      route: `${t?.source || '—'} → ${t?.destination || '—'}`,
+      status: t?.status || 'Ongoing',
+      eta: t?.eta?.duration?.text || '—',
+    }))
+  }, [activeTrips])
+
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6">
+      {error && (
+        <div className="mb-4 rounded-2xl border border-orange-200 bg-orange-50 p-3 text-sm text-orange-800">
+          {error}
+        </div>
+      )}
+      {loading && (
+        <div className="mb-4 rounded-2xl border border-slate-200 bg-white p-4 flex items-center gap-3 text-slate-700">
+          <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-600 border-t-transparent"></div>
+          Loading live data...
+        </div>
+      )}
       {/* Top Banner */}
       <section className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white shadow ring-1 ring-slate-900/5 p-6 sm:p-8 mb-6">
         {/* ambient bg */}
@@ -32,6 +95,11 @@ const Dashboard = () => {
             <button className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50">
               <span className="text-sm">Manage Buses</span>
             </button>
+            {lastRefresh && (
+              <span className="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-200">
+                Updated {Math.max(1, Math.floor((new Date() - lastRefresh)/1000))}s ago
+              </span>
+            )}
           </div>
         </div>
       </section>
@@ -39,10 +107,10 @@ const Dashboard = () => {
       {/* KPI Cards */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {[
-          { label: 'Active Trips', value: '24', accent: 'from-blue-50 to-indigo-50', pill: 'bg-blue-600' },
-          { label: 'Buses Online', value: '18', accent: 'from-teal-50 to-cyan-50', pill: 'bg-teal-600' },
-          { label: 'Avg ETA Refresh', value: '1s', accent: 'from-sky-50 to-blue-50', pill: 'bg-sky-600' },
-          { label: 'Incidents', value: '0', accent: 'from-amber-50 to-orange-50', pill: 'bg-orange-500' }
+          { label: 'Active Trips', value: String(kpis.totalActive), accent: 'from-blue-50 to-indigo-50', pill: 'bg-blue-600' },
+          { label: 'Buses Online', value: String(kpis.onlineBuses), accent: 'from-teal-50 to-cyan-50', pill: 'bg-teal-600' },
+          { label: 'Avg ETA Refresh', value: kpis.avgEtaRefresh, accent: 'from-sky-50 to-blue-50', pill: 'bg-sky-600' },
+          { label: 'Incidents', value: String(kpis.incidents), accent: 'from-amber-50 to-orange-50', pill: 'bg-orange-500' }
         ].map((k) => (
           <div key={k.label} className={`rounded-2xl border border-slate-200 bg-white p-4 ring-1 ring-slate-900/5 shadow relative overflow-hidden`}>
             <div className={`absolute -top-10 -right-10 w-28 h-28 rounded-full bg-gradient-to-br ${k.accent} blur-2xl`} />
@@ -117,12 +185,7 @@ const Dashboard = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
-              {[
-                { bus: 'DL 12 AB 3456', route: 'Connaught Pl → Airport', status: 'Ongoing', eta: '7 min' },
-                { bus: 'MH 01 CD 9876', route: 'Bandra → Andheri', status: 'Ongoing', eta: '12 min' },
-                { bus: 'KA 05 EF 1122', route: 'MG Rd → Whitefield', status: 'Completed', eta: '-' },
-                { bus: 'TN 09 GH 7788', route: 'T Nagar → OMR', status: 'Pending', eta: '-' }
-              ].map((r, i) => (
+              {recentTrips.map((r, i) => (
                 <tr key={i} className="text-slate-800">
                   <td className="py-3 pr-4 font-semibold">{r.bus}</td>
                   <td className="py-3 pr-4">{r.route}</td>
@@ -132,6 +195,11 @@ const Dashboard = () => {
                   <td className="py-3 pr-4 font-semibold">{r.eta}</td>
                 </tr>
               ))}
+              {(!recentTrips || recentTrips.length === 0) && (
+                <tr>
+                  <td className="py-6 text-slate-500" colSpan={4}>No active trips yet.</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
