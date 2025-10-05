@@ -6,6 +6,7 @@ const Dashboard = () => {
   const [error, setError] = useState('')
   const [activeTrips, setActiveTrips] = useState([])
   const [buses, setBuses] = useState([])
+  const [cities, setCities] = useState([])
   const [lastRefresh, setLastRefresh] = useState(null)
 
   const API_BASE = useMemo(() => 'http://localhost:2000', [])
@@ -14,12 +15,14 @@ const Dashboard = () => {
     try {
       setError('')
       // Parallel requests
-      const [tripsRes, busesRes] = await Promise.all([
+      const [tripsRes, busesRes, citiesRes] = await Promise.all([
         axios.get(`${API_BASE}/trips/active`),
         axios.get(`${API_BASE}/buses`),
+        axios.get(`${API_BASE}/buses/cities`),
       ])
       setActiveTrips(tripsRes?.data?.trips || tripsRes?.data || [])
       setBuses(busesRes?.data?.buses || busesRes?.data || [])
+      setCities(citiesRes?.data?.cities || citiesRes?.data || [])
       setLastRefresh(new Date())
     } catch (e) {
       setError(e?.response?.data?.message || e.message || 'Failed to load data')
@@ -42,6 +45,24 @@ const Dashboard = () => {
     const incidents = 0
     return { totalActive, onlineBuses, avgEtaRefresh, incidents }
   }, [activeTrips, buses])
+
+  const orgStats = useMemo(() => {
+    const totalBuses = buses?.length || 0
+    const activeBuses = buses?.filter(b => b?.status === 'Active')?.length || 0
+    const inactiveBuses = buses?.filter(b => b?.status === 'Inactive')?.length || 0
+    const assignedDrivers = new Set((buses || []).filter(b => b?.driver).map(b => String(b.driver?._id || b.driver))).size
+    const activeDrivers = new Set((activeTrips || []).map(t => String(t?.driver?._id || t?.driver))).size
+    const totalCities = cities?.length || 0
+    const unassignedBuses = Math.max(0, totalBuses - assignedDrivers)
+    const tripsWithLive = (activeTrips || []).filter(t => t?.currentLocation && (t.currentLocation.latitude || t.currentLocation.lat)).length
+    const etaValuesSec = (activeTrips || [])
+      .map(t => t?.eta?.duration_in_traffic?.value || t?.eta?.duration?.value)
+      .filter(Boolean)
+    const avgEtaMins = etaValuesSec.length
+      ? Math.round((etaValuesSec.reduce((a,b)=>a+b,0) / etaValuesSec.length) / 60)
+      : null
+    return { totalBuses, activeBuses, inactiveBuses, assignedDrivers, activeDrivers, totalCities, unassignedBuses, tripsWithLive, avgEtaMins }
+  }, [buses, activeTrips, cities])
 
   const recentTrips = useMemo(() => {
     // Map active trips to table rows (limit 8)
@@ -104,20 +125,50 @@ const Dashboard = () => {
         </div>
       </section>
 
+      {/* Organization Metrics */}
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6 mb-8">
+        {[
+          { label: 'Total Buses', value: String(orgStats.totalBuses), accent: 'from-slate-50 to-white', pill: 'bg-slate-700' },
+          { label: 'Active Buses', value: String(orgStats.activeBuses), accent: 'from-green-50 to-white', pill: 'bg-green-600' },
+          { label: 'Inactive Buses', value: String(orgStats.inactiveBuses), accent: 'from-slate-50 to-white', pill: 'bg-slate-600' },
+          { label: 'Assigned Drivers', value: String(orgStats.assignedDrivers), accent: 'from-blue-50 to-white', pill: 'bg-blue-600' },
+          { label: 'Active Drivers', value: String(orgStats.activeDrivers), accent: 'from-teal-50 to-white', pill: 'bg-teal-600' },
+          { label: 'Cities', value: String(orgStats.totalCities), accent: 'from-indigo-50 to-white', pill: 'bg-indigo-600' },
+        ].map((k) => (
+          <div key={k.label} className={`group rounded-3xl border border-slate-200 bg-white p-6 sm:p-7 ring-1 ring-slate-900/5 shadow-md hover:shadow-xl transition-all duration-300 relative overflow-hidden hover:-translate-y-0.5`}>
+            <div className={`absolute -top-12 -right-12 w-40 h-40 rounded-full bg-gradient-to-br ${k.accent} blur-3xl`} />
+            <div className="relative flex items-center gap-4">
+              <span className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 border border-blue-100">
+                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12h18M3 6h18M3 18h18"/></svg>
+              </span>
+              <div>
+                <div className="text-3xl font-extrabold text-slate-900 leading-tight">{k.value}</div>
+                <div className="text-sm text-slate-600">{k.label}</div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </section>
+
       {/* KPI Cards */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {[
           { label: 'Active Trips', value: String(kpis.totalActive), accent: 'from-blue-50 to-indigo-50', pill: 'bg-blue-600' },
           { label: 'Buses Online', value: String(kpis.onlineBuses), accent: 'from-teal-50 to-cyan-50', pill: 'bg-teal-600' },
           { label: 'Avg ETA Refresh', value: kpis.avgEtaRefresh, accent: 'from-sky-50 to-blue-50', pill: 'bg-sky-600' },
           { label: 'Incidents', value: String(kpis.incidents), accent: 'from-amber-50 to-orange-50', pill: 'bg-orange-500' }
         ].map((k) => (
-          <div key={k.label} className={`rounded-2xl border border-slate-200 bg-white p-4 ring-1 ring-slate-900/5 shadow relative overflow-hidden`}>
-            <div className={`absolute -top-10 -right-10 w-28 h-28 rounded-full bg-gradient-to-br ${k.accent} blur-2xl`} />
-            <div className="relative">
-              <div className="text-2xl font-extrabold text-slate-900">{k.value}</div>
-              <div className="text-sm text-slate-600">{k.label}</div>
-              <span className={`mt-3 inline-flex px-2 py-0.5 rounded-full text-white text-[11px] font-semibold ${k.pill}`}>Live</span>
+          <div key={k.label} className={`group rounded-3xl border border-slate-200 bg-white p-6 sm:p-7 ring-1 ring-slate-900/5 shadow-md hover:shadow-xl transition-all duration-300 relative overflow-hidden hover:-translate-y-0.5`}>
+            <div className={`absolute -top-14 -right-14 w-48 h-48 rounded-full bg-gradient-to-br ${k.accent} blur-3xl`} />
+            <div className="relative flex items-center gap-4">
+              <span className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 border border-blue-100">
+                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v8m-4-4h8"/></svg>
+              </span>
+              <div>
+                <div className="text-4xl font-extrabold text-slate-900 leading-tight">{k.value}</div>
+                <div className="text-sm text-slate-600">{k.label}</div>
+                <span className={`mt-3 inline-flex px-2 py-0.5 rounded-full text-white text-[11px] font-semibold ${k.pill}`}>Live</span>
+              </div>
             </div>
           </div>
         ))}
