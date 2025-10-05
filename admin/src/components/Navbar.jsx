@@ -7,7 +7,7 @@ const Navbar = () => {
 
   return (
     <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-slate-200/70 shadow-sm">
-      <div className="max-w-7xl mx-auto h-16 px-3 sm:px-4 lg:px-6 flex items-center justify-between">
+      <div className=" w-full mx-auto h-[10vh] px-3 sm:px-4 lg:px-6 flex items-center justify-between">
         {/* Left: Menu (mobile) + Logo */}
         <div className="flex items-center gap-3">
           <button

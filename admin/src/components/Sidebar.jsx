@@ -19,7 +19,7 @@ const Sidebar = () => {
 
       {/* Mobile slide-in panel */}
       <aside
-        className={`fixed top-0 left-0 h-full w-72 bg-white shadow-2xl border-r border-slate-200 z-50 transform transition-transform duration-300 lg:hidden ${open ? 'translate-x-0' : '-translate-x-full'}`}
+        className={`  fixed top-0 left-0 h-full w-72 bg-white shadow-2xl border-r border-slate-200 z-50 transform transition-transform duration-300 lg:hidden ${open ? 'translate-x-0' : '-translate-x-full'}`}
         aria-label="Sidebar"
       >
         {/* Brand header */}
@@ -81,7 +81,7 @@ const Sidebar = () => {
       </aside>
 
       {/* Desktop fixed sidebar (25% width) */}
-      <aside className="hidden lg:flex fixed top-0 left-0 h-full w-[25%] flex-col border-r border-slate-200 bg-white">
+      <aside className="hidden lg:flex fixed top-[10vh] left-0 h-[90vh] w-[25%] flex-col border-r border-slate-200 bg-white">
         <div className="h-16 px-4 flex items-center gap-3 border-b border-slate-200 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
           <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center shadow">
             <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
