@@ -82,7 +82,7 @@ const Sidebar = () => {
 
       {/* Desktop fixed sidebar (25% width) */}
       <aside className="hidden lg:flex fixed top-[10vh] left-0 h-[90vh] w-[20%] flex-col border-r border-slate-800 bg-[#0F172A]">
-        <div className="h-16 px-4 flex items-center gap-3 border-b border-slate-800 bg-[#0F172A] text-slate-100">
+        <div className="h-16 px-8 flex items-center gap-3 border-b border-slate-800 bg-[#0F172A] text-slate-100">
           <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center shadow">
             <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
               <path d="M4 16c0 .88.39 1.67 1 2.22V20a1 1 0 001 1h1a1 1 0 001-1v-1h8v1a1 1 0 001 1h1a1 1 0 001-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10z"/>
@@ -90,7 +90,8 @@ const Sidebar = () => {
           </div>
           <div className="font-extrabold tracking-tight text-xl">Admin</div>
         </div>
-        <nav className="p-3 space-y-1 overflow-y-auto">
+
+        <nav className="p-3 px-7 space-y-1 overflow-y-auto">
           {[
             'Dashboard','Trips','Buses','Drivers','Routes','Settings'
           ].map((label) => (
@@ -99,9 +100,9 @@ const Sidebar = () => {
               <span className="font-semibold text-xl">{label}</span>
             </a>
           ))}
-          <div className="mt-4 p-3 rounded-2xl bg-slate-800/60 border border-slate-700 text-slate-200">
+          <div className="mt-4 p-3 rounded-2xl bg-white/80 border border-slate-700 text-black">
             <div className="font-extrabold text-sm">Reminder</div>
-            <div className="text-slate-400 text-xs">Sidebar stays fixed on laptop/desktop.</div>
+            <div className="text-slate-900 text-xs">Sidebar stays fixed on laptop/desktop.</div>
           </div>
         </nav>
       </aside>
