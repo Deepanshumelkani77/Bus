@@ -1,18 +1,25 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 
-const Sidebar = ({ isOpen, onClose }) => {
+const Sidebar = () => {
+  const [open, setOpen] = useState(false)
+
+  useEffect(() => {
+    const handler = () => setOpen((v) => !v)
+    window.addEventListener('admin:toggleSidebar', handler)
+    return () => window.removeEventListener('admin:toggleSidebar', handler)
+  }, [])
+
   return (
     <>
-      {/* Overlay - mobile only */}
+      {/* Overlay for mobile */}
       <div
-        className={`fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity lg:hidden ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
-        onClick={onClose}
+        className={`fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity lg:hidden ${open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+        onClick={() => setOpen(false)}
       />
 
-      {/* Sidebar panel */}
+      {/* Mobile slide-in panel */}
       <aside
-        className={`fixed top-0 left-0 h-full w-72 bg-white shadow-2xl border-r border-slate-200 z-50 transform transition-transform duration-300
-        ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:static lg:shadow-none`}
+        className={`fixed top-0 left-0 h-full w-72 bg-white shadow-2xl border-r border-slate-200 z-50 transform transition-transform duration-300 lg:hidden ${open ? 'translate-x-0' : '-translate-x-full'}`}
         aria-label="Sidebar"
       >
         {/* Brand header */}
@@ -24,8 +31,8 @@ const Sidebar = ({ isOpen, onClose }) => {
           </div>
           <div className="font-extrabold tracking-tight">Admin</div>
           <button
-            className="ml-auto lg:hidden inline-flex items-center justify-center w-9 h-9 rounded-lg text-white/90 hover:text-white hover:bg-white/10"
-            onClick={onClose}
+            className="ml-auto inline-flex items-center justify-center w-9 h-9 rounded-lg text-white/90 hover:text-white hover:bg-white/10"
+            onClick={() => setOpen(false)}
             aria-label="Close menu"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -69,6 +76,32 @@ const Sidebar = ({ isOpen, onClose }) => {
           <div className="mt-4 p-3 rounded-2xl bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-100">
             <div className="text-slate-900 font-extrabold text-sm">Quick Tip</div>
             <div className="text-slate-600 text-xs">Use the mobile menu to navigate quickly on the go.</div>
+          </div>
+        </nav>
+      </aside>
+
+      {/* Desktop fixed sidebar (25% width) */}
+      <aside className="hidden lg:flex fixed top-0 left-0 h-full w-[25%] flex-col border-r border-slate-200 bg-white">
+        <div className="h-16 px-4 flex items-center gap-3 border-b border-slate-200 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+          <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center shadow">
+            <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M4 16c0 .88.39 1.67 1 2.22V20a1 1 0 001 1h1a1 1 0 001-1v-1h8v1a1 1 0 001 1h1a1 1 0 001-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10z"/>
+            </svg>
+          </div>
+          <div className="font-extrabold tracking-tight">Admin</div>
+        </div>
+        <nav className="p-3 space-y-1 overflow-y-auto">
+          {[
+            'Dashboard','Trips','Buses','Drivers','Routes','Settings'
+          ].map((label) => (
+            <a key={label} href="#" className="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-100 border border-transparent hover:border-slate-200 transition-all">
+              <span className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-blue-50 text-blue-600 group-hover:bg-blue-100 group-hover:text-blue-700">•</span>
+              <span className="font-semibold text-sm">{label}</span>
+            </a>
+          ))}
+          <div className="mt-4 p-3 rounded-2xl bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-100">
+            <div className="text-slate-900 font-extrabold text-sm">Reminder</div>
+            <div className="text-slate-600 text-xs">Sidebar stays fixed on laptop/desktop.</div>
           </div>
         </nav>
       </aside>
