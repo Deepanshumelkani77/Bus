@@ -19,19 +19,19 @@ const Sidebar = () => {
 
       {/* Mobile slide-in panel */}
       <aside
-        className={`  fixed top-0 left-0 h-full w-72 bg-white shadow-2xl border-r border-slate-200 z-50 transform transition-transform duration-300 lg:hidden ${open ? 'translate-x-0' : '-translate-x-full'}`}
+        className={`fixed top-0 left-0 h-full w-72 bg-white shadow-2xl border-r border-slate-200 z-50 transform transition-transform duration-300 lg:hidden ${open ? 'translate-x-0' : '-translate-x-full'}`}
         aria-label="Sidebar"
       >
-        {/* Brand header */}
-        <div className="h-16 px-4 flex items-center gap-3 border-b border-slate-200 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
-          <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center shadow">
+        {/* Brand header (white, blue tile) */}
+        <div className="h-16 px-4 flex items-center gap-3 border-b border-slate-200 bg-white text-slate-900">
+          <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center shadow">
             <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
               <path d="M4 16c0 .88.39 1.67 1 2.22V20a1 1 0 001 1h1a1 1 0 001-1v-1h8v1a1 1 0 001 1h1a1 1 0 001-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10z"/>
             </svg>
           </div>
           <div className="font-extrabold tracking-tight">Admin</div>
           <button
-            className="ml-auto inline-flex items-center justify-center w-9 h-9 rounded-lg text-white/90 hover:text-white hover:bg-white/10"
+            className="ml-auto inline-flex items-center justify-center w-9 h-9 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100"
             onClick={() => setOpen(false)}
             aria-label="Close menu"
           >
@@ -82,8 +82,8 @@ const Sidebar = () => {
 
       {/* Desktop fixed sidebar (25% width) */}
       <aside className="hidden lg:flex fixed top-[10vh] left-0 h-[90vh] w-[25%] flex-col border-r border-slate-200 bg-white">
-        <div className="h-16 px-4 flex items-center gap-3 border-b border-slate-200 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
-          <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center shadow">
+        <div className="h-16 px-4 flex items-center gap-3 border-b border-slate-200 bg-white text-slate-900">
+          <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center shadow">
             <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
               <path d="M4 16c0 .88.39 1.67 1 2.22V20a1 1 0 001 1h1a1 1 0 001-1v-1h8v1a1 1 0 001 1h1a1 1 0 001-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10z"/>
             </svg>
