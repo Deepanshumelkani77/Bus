@@ -107,8 +107,8 @@ const Dashboard = () => {
         </div>
         <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">Dashboard</h1>
-            <p className="text-slate-600">Live view of trips, buses and drivers</p>
+            <h1 className="lg:mb-5 text-2xl sm:text-3xl lg:text-5xl font-extrabold text-slate-900">Dashboard</h1>
+            <p className="text-slate-600 lg:text-xl ">Live view of trips, buses and drivers</p>
           </div>
           <div className="flex items-center gap-3">
             <button className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 text-white font-semibold shadow hover:shadow-lg transition-all">
