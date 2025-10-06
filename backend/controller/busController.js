@@ -1,11 +1,19 @@
 const Bus = require('../models/Bus');
 const Driver = require('../models/Driver');
 
-// GET /buses?city=Jaipur
+// GET /buses?city=Jaipur&q=10
 async function listBuses(req, res) {
   try {
-    const { city } = req.query;
-    const query = city ? { city } : {};
+    const { city, q, number } = req.query;
+    const query = {};
+    if (city) query.city = city;
+    if (q || number) {
+      const term = String(q || number).trim();
+      if (term) {
+        // partial, case-insensitive match on busNumber
+        query.busNumber = { $regex: term, $options: 'i' };
+      }
+    }
     const buses = await Bus.find(query).sort({ createdAt: -1 });
     res.json({ buses });
   } catch (e) {
