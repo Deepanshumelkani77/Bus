@@ -236,7 +236,7 @@ const Dashboard = () => {
 
         {/* System Health */}
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow ring-1 ring-slate-900/5">
-          <h2 className="font-bold text-slate-900 mb-4">System Health</h2>
+          <h2 className="font-bold lg:text-2xl text-slate-900 mb-4">System Health</h2>
           <div className="space-y-3">
             {[
               { label: 'API Latency', value: '128 ms', tone: 'text-blue-700 bg-blue-50 border-blue-100' },
@@ -260,13 +260,13 @@ const Dashboard = () => {
       {/* Recent Trips */}
       <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-6 shadow ring-1 ring-slate-900/5">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-bold text-slate-900">Recent Trips</h2>
-          <button className="text-sm font-semibold text-blue-700 hover:text-blue-800">View all</button>
+          <h2 className="font-bold lg:text-3xl text-slate-900">Recent Trips</h2>
+          <button className="text-sm lg:text-xl font-semibold text-blue-700 hover:text-blue-800">View all</button>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm">
             <thead>
-              <tr className="text-left text-slate-600">
+              <tr className="text-left lg:text-2xl text-slate-600">
                 <th className="py-2 pr-4">Bus</th>
                 <th className="py-2 pr-4">Route</th>
                 <th className="py-2 pr-4">Status</th>
