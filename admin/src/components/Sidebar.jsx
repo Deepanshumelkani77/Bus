@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 
 const Sidebar = () => {
   const [open, setOpen] = useState(false)
@@ -61,16 +62,16 @@ const Sidebar = () => {
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11.983 6.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.5 12h-2M21.5 12h-2M12 4.5v-2M12 21.5v-2"/></svg>
             ) },
           ].map((item) => (
-            <a
+            <Link
               key={item.label}
-              href="#"
+              to={item.path || '#'}
               className="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-200 hover:text-white hover:bg-slate-800/60 border border-transparent hover:border-slate-700 transition-all"
             >
               <span className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-slate-800 text-slate-200 group-hover:bg-blue-600 group-hover:text-white">
                 {item.icon}
               </span>
               <span className="font-semibold text-sm">{item.label}</span>
-            </a>
+            </Link>
           ))}
 
           <div className="mt-4 p-3 rounded-2xl bg-slate-800/60 border border-slate-700 text-slate-200">
@@ -93,12 +94,20 @@ const Sidebar = () => {
 
         <nav className="p-3 px-7 space-y-1 overflow-y-auto">
           {[
-            'Dashboard','Trips','Buses','Drivers','Routes','Settings'
-          ].map((label) => (
-            <a key={label} href="#" className="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-200 hover:text-white hover:bg-slate-800/60 border border-transparent hover:border-slate-700 transition-all">
-             
-              <span className="font-semibold text-xl">{label}</span>
-            </a>
+            { label: 'Dashboard', path: '/' },
+            { label: 'Trips' },
+            { label: 'Buses', path: '/bus' },
+            { label: 'Drivers', path: '/driver' },
+            { label: 'Routes' },
+            { label: 'Settings' },
+          ].map((item) => (
+            <Link
+              key={item.label}
+              to={item.path || '#'}
+              className="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-200 hover:text-white hover:bg-slate-800/60 border border-transparent hover:border-slate-700 transition-all"
+            >
+              <span className="font-semibold text-xl">{item.label}</span>
+            </Link>
           ))}
           <div className="mt-4 p-3 rounded-2xl bg-white/80 border border-slate-700 text-black">
             <div className="font-extrabold text-sm">Reminder</div>

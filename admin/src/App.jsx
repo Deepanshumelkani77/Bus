@@ -6,20 +6,17 @@ import Dashboard from './pages/Dashboard'
 
 const App = () => {
   return (
-    <div className="w-full h-screen ">
-      
-<Navbar />
-<Sidebar />
-
-<main className="mt-[10vh] lg:ml-[25%] ">
-  <Routes>
-    <Route path="/" element={<Dashboard />} />
-  </Routes>
-</main>
-
-
-
-    </div>
+  
+      <div className="w-full h-screen ">
+        <Navbar />
+        <Sidebar />
+        <main className="mt-[10vh] lg:ml-[25%] ">
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+          </Routes>
+        </main>
+      </div>
+    
   )
 }
 
