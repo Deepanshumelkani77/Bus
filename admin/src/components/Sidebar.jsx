@@ -42,16 +42,16 @@ const Sidebar = () => {
         {/* Nav */}
         <nav className="p-3 space-y-1 overflow-y-auto h-[calc(100%-4rem)]">
           {[
-            { label: 'Dashboard', icon: (
+            { label: 'Dashboard',path:'/', icon: (
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M13 5v14m-4 0h8"/></svg>
             ) },
             { label: 'Trips', icon: (
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 7h18M3 12h18M3 17h18"/></svg>
             ) },
-            { label: 'Buses', icon: (
+            { label: 'Buses',path:'/bus', icon: (
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 17v2a1 1 0 001 1h1a1 1 0 001-1v-2m8 0v2a1 1 0 001 1h1a1 1 0 001-1v-2M6 17h12M6 13h12M6 9h12"/></svg>
             ) },
-            { label: 'Drivers', icon: (
+            { label: 'Drivers',path:'/driver', icon: (
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 14a4 4 0 10-8 0m8 0v1a4 4 0 01-4 4m0 0a4 4 0 01-4-4v-1m4 5v0"/></svg>
             ) },
             { label: 'Routes', icon: (
