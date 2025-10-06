@@ -184,16 +184,16 @@ const Dashboard = () => {
       {/* KPI Cards */}
       <section className="grid [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))] gap-6 mb-8">
         {[
-          { label: 'Active Trips', value: String(kpis.totalActive), sub: `${kpis.totalActive > 0 ? 'live now' : 'no active'}`, accent: 'from-blue-50 to-indigo-50', iconBg: 'bg-indigo-50', iconText: 'text-indigo-700', iconBorder: 'border-indigo-200', pill: 'bg-indigo-600', icon: (
+          { label: 'Active Trips', value: String(kpis.totalActive), sub: `${kpis.totalActive > 0 ? 'live now' : 'no active'}`, accent: 'from-blue-50 to-indigo-50', iconBg: 'bg-indigo-600', iconText: 'text-white', iconBorder: 'border-indigo-200', pill: 'bg-indigo-600', icon: (
             <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2 4 4 8-8 4 4"/></svg>
           ) },
-          { label: 'Buses Online', value: String(kpis.onlineBuses), sub: 'broadcasting location', accent: 'from-teal-50 to-emerald-50', iconBg: 'bg-emerald-50', iconText: 'text-emerald-700', iconBorder: 'border-emerald-200', pill: 'bg-emerald-600', icon: (
+          { label: 'Buses Online', value: String(kpis.onlineBuses), sub: 'location', accent: 'from-teal-50 to-emerald-50', iconBg: 'bg-emerald-600', iconText: 'text-white', iconBorder: 'border-emerald-200', pill: 'bg-emerald-600', icon: (
             <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2 12a10 10 0 0020 0M5 12a7 7 0 0014 0M8 12a4 4 0 008 0"/></svg>
           ) },
-          { label: 'Avg ETA Refresh', value: kpis.avgEtaRefresh, sub: 'traffic-aware', accent: 'from-sky-50 to-cyan-50', iconBg: 'bg-sky-50', iconText: 'text-sky-700', iconBorder: 'border-sky-200', pill: 'bg-sky-600', icon: (
+          { label: 'Avg ETA Refresh', value: kpis.avgEtaRefresh, sub: 'traffic-aware', accent: 'from-sky-50 to-cyan-50', iconBg: 'bg-sky-600', iconText: 'text-white', iconBorder: 'border-sky-200', pill: 'bg-sky-600', icon: (
             <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3M12 22a10 10 0 110-20 10 10 0 010 20z"/></svg>
           ) },
-          { label: 'Incidents', value: String(kpis.incidents), sub: 'last 24h', accent: 'from-amber-50 to-orange-50', iconBg: 'bg-amber-50', iconText: 'text-amber-700', iconBorder: 'border-amber-200', pill: 'bg-orange-500', icon: (
+          { label: 'Incidents', value: String(kpis.incidents), sub: 'last 24h', accent: 'from-amber-50 to-orange-50', iconBg: 'bg-amber-600', iconText: 'text-white', iconBorder: 'border-amber-200', pill: 'bg-orange-500', icon: (
             <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
           ) }
         ].map((k) => (
@@ -202,9 +202,9 @@ const Dashboard = () => {
             <div className="relative flex items-center gap-4">
               <span className={`inline-flex items-center justify-center w-12 h-12 rounded-2xl ${k.iconBg} ${k.iconText} border ${k.iconBorder}`}>{k.icon}</span>
               <div>
-                <div className="text-4xl font-extrabold text-slate-900 leading-tight">{k.value}</div>
-                <div className="text-sm text-slate-600">{k.label}</div>
-                {k.sub && <div className="text-xs text-slate-500 mt-0.5">{k.sub}</div>}
+                <div className="text-4xl lg:text-5xl font-extrabold text-slate-900 leading-tight">{k.value}</div>
+                <div className="text-sm lg:text-xl text-slate-600">{k.label}</div>
+                {k.sub && <div className="text-xs lg:text-xl text-slate-500 mt-0.5">{k.sub}</div>}
                 <span className={`mt-3 inline-flex px-2 py-0.5 rounded-full text-white text-[11px] font-semibold ${k.pill}`}>Live</span>
               </div>
             </div>
