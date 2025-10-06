@@ -148,22 +148,33 @@ const Dashboard = () => {
       {/* Organization Metrics */}
       <section className="grid [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))] gap-6 mb-8">
         {[
-          { label: 'Total Buses', value: String(orgStats.totalBuses), accent: 'from-slate-50 to-white', iconBg: 'bg-slate-100', iconText: 'text-slate-700', iconBorder: 'border-slate-200' },
-          { label: 'Active Buses', value: String(orgStats.activeBuses), accent: 'from-green-50 to-emerald-50', iconBg: 'bg-emerald-50', iconText: 'text-emerald-700', iconBorder: 'border-emerald-200' },
-          { label: 'Inactive Buses', value: String(orgStats.inactiveBuses), accent: 'from-rose-50 to-red-50', iconBg: 'bg-rose-50', iconText: 'text-rose-700', iconBorder: 'border-rose-200' },
-          { label: 'Assigned Drivers', value: String(orgStats.assignedDrivers), accent: 'from-blue-50 to-indigo-50', iconBg: 'bg-blue-50', iconText: 'text-blue-700', iconBorder: 'border-blue-200' },
-          { label: 'Active Drivers', value: String(orgStats.activeDrivers), accent: 'from-teal-50 to-cyan-50', iconBg: 'bg-teal-50', iconText: 'text-teal-700', iconBorder: 'border-teal-200' },
-          { label: 'Cities', value: String(orgStats.totalCities), accent: 'from-violet-50 to-indigo-50', iconBg: 'bg-violet-50', iconText: 'text-violet-700', iconBorder: 'border-violet-200' },
+          { label: 'Total Buses', value: String(orgStats.totalBuses), sub: `${orgStats.unassignedBuses} unassigned`, accent: 'from-slate-50 to-white', iconBg: 'bg-slate-100', iconText: 'text-slate-700', iconBorder: 'border-slate-200', icon: (
+            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 13h18M5 6h14a2 2 0 012 2v9H3V8a2 2 0 012-2z"/></svg>
+          ) },
+          { label: 'Active Buses', value: String(orgStats.activeBuses), sub: `${orgStats.tripsWithLive} with live GPS`, accent: 'from-green-50 to-emerald-50', iconBg: 'bg-emerald-50', iconText: 'text-emerald-700', iconBorder: 'border-emerald-200', icon: (
+            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12l5 5L20 7"/></svg>
+          ) },
+          { label: 'Inactive Buses', value: String(orgStats.inactiveBuses), sub: 'Needs attention', accent: 'from-rose-50 to-red-50', iconBg: 'bg-rose-50', iconText: 'text-rose-700', iconBorder: 'border-rose-200', icon: (
+            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          ) },
+          { label: 'Assigned Drivers', value: String(orgStats.assignedDrivers), sub: `${orgStats.totalBuses - orgStats.unassignedBuses} buses`, accent: 'from-blue-50 to-indigo-50', iconBg: 'bg-blue-50', iconText: 'text-blue-700', iconBorder: 'border-blue-200', icon: (
+            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a4 4 0 00-4-4h-1m-4 6H2v-2a4 4 0 014-4h6m-3-4a4 4 0 100-8 4 4 0 000 8z"/></svg>
+          ) },
+          { label: 'Active Drivers', value: String(orgStats.activeDrivers), sub: 'Currently on trips', accent: 'from-teal-50 to-cyan-50', iconBg: 'bg-teal-50', iconText: 'text-teal-700', iconBorder: 'border-teal-200', icon: (
+            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l6.16-3.422A12.083 12.083 0 016 8.882"/></svg>
+          ) },
+          { label: 'Cities', value: String(orgStats.totalCities), sub: 'Operating regions', accent: 'from-violet-50 to-indigo-50', iconBg: 'bg-violet-50', iconText: 'text-violet-700', iconBorder: 'border-violet-200', icon: (
+            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 0v20m10-10H2"/></svg>
+          ) },
         ].map((k) => (
           <div key={k.label} className={`group rounded-3xl border border-slate-200 bg-white p-6 sm:p-7 ring-1 ring-slate-900/5 shadow-md hover:shadow-xl transition-all duration-300 relative overflow-hidden hover:-translate-y-0.5 min-h-[120px]`}>
             <div className={`absolute -top-12 -right-12 w-40 h-40 rounded-full bg-gradient-to-br ${k.accent} blur-3xl`} />
             <div className="relative flex items-center gap-4">
-              <span className={`inline-flex items-center justify-center w-12 h-12 rounded-2xl ${k.iconBg} ${k.iconText} border ${k.iconBorder}`}>
-                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12h18M3 6h18M3 18h18"/></svg>
-              </span>
+              <span className={`inline-flex items-center justify-center w-12 h-12 rounded-2xl ${k.iconBg} ${k.iconText} border ${k.iconBorder}`}>{k.icon}</span>
               <div>
                 <div className="text-4xl font-extrabold text-slate-900 leading-tight">{k.value}</div>
                 <div className="text-sm text-slate-600">{k.label}</div>
+                {k.sub && <div className="text-xs text-slate-500 mt-0.5">{k.sub}</div>}
               </div>
             </div>
           </div>
@@ -173,20 +184,27 @@ const Dashboard = () => {
       {/* KPI Cards */}
       <section className="grid [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))] gap-6 mb-8">
         {[
-          { label: 'Active Trips', value: String(kpis.totalActive), accent: 'from-blue-50 to-indigo-50', iconBg: 'bg-indigo-50', iconText: 'text-indigo-700', iconBorder: 'border-indigo-200', pill: 'bg-indigo-600' },
-          { label: 'Buses Online', value: String(kpis.onlineBuses), accent: 'from-teal-50 to-emerald-50', iconBg: 'bg-emerald-50', iconText: 'text-emerald-700', iconBorder: 'border-emerald-200', pill: 'bg-emerald-600' },
-          { label: 'Avg ETA Refresh', value: kpis.avgEtaRefresh, accent: 'from-sky-50 to-cyan-50', iconBg: 'bg-sky-50', iconText: 'text-sky-700', iconBorder: 'border-sky-200', pill: 'bg-sky-600' },
-          { label: 'Incidents', value: String(kpis.incidents), accent: 'from-amber-50 to-orange-50', iconBg: 'bg-amber-50', iconText: 'text-amber-700', iconBorder: 'border-amber-200', pill: 'bg-orange-500' }
+          { label: 'Active Trips', value: String(kpis.totalActive), sub: `${kpis.totalActive > 0 ? 'live now' : 'no active'}`, accent: 'from-blue-50 to-indigo-50', iconBg: 'bg-indigo-50', iconText: 'text-indigo-700', iconBorder: 'border-indigo-200', pill: 'bg-indigo-600', icon: (
+            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2 4 4 8-8 4 4"/></svg>
+          ) },
+          { label: 'Buses Online', value: String(kpis.onlineBuses), sub: 'broadcasting location', accent: 'from-teal-50 to-emerald-50', iconBg: 'bg-emerald-50', iconText: 'text-emerald-700', iconBorder: 'border-emerald-200', pill: 'bg-emerald-600', icon: (
+            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2 12a10 10 0 0020 0M5 12a7 7 0 0014 0M8 12a4 4 0 008 0"/></svg>
+          ) },
+          { label: 'Avg ETA Refresh', value: kpis.avgEtaRefresh, sub: 'traffic-aware', accent: 'from-sky-50 to-cyan-50', iconBg: 'bg-sky-50', iconText: 'text-sky-700', iconBorder: 'border-sky-200', pill: 'bg-sky-600', icon: (
+            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3M12 22a10 10 0 110-20 10 10 0 010 20z"/></svg>
+          ) },
+          { label: 'Incidents', value: String(kpis.incidents), sub: 'last 24h', accent: 'from-amber-50 to-orange-50', iconBg: 'bg-amber-50', iconText: 'text-amber-700', iconBorder: 'border-amber-200', pill: 'bg-orange-500', icon: (
+            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+          ) }
         ].map((k) => (
           <div key={k.label} className={`group rounded-3xl border border-slate-200 bg-white p-6 sm:p-7 ring-1 ring-slate-900/5 shadow-md hover:shadow-xl transition-all duration-300 relative overflow-hidden hover:-translate-y-0.5 min-h-[140px]`}>
             <div className={`absolute -top-14 -right-14 w-48 h-48 rounded-full bg-gradient-to-br ${k.accent} blur-3xl`} />
             <div className="relative flex items-center gap-4">
-              <span className={`inline-flex items-center justify-center w-12 h-12 rounded-2xl ${k.iconBg} ${k.iconText} border ${k.iconBorder}`}>
-                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v8m-4-4h8"/></svg>
-              </span>
+              <span className={`inline-flex items-center justify-center w-12 h-12 rounded-2xl ${k.iconBg} ${k.iconText} border ${k.iconBorder}`}>{k.icon}</span>
               <div>
                 <div className="text-4xl font-extrabold text-slate-900 leading-tight">{k.value}</div>
                 <div className="text-sm text-slate-600">{k.label}</div>
+                {k.sub && <div className="text-xs text-slate-500 mt-0.5">{k.sub}</div>}
                 <span className={`mt-3 inline-flex px-2 py-0.5 rounded-full text-white text-[11px] font-semibold ${k.pill}`}>Live</span>
               </div>
             </div>
