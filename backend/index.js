@@ -40,6 +40,8 @@ const googleRoutes=require("./routes/google.js");
 app.use("/google",googleRoutes);
 const smartTripRoutes = require("./routes/smartTrips");
 app.use("/smart-trips", smartTripRoutes);
+const driverRoutes = require("./routes/driver");
+app.use("/drivers", driverRoutes);
 
 const PORT =  2000;
 
