@@ -276,8 +276,8 @@ const Dashboard = () => {
             <tbody className="divide-y divide-slate-200">
               {recentTrips.map((r, i) => (
                 <tr key={i} className="text-slate-800 hover:bg-slate-50/70">
-                  <td className="py-3 pr-4 font-semibold">{r.bus}</td>
-                  <td className="py-3 pr-4">{r.route}</td>
+                  <td className="py-3 pr-4 lg:text-xl font-semibold">{r.bus}</td>
+                  <td className="py-3 lg:text-xl pr-4">{r.route}</td>
                   <td className="py-3 pr-4">
                     <span className={`px-2 py-1 rounded-full text-[11px] font-bold ${r.status === 'Ongoing' ? 'bg-green-50 text-green-700 border border-green-100' : r.status === 'Completed' ? 'bg-slate-100 text-slate-700 border border-slate-200' : 'bg-orange-50 text-orange-700 border border-orange-100'}`}>{r.status}</span>
                   </td>
