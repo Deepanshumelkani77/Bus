@@ -113,3 +113,58 @@ async function assignBusToDriver(req, res) {
 }
 
 module.exports.assignBusToDriver = assignBusToDriver;
+
+// POST /buses
+async function createBus(req, res) {
+  try {
+    const { busNumber, city, totalSeats, status, image } = req.body || {};
+    if (!busNumber || !city || !totalSeats) {
+      return res.status(400).json({ message: 'busNumber, city and totalSeats are required' });
+    }
+    const exists = await Bus.findOne({ busNumber });
+    if (exists) return res.status(409).json({ message: 'Bus number already exists' });
+    const bus = await Bus.create({ busNumber, city, totalSeats, status, image });
+    res.status(201).json({ bus });
+  } catch (e) {
+    console.error('Create bus error', e);
+    res.status(500).json({ message: 'Failed to create bus' });
+  }
+}
+
+// PUT /buses/:id
+async function updateBus(req, res) {
+  try {
+    const { id } = req.params;
+    const { busNumber, city, totalSeats, status, image } = req.body || {};
+    const update = {};
+    if (busNumber) update.busNumber = busNumber;
+    if (city) update.city = city;
+    if (typeof totalSeats !== 'undefined') update.totalSeats = totalSeats;
+    if (status) update.status = status;
+    if (typeof image !== 'undefined') update.image = image;
+
+    const bus = await Bus.findByIdAndUpdate(id, update, { new: true });
+    if (!bus) return res.status(404).json({ message: 'Bus not found' });
+    res.json({ bus });
+  } catch (e) {
+    console.error('Update bus error', e);
+    res.status(500).json({ message: 'Failed to update bus' });
+  }
+}
+
+// DELETE /buses/:id
+async function deleteBus(req, res) {
+  try {
+    const { id } = req.params;
+    const bus = await Bus.findByIdAndDelete(id);
+    if (!bus) return res.status(404).json({ message: 'Bus not found' });
+    res.json({ message: 'Deleted', id });
+  } catch (e) {
+    console.error('Delete bus error', e);
+    res.status(500).json({ message: 'Failed to delete bus' });
+  }
+}
+
+module.exports.createBus = createBus;
+module.exports.updateBus = updateBus;
+module.exports.deleteBus = deleteBus;

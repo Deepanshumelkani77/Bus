@@ -10,6 +10,12 @@ const Bus = () => {
   const [query, setQuery] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [saving, setSaving] = useState(false)
+
+  // Modal state
+  const [modalOpen, setModalOpen] = useState(false)
+  const [editingBus, setEditingBus] = useState(null)
+  const [form, setForm] = useState({ busNumber: '', city: '', totalSeats: '', status: 'Inactive', image: '' })
 
   // Debounce query
   const [debouncedQuery, setDebouncedQuery] = useState('')
@@ -51,6 +57,79 @@ const Bus = () => {
     fetchBuses()
   }, [city, debouncedQuery])
 
+  // Handlers for CRUD
+  const openAdd = () => {
+    setEditingBus(null)
+    setForm({ busNumber: '', city: '', totalSeats: '', status: 'Inactive', image: '' })
+    setModalOpen(true)
+  }
+
+  const openEdit = (b) => {
+    setEditingBus(b)
+    setForm({
+      busNumber: b.busNumber || '',
+      city: b.city || '',
+      totalSeats: b.totalSeats ?? '',
+      status: b.status || 'Inactive',
+      image: b.image || ''
+    })
+    setModalOpen(true)
+  }
+
+  const closeModal = () => {
+    if (saving) return
+    setModalOpen(false)
+    setEditingBus(null)
+  }
+
+  const handleFormChange = (e) => {
+    const { name, value } = e.target
+    setForm((f) => ({ ...f, [name]: name === 'totalSeats' ? (value === '' ? '' : Number(value)) : value }))
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    try {
+      setSaving(true)
+      setError('')
+      const payload = {
+        busNumber: String(form.busNumber).trim(),
+        city: String(form.city).trim(),
+        totalSeats: Number(form.totalSeats),
+        status: form.status,
+        image: form.image?.trim() || undefined,
+      }
+      if (!payload.busNumber || !payload.city || !payload.totalSeats) {
+        setError('Please provide bus number, city and total seats')
+        return
+      }
+      if (editingBus?._id) {
+        await axios.put(`${API_BASE}/buses/${editingBus._id}`, payload)
+      } else {
+        await axios.post(`${API_BASE}/buses`, payload)
+      }
+      await fetchBuses()
+      setModalOpen(false)
+      setEditingBus(null)
+    } catch (e) {
+      setError(e?.response?.data?.message || e.message || 'Failed to save bus')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDelete = async (b) => {
+    const ok = window.confirm(`Delete bus #${b.busNumber}?`)
+    if (!ok) return
+    try {
+      setError('')
+      await axios.delete(`${API_BASE}/buses/${b._id}`)
+      await fetchBuses()
+    } catch (e) {
+      setError(e?.response?.data?.message || e.message || 'Failed to delete bus')
+    }
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6">
       {/* Header */}
@@ -65,6 +144,13 @@ const Bus = () => {
             <p className="text-slate-600 lg:text-xl">Manage all buses with filters and search</p>
           </div>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+            <button
+              onClick={openAdd}
+              className="order-3 sm:order-none inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 text-white font-semibold shadow hover:shadow-lg transition-all"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v14m-7-7h14"/></svg>
+              Add Bus
+            </button>
             <div className="relative w-full sm:w-72 lg:w-80">
               <input
                 value={query}
@@ -139,9 +225,76 @@ const Bus = () => {
                 {b.createdAt ? new Date(b.createdAt).toLocaleDateString() : ''}
               </div>
             </div>
+            <div className="mt-3 flex items-center gap-2">
+              <button
+                onClick={() => openEdit(b)}
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 text-sm"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536M4 20h4l10.5-10.5a2.5 2.5 0 00-3.536-3.536L4 16v4z"/></svg>
+                Edit
+              </button>
+              <button
+                onClick={() => handleDelete(b)}
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-rose-200 text-rose-700 hover:bg-rose-50 text-sm"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 7h12M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2m-7 0v12m4-12v12M5 7l1 14a2 2 0 002 2h8a2 2 0 002-2l1-14"/></svg>
+                Delete
+              </button>
+            </div>
           </div>
         ))}
       </div>
+
+      {/* Modal */}
+      {modalOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={closeModal} />
+          <div className="relative z-10 w-[92%] max-w-lg rounded-2xl bg-white border border-slate-200 shadow-xl p-5">
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-lg font-extrabold text-slate-900">{editingBus ? 'Edit Bus' : 'Add Bus'}</div>
+              <button onClick={closeModal} className="inline-flex items-center justify-center w-8 h-8 rounded-lg hover:bg-slate-100">
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+            </div>
+            {error && (
+              <div className="mb-2 rounded-xl border border-orange-200 bg-orange-50 p-2 text-xs text-orange-800">{error}</div>
+            )}
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Bus Number</label>
+                  <input name="busNumber" value={form.busNumber} onChange={handleFormChange} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. 101" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">City</label>
+                  <input name="city" value={form.city} onChange={handleFormChange} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. Jaipur" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Total Seats</label>
+                  <input type="number" min="1" name="totalSeats" value={form.totalSeats} onChange={handleFormChange} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. 40" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Status</label>
+                  <select name="status" value={form.status} onChange={handleFormChange} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option>Active</option>
+                    <option>Inactive</option>
+                  </select>
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Image URL</label>
+                  <input name="image" value={form.image} onChange={handleFormChange} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="https://..." />
+                </div>
+              </div>
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <button type="button" onClick={closeModal} className="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50">Cancel</button>
+                <button disabled={saving} className="px-4 py-2 rounded-xl bg-blue-600 text-white font-semibold shadow hover:shadow-lg disabled:opacity-60">
+                  {saving ? 'Saving...' : editingBus ? 'Update' : 'Create'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
