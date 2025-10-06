@@ -298,7 +298,7 @@ const Dashboard = () => {
       <section className="mt-6 grid [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))] gap-6">
         {[
           { label: 'Add New Driver', accent: 'from-blue-600 to-indigo-600', text: 'text-white' },
-          { label: 'Create Route', accent: 'from-sky-500 to-teal-600', text: 'text-white' },
+          { label: 'Create Route', accent: 'from-green-500 to-green-600', text: 'text-white' },
           { label: 'Broadcast Notice', accent: 'from-orange-500 to-amber-600', text: 'text-white' },
         ].map((a) => (
           <button key={a.label} className={`group rounded-2xl px-5 py-5 font-semibold shadow-md hover:shadow-xl transition-all bg-gradient-to-r ${a.accent} ${a.text} text-left flex items-center gap-3`}>
