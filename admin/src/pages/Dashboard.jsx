@@ -128,14 +128,14 @@ const Dashboard = () => {
 
       {/* Quick Filters */}
       <div className="mb-6 flex flex-wrap items-center gap-2">
-        <span className="text-slate-500 text-sm font-semibold mr-2">Filters:</span>
-        <button className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 text-xs font-semibold">
+        <span className="text-slate-500 text-sm lg:text-xl font-semibold mr-2">Filters:</span>
+        <button className="lg:text-xl inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 text-xs font-semibold">
           All Cities <span className="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-slate-100 text-slate-700">{orgStats.totalCities}</span>
         </button>
-        <button className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 text-xs font-semibold">
+        <button className="lg:text-xl inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 text-xs font-semibold">
           Active Buses <span className="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-white/70 text-green-700">{orgStats.activeBuses}</span>
         </button>
-        <button className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 text-xs font-semibold">
+        <button className="lg:text-xl inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 text-xs font-semibold">
           Inactive Buses <span className="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-slate-100 text-slate-700">{orgStats.inactiveBuses}</span>
         </button>
         {orgStats.avgEtaMins !== null && (
@@ -173,8 +173,8 @@ const Dashboard = () => {
               <span className={`inline-flex items-center justify-center w-12 h-12 rounded-2xl ${k.iconBg} ${k.iconText} border ${k.iconBorder}`}>{k.icon}</span>
               <div>
                 <div className="text-4xl lg:text-5xl font-extrabold text-slate-900 leading-tight">{k.value}</div>
-                <div className="text-sm text-slate-600">{k.label}</div>
-                {k.sub && <div className="text-xs text-slate-500 mt-0.5">{k.sub}</div>}
+                <div className="text-sm lg:text-xl text-slate-600">{k.label}</div>
+                {k.sub && <div className="text-xs lg:text-xl text-slate-500 mt-0.5">{k.sub}</div>}
               </div>
             </div>
           </div>
