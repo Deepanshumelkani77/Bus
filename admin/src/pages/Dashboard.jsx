@@ -148,22 +148,22 @@ const Dashboard = () => {
       {/* Organization Metrics */}
       <section className="grid [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))] gap-6 mb-8">
         {[
-          { label: 'Total Buses', value: String(orgStats.totalBuses), sub: `${orgStats.unassignedBuses} unassigned`, accent: 'from-slate-50 to-white', iconBg: 'bg-slate-100', iconText: 'text-slate-700', iconBorder: 'border-slate-200', icon: (
+          { label: 'Total Buses', value: String(orgStats.totalBuses), sub: `${orgStats.unassignedBuses} unassigned`, accent: 'from-slate-50 to-white', iconBg: 'bg-orange-600', iconText: 'text-white', iconBorder: 'border-orange-200', icon: (
             <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 13h18M5 6h14a2 2 0 012 2v9H3V8a2 2 0 012-2z"/></svg>
           ) },
-          { label: 'Active Buses', value: String(orgStats.activeBuses), sub: `${orgStats.tripsWithLive} with live GPS`, accent: 'from-green-50 to-emerald-50', iconBg: 'bg-emerald-50', iconText: 'text-emerald-700', iconBorder: 'border-emerald-200', icon: (
+          { label: 'Active Buses', value: String(orgStats.activeBuses), sub: `${orgStats.tripsWithLive} with live GPS`, accent: 'from-green-50 to-emerald-50', iconBg: 'bg-green-600', iconText: 'text-white', iconBorder: 'border-emerald-200', icon: (
             <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12l5 5L20 7"/></svg>
           ) },
-          { label: 'Inactive Buses', value: String(orgStats.inactiveBuses), sub: 'Needs attention', accent: 'from-rose-50 to-red-50', iconBg: 'bg-rose-50', iconText: 'text-rose-700', iconBorder: 'border-rose-200', icon: (
+          { label: 'Inactive Buses', value: String(orgStats.inactiveBuses), sub: 'Needs attention', accent: 'from-rose-50 to-red-50', iconBg: 'bg-rose-600', iconText: 'text-white', iconBorder: 'border-rose-200', icon: (
             <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg>
           ) },
-          { label: 'Assigned Drivers', value: String(orgStats.assignedDrivers), sub: `${orgStats.totalBuses - orgStats.unassignedBuses} buses`, accent: 'from-blue-50 to-indigo-50', iconBg: 'bg-blue-50', iconText: 'text-blue-700', iconBorder: 'border-blue-200', icon: (
+          { label: 'Assigned Drivers', value: String(orgStats.assignedDrivers), sub: `${orgStats.totalBuses - orgStats.unassignedBuses} buses`, accent: 'from-blue-50 to-indigo-50', iconBg: 'bg-blue-600', iconText: 'text-white', iconBorder: 'border-blue-200', icon: (
             <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a4 4 0 00-4-4h-1m-4 6H2v-2a4 4 0 014-4h6m-3-4a4 4 0 100-8 4 4 0 000 8z"/></svg>
           ) },
-          { label: 'Active Drivers', value: String(orgStats.activeDrivers), sub: 'Currently on trips', accent: 'from-teal-50 to-cyan-50', iconBg: 'bg-teal-50', iconText: 'text-teal-700', iconBorder: 'border-teal-200', icon: (
+          { label: 'Active Drivers', value: String(orgStats.activeDrivers), sub: 'Currently on trips', accent: 'from-teal-50 to-cyan-50', iconBg: 'bg-teal-600', iconText: 'text-white', iconBorder: 'border-teal-200', icon: (
             <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l6.16-3.422A12.083 12.083 0 016 8.882"/></svg>
           ) },
-          { label: 'Cities', value: String(orgStats.totalCities), sub: 'Operating regions', accent: 'from-violet-50 to-indigo-50', iconBg: 'bg-violet-50', iconText: 'text-violet-700', iconBorder: 'border-violet-200', icon: (
+          { label: 'Cities', value: String(orgStats.totalCities), sub: 'Operating regions', accent: 'from-violet-50 to-indigo-50', iconBg: 'bg-violet-600', iconText: 'text-white', iconBorder: 'border-violet-200', icon: (
             <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 0v20m10-10H2"/></svg>
           ) },
         ].map((k) => (
@@ -172,7 +172,7 @@ const Dashboard = () => {
             <div className="relative flex items-center gap-4">
               <span className={`inline-flex items-center justify-center w-12 h-12 rounded-2xl ${k.iconBg} ${k.iconText} border ${k.iconBorder}`}>{k.icon}</span>
               <div>
-                <div className="text-4xl font-extrabold text-slate-900 leading-tight">{k.value}</div>
+                <div className="text-4xl lg:text-5xl font-extrabold text-slate-900 leading-tight">{k.value}</div>
                 <div className="text-sm text-slate-600">{k.label}</div>
                 {k.sub && <div className="text-xs text-slate-500 mt-0.5">{k.sub}</div>}
               </div>
