@@ -31,8 +31,15 @@ const Navbar = () => {
   }, []);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-[#0F172A] border-b border-slate-700/60 shadow-sm">
-      <div className="w-full mx-auto h-[10vh] px-3 sm:px-4 lg:px-6 flex items-center justify-between">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-[#0F172A] border-b border-slate-700/60 shadow-sm relative overflow-hidden">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0">
+        <div className="absolute w-96 h-96 rounded-full bg-teal-400/5 -top-20 -left-20 animate-pulse"></div>
+        <div className="absolute w-80 h-80 rounded-full bg-sky-400/5 top-1/3 -right-20 animate-pulse" style={{animationDelay: '1s'}}></div>
+        <div className="absolute w-64 h-64 rounded-full bg-purple-400/5 -bottom-10 left-1/4 animate-pulse" style={{animationDelay: '2s'}}></div>
+      </div>
+      
+      <div className="relative z-10 w-full mx-auto h-[10vh] px-3 sm:px-4 lg:px-6 flex items-center justify-between">
         {/* Left: Menu (mobile) + Logo */}
         <div className="flex items-center gap-3">
           

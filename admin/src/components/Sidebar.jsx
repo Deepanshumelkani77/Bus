@@ -20,11 +20,17 @@ const Sidebar = () => {
 
       {/* Mobile slide-in panel */}
       <aside
-        className={`fixed top-0 left-0 h-full w-72 bg-[#0F172A] shadow-2xl border-r border-slate-800 z-50 transform transition-transform duration-300 lg:hidden ${open ? 'translate-x-0' : '-translate-x-full'}`}
+        className={`fixed top-0 left-0 h-full w-72 bg-[#0F172A] shadow-2xl border-r border-slate-800 z-50 transform transition-transform duration-300 lg:hidden overflow-hidden ${open ? 'translate-x-0' : '-translate-x-full'}`}
         aria-label="Sidebar"
       >
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0">
+          <div className="absolute w-64 h-64 rounded-full bg-teal-400/8 -top-10 -left-10 animate-pulse"></div>
+          <div className="absolute w-48 h-48 rounded-full bg-sky-400/8 top-1/3 -right-10 animate-pulse" style={{animationDelay: '1s'}}></div>
+          <div className="absolute w-40 h-40 rounded-full bg-purple-400/8 bottom-20 left-1/4 animate-pulse" style={{animationDelay: '2s'}}></div>
+        </div>
         {/* Brand header - dark */}
-        <div className="h-16 px-4 flex items-center gap-3 border-b border-slate-800 bg-[#0F172A] text-slate-100">
+        <div className="relative z-10 h-16 px-4 flex items-center gap-3 border-b border-slate-800 bg-[#0F172A] text-slate-100">
           <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center shadow">
             <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
               <path d="M4 16c0 .88.39 1.67 1 2.22V20a1 1 0 001 1h1a1 1 0 001-1v-1h8v1a1 1 0 001 1h1a1 1 0 001-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10z"/>
@@ -41,7 +47,7 @@ const Sidebar = () => {
         </div>
 
         {/* Nav */}
-        <nav className="p-3 space-y-1 h-[calc(100%-4rem)] flex flex-col">
+        <nav className="relative z-10 p-3 space-y-1 h-[calc(100%-4rem)] flex flex-col">
           <div className="space-y-1 flex-1">
             {[
               { label: 'Dashboard',path:'/', icon: (
@@ -85,8 +91,15 @@ const Sidebar = () => {
       </aside>
 
       {/* Desktop fixed sidebar (25% width) */}
-      <aside className="hidden lg:flex fixed top-[10vh] left-0 h-[90vh] w-[20%] flex-col border-r border-slate-800 bg-[#0F172A]">
-        <div className="h-16 px-8 flex items-center gap-3 border-b border-slate-800 bg-[#0F172A] text-slate-100">
+      <aside className="hidden lg:flex fixed top-[10vh] left-0 h-[90vh] w-[20%] flex-col border-r border-slate-800 bg-[#0F172A] overflow-hidden">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0">
+          <div className="absolute w-80 h-80 rounded-full bg-teal-400/6 -top-20 -left-20 animate-pulse"></div>
+          <div className="absolute w-64 h-64 rounded-full bg-sky-400/6 top-1/2 -right-16 animate-pulse" style={{animationDelay: '1s'}}></div>
+          <div className="absolute w-48 h-48 rounded-full bg-purple-400/6 bottom-10 left-1/4 animate-pulse" style={{animationDelay: '2s'}}></div>
+        </div>
+        
+        <div className="relative z-10 h-16 px-8 flex items-center gap-3 border-b border-slate-800 bg-[#0F172A] text-slate-100">
           <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center shadow">
             <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
               <path d="M4 16c0 .88.39 1.67 1 2.22V20a1 1 0 001 1h1a1 1 0 001-1v-1h8v1a1 1 0 001 1h1a1 1 0 001-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10z"/>
@@ -95,7 +108,7 @@ const Sidebar = () => {
           <div className="font-extrabold tracking-tight text-xl">Admin</div>
         </div>
 
-        <nav className="p-3 px-7 space-y-1 flex-1 flex flex-col">
+        <nav className="relative z-10 p-3 px-7 space-y-1 flex-1 flex flex-col">
           <div className="space-y-1">
             {[
               { label: 'Dashboard', path: '/', icon: (
