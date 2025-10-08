@@ -233,10 +233,16 @@ const Driver = () => {
       {/* Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {loading && Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="rounded-3xl border border-slate-200 bg-white p-4 ring-1 ring-slate-900/5 shadow-md animate-pulse">
-            <div className="h-32 bg-slate-100 rounded-xl mb-3" />
-            <div className="h-4 bg-slate-100 rounded w-2/3 mb-2" />
-            <div className="h-4 bg-slate-100 rounded w-1/2" />
+          <div key={i} className="rounded-3xl border border-slate-200 bg-white ring-1 ring-slate-900/5 shadow-md animate-pulse w-full max-w-sm mx-auto overflow-hidden">
+            <div className="aspect-[4/3] bg-slate-100 rounded-t-3xl" />
+            <div className="p-4">
+              <div className="h-4 bg-slate-100 rounded w-2/3 mb-2" />
+              <div className="h-3 bg-slate-100 rounded w-1/2 mb-3" />
+              <div className="flex gap-2">
+                <div className="h-8 bg-slate-100 rounded flex-1" />
+                <div className="h-8 bg-slate-100 rounded flex-1" />
+              </div>
+            </div>
           </div>
         ))}
 
@@ -249,8 +255,8 @@ const Driver = () => {
         )}
 
         {!loading && (drivers || []).map((d) => (
-          <div key={d._id || d.email} className="group rounded-3xl border border-slate-200 bg-white p-4 ring-1 ring-slate-900/5 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden">
-            <div className="relative h-40 rounded-2xl overflow-hidden border border-slate-100 mb-3 bg-gradient-to-br from-slate-50 to-white">
+          <div key={d._id || d.email} className="group rounded-3xl border border-slate-200 bg-white ring-1 ring-slate-900/5 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden w-full max-w-sm mx-auto">
+            <div className="relative aspect-[4/3] rounded-t-3xl overflow-hidden bg-gradient-to-br from-slate-50 to-white">
               {d.image ? (
                 <img 
                   src={d.image} 
@@ -274,33 +280,39 @@ const Driver = () => {
                   <div className="text-white/90 text-xs">{d.email}</div>
                 </div>
               )}
-              <div className="absolute top-2 right-2 inline-flex items-center gap-2 px-2 py-1 rounded-full text-xs font-semibold border bg-white/90 text-slate-700 border-slate-200">
+              <div className="absolute top-3 right-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border backdrop-blur-sm bg-white/90 text-slate-700 border-slate-200">
                 {d.city}
               </div>
             </div>
-            <div className="flex items-center justify-between">
-              <div className="text-slate-600 text-sm">
+            <div className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <div className="text-lg font-extrabold text-slate-900">{d.name}</div>
+                  <div className="text-slate-600 text-sm">{d.email}</div>
+                </div>
+                <div className="text-xs text-slate-500">
+                  {d.createdAt ? new Date(d.createdAt).toLocaleDateString() : ''}
+                </div>
+              </div>
+              <div className="text-slate-600 text-sm mb-3">
                 {d.activeBus ? `Active Bus: #${d.activeBus.busNumber || ''}` : 'No active bus'}
               </div>
-              <div className="text-xs text-slate-500">
-                {d.createdAt ? new Date(d.createdAt).toLocaleDateString() : ''}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => openEdit(d)}
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 text-sm font-medium transition-colors"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536M4 20h4l10.5-10.5a2.5 2.5 0 00-3.536-3.536L4 16v4z"/></svg>
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDelete(d)}
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-rose-200 text-rose-700 hover:bg-rose-50 text-sm font-medium transition-colors"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 7h12M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2m-7 0v12m4-12v12M5 7l1 14a2 2 0 002 2h8a2 2 0 002-2l1-14"/></svg>
+                  Delete
+                </button>
               </div>
-            </div>
-            <div className="mt-3 flex items-center gap-2">
-              <button
-                onClick={() => openEdit(d)}
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 text-sm"
-              >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536M4 20h4l10.5-10.5a2.5 2.5 0 00-3.536-3.536L4 16v4z"/></svg>
-                Edit
-              </button>
-              <button
-                onClick={() => handleDelete(d)}
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-rose-200 text-rose-700 hover:bg-rose-50 text-sm"
-              >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 7h12M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2m-7 0v12m4-12v12M5 7l1 14a2 2 0 002 2h8a2 2 0 002-2l1-14"/></svg>
-                Delete
-              </button>
             </div>
           </div>
         ))}
