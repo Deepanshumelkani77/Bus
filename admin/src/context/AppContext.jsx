@@ -91,13 +91,6 @@ const AppContextProvider = (props) => {
     }
   };
 
-  // Logout function
-  const logout = () => {
-    localStorage.removeItem('adminToken');
-    localStorage.removeItem('admin');
-    setAdmin(null);
-    navigate('/login');
-  };
 
   // Check authentication on app load
   useEffect(() => {
