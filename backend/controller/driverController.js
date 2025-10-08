@@ -38,14 +38,14 @@ async function listDriverCities(req, res) {
 // POST /drivers
 async function createDriver(req, res) {
   try {
-    const { name, email, password, city } = req.body || {};
+    const { name, email, password, city, image } = req.body || {};
     if (!name || !email || !password || !city) {
       return res.status(400).json({ message: 'name, email, password and city are required' });
     }
     const exists = await Driver.findOne({ email });
     if (exists) return res.status(409).json({ message: 'Email already exists' });
     const hashed = await bcrypt.hash(password, 10);
-    const driver = await Driver.create({ name, email, password: hashed, city });
+    const driver = await Driver.create({ name, email, password: hashed, city, image });
     res.status(201).json({ driver });
   } catch (e) {
     console.error('Create driver error', e);
@@ -57,11 +57,12 @@ async function createDriver(req, res) {
 async function updateDriver(req, res) {
   try {
     const { id } = req.params;
-    const { name, email, password, city } = req.body || {};
+    const { name, email, password, city, image } = req.body || {};
     const update = {};
     if (name) update.name = name;
     if (email) update.email = email;
     if (city) update.city = city;
+    if (typeof image !== 'undefined') update.image = image;
     if (password) update.password = await bcrypt.hash(password, 10);
     const driver = await Driver.findByIdAndUpdate(id, update, { new: true });
     if (!driver) return res.status(404).json({ message: 'Driver not found' });

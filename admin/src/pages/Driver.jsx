@@ -122,6 +122,11 @@ const Driver = () => {
     try {
       setSaving(true)
       setError('')
+      if (uploading) {
+        setError('Please wait for the image upload to complete before saving')
+        setSaving(false)
+        return
+      }
       const payload = {
         name: String(form.name).trim(),
         email: String(form.email).trim(),
@@ -130,6 +135,7 @@ const Driver = () => {
       }
       if (!payload.name || !payload.email || !payload.city) {
         setError('Please provide name, email and city')
+        setSaving(false)
         return
       }
       if (editingDriver?._id) {
@@ -327,8 +333,8 @@ const Driver = () => {
               </div>
               <div className="flex items-center justify-end gap-2 pt-2">
                 <button type="button" onClick={closeModal} className="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50">Cancel</button>
-                <button disabled={saving} className="px-4 py-2 rounded-xl bg-blue-600 text-white font-semibold shadow hover:shadow-lg disabled:opacity-60">
-                  {saving ? 'Saving...' : editingDriver ? 'Update' : 'Create'}
+                <button disabled={saving || uploading} className="px-4 py-2 rounded-xl bg-blue-600 text-white font-semibold shadow hover:shadow-lg disabled:opacity-60">
+                  {uploading ? 'Uploading...' : saving ? 'Saving...' : editingDriver ? 'Update' : 'Create'}
                 </button>
               </div>
             </form>
