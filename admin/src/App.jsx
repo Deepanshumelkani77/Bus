@@ -4,10 +4,11 @@ import Navbar from './components/Navbar'
 import Sidebar from './components/Sidebar'
 import Dashboard from './pages/Dashboard'
 import Bus from './pages/Bus'
+import Driver from './pages/Driver'
 
 const App = () => {
   return (
-  
+   
       <div className="w-full h-screen ">
         <Navbar />
         <Sidebar />
@@ -15,10 +16,11 @@ const App = () => {
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/bus" element={<Bus />} />
+            <Route path="/driver" element={<Driver />} />
           </Routes>
         </main>
       </div>
-   
+
   )
 }
 
