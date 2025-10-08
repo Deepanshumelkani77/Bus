@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState, useRef } from 'react'
 import axios from 'axios'
 
 const Driver = () => {
@@ -21,6 +21,7 @@ const Driver = () => {
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [localPreview, setLocalPreview] = useState('')
+  const fileInputRef = useRef(null)
 
   // Debounce query
   const [debouncedQuery, setDebouncedQuery] = useState('')
@@ -62,6 +63,7 @@ const Driver = () => {
     setEditingDriver(null)
     setForm({ name: '', email: '', password: '', city: '', image: '' })
     setLocalPreview('')
+    if (fileInputRef.current) fileInputRef.current.value = ''
     setModalOpen(true)
   }
 
@@ -76,6 +78,9 @@ const Driver = () => {
     if (saving) return
     setModalOpen(false)
     setEditingDriver(null)
+    setForm({ name: '', email: '', password: '', city: '', image: '' })
+    setLocalPreview('')
+    if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
   const handleFormChange = (e) => {
@@ -153,6 +158,9 @@ const Driver = () => {
       await fetchDrivers()
       setModalOpen(false)
       setEditingDriver(null)
+      setForm({ name: '', email: '', password: '', city: '', image: '' })
+      setLocalPreview('')
+      if (fileInputRef.current) fileInputRef.current.value = ''
     } catch (e) {
       setError(e?.response?.data?.message || e.message || 'Failed to save driver')
     } finally {
@@ -242,12 +250,31 @@ const Driver = () => {
 
         {!loading && (drivers || []).map((d) => (
           <div key={d._id || d.email} className="group rounded-3xl border border-slate-200 bg-white p-4 ring-1 ring-slate-900/5 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden">
-            <div className="relative h-40 rounded-2xl overflow-hidden border border-slate-100 mb-3 bg-gradient-to-br from-slate-50 to-white flex items-center justify-center">
-              <div className="text-center">
-                <div className="text-xl font-extrabold text-slate-900">{d.name}</div>
-                <div className="text-slate-600 text-sm">{d.email}</div>
+            <div className="relative h-40 rounded-2xl overflow-hidden border border-slate-100 mb-3 bg-gradient-to-br from-slate-50 to-white">
+              {d.image ? (
+                <img 
+                  src={d.image} 
+                  alt={d.name}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.nextSibling.style.display = 'flex';
+                  }}
+                />
+              ) : null}
+              <div className={`${d.image ? 'absolute inset-0 bg-black/40' : ''} flex items-center justify-center text-center ${d.image ? 'text-white' : 'text-slate-900'}`} style={{display: d.image ? 'none' : 'flex'}}>
+                <div>
+                  <div className="text-xl font-extrabold">{d.name}</div>
+                  <div className={`text-sm ${d.image ? 'text-white/80' : 'text-slate-600'}`}>{d.email}</div>
+                </div>
               </div>
-              <div className="absolute top-2 right-2 inline-flex items-center gap-2 px-2 py-1 rounded-full text-xs font-semibold border bg-slate-100 text-slate-700 border-slate-200">
+              {d.image && (
+                <div className="absolute bottom-2 left-2 right-2 text-center">
+                  <div className="text-white font-bold text-sm bg-black/50 rounded px-2 py-1">{d.name}</div>
+                  <div className="text-white/90 text-xs">{d.email}</div>
+                </div>
+              )}
+              <div className="absolute top-2 right-2 inline-flex items-center gap-2 px-2 py-1 rounded-full text-xs font-semibold border bg-white/90 text-slate-700 border-slate-200">
                 {d.city}
               </div>
             </div>
@@ -314,7 +341,7 @@ const Driver = () => {
                 <div className="sm:col-span-2">
                   <label className="block text-xs font-semibold text-slate-600 mb-1">Upload Image</label>
                   <div className="flex items-center gap-3">
-                    <input type="file" accept="image/*" onChange={handleFileChange} className="block w-full text-sm text-slate-600 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200" />
+                    <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="block w-full text-sm text-slate-600 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200" />
                   </div>
                   {(localPreview || form.image) && (
                     <div className="mt-3 flex items-center gap-3">
