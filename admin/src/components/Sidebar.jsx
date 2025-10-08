@@ -120,7 +120,7 @@ const Sidebar = () => {
               <Link
                 key={item.label}
                 to={item.path || '#'}
-                className="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-200 hover:text-white hover:bg-slate-800/60 border border-transparent hover:border-slate-700 transition-all"
+                className="group flex items-center gap-3  py-2.5 rounded-xl text-slate-200 hover:text-white hover:bg-slate-800/60 border border-transparent hover:border-slate-700 transition-all"
               >
                 <span className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-slate-800 text-slate-200 group-hover:bg-blue-600 group-hover:text-white">
                   {item.icon}
@@ -131,9 +131,9 @@ const Sidebar = () => {
           </div>
           
           {/* Remainder section at bottom */}
-          <div className="mt-auto mb-4 p-3 rounded-2xl bg-slate-800/60 border border-slate-700 text-slate-200">
+          <div className="mt-auto mb-4 p-3 rounded-2xl bg-white/70 border border-slate-700 text-black-200">
             <div className="font-extrabold text-sm">Remainder</div>
-            <div className="text-slate-400 text-xs">Check daily reports and system updates regularly.</div>
+            <div className="text-black-400 text-xs">Check daily reports and system updates regularly.</div>
           </div>
         </nav>
       </aside>
