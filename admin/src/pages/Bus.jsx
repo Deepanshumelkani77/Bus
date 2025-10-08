@@ -3,6 +3,8 @@ import axios from 'axios'
 
 const Bus = () => {
   const API_BASE = useMemo(() => 'http://localhost:2000', [])
+  const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/drx3wkg1h/image/upload'
+  const CLOUDINARY_PRESET = 'BusTrac'
 
   const [buses, setBuses] = useState([])
   const [cities, setCities] = useState([])
@@ -11,6 +13,9 @@ const Bus = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const [localPreview, setLocalPreview] = useState('')
 
   // Modal state
   const [modalOpen, setModalOpen] = useState(false)
@@ -73,6 +78,7 @@ const Bus = () => {
       status: b.status || 'Inactive',
       image: b.image || ''
     })
+    setLocalPreview(b.image || '')
     setModalOpen(true)
   }
 
@@ -85,6 +91,40 @@ const Bus = () => {
   const handleFormChange = (e) => {
     const { name, value } = e.target
     setForm((f) => ({ ...f, [name]: name === 'totalSeats' ? (value === '' ? '' : Number(value)) : value }))
+  }
+
+  const uploadImage = async (file) => {
+    try {
+      setUploading(true)
+      setUploadProgress(0)
+      const fd = new FormData()
+      fd.append('file', file)
+      fd.append('upload_preset', CLOUDINARY_PRESET)
+      const res = await axios.post(CLOUDINARY_URL, fd, {
+        onUploadProgress: (evt) => {
+          if (!evt.total) return
+          const pct = Math.round((evt.loaded * 100) / evt.total)
+          setUploadProgress(pct)
+        },
+      })
+      const url = res?.data?.secure_url || res?.data?.url
+      if (url) {
+        setForm((f) => ({ ...f, image: url }))
+        setLocalPreview(url)
+      }
+    } catch (e) {
+      setError(e?.response?.data?.error?.message || e.message || 'Image upload failed')
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files && e.target.files[0]
+    if (!file) return
+    const preview = URL.createObjectURL(file)
+    setLocalPreview(preview)
+    await uploadImage(file)
   }
 
   const handleSubmit = async (e) => {
@@ -281,8 +321,24 @@ const Bus = () => {
                   </select>
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">Image URL</label>
-                  <input name="image" value={form.image} onChange={handleFormChange} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="https://..." />
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Upload Image</label>
+                  <div className="flex items-center gap-3">
+                    <input type="file" accept="image/*" onChange={handleFileChange} className="block w-full text-sm text-slate-600 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200" />
+                  </div>
+                  {(localPreview || form.image) && (
+                    <div className="mt-3 flex items-center gap-3">
+                      <img src={localPreview || form.image} alt="preview" className="w-20 h-20 rounded-xl object-cover border" />
+                      {uploading && (
+                        <div className="flex-1">
+                          <div className="h-2 w-full rounded bg-slate-100">
+                            <div className="h-2 rounded bg-blue-600" style={{ width: `${uploadProgress}%` }} />
+                          </div>
+                          <div className="text-xs text-slate-500 mt-1">Uploading {uploadProgress}%</div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
                 </div>
               </div>
               <div className="flex items-center justify-end gap-2 pt-2">
