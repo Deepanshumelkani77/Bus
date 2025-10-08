@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
+import { AppContext } from '../context/AppContext';
 
 const Trip = () => {
   const [trips, setTrips] = useState([]);
@@ -8,65 +9,50 @@ const Trip = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const { API_BASE } = useContext(AppContext);
 
-  // Mock data for demonstration - replace with actual API calls
-  const mockTrips = [
-    {
-      _id: '1',
-      tripId: 'TRP001',
-      busNumber: 'DL-01-AB-1234',
-      driverName: 'John Doe',
-      source: 'Delhi',
-      destination: 'Mumbai',
-      departureTime: '2024-01-15T06:00:00Z',
-      arrivalTime: '2024-01-15T18:00:00Z',
-      status: 'ongoing',
-      passengers: 35,
-      totalSeats: 40,
-      fare: 1200,
-      distance: '1400 km',
-      createdAt: '2024-01-14T10:00:00Z'
-    },
-    {
-      _id: '2',
-      tripId: 'TRP002',
-      busNumber: 'DL-02-CD-5678',
-      driverName: 'Jane Smith',
-      source: 'Bangalore',
-      destination: 'Chennai',
-      departureTime: '2024-01-15T08:00:00Z',
-      arrivalTime: '2024-01-15T14:00:00Z',
-      status: 'completed',
-      passengers: 28,
-      totalSeats: 35,
-      fare: 800,
-      distance: '350 km',
-      createdAt: '2024-01-14T12:00:00Z'
-    },
-    {
-      _id: '3',
-      tripId: 'TRP003',
-      busNumber: 'DL-03-EF-9012',
-      driverName: 'Mike Johnson',
-      source: 'Pune',
-      destination: 'Goa',
-      departureTime: '2024-01-16T05:30:00Z',
-      arrivalTime: '2024-01-16T15:30:00Z',
-      status: 'scheduled',
-      passengers: 0,
-      totalSeats: 45,
-      fare: 1000,
-      distance: '460 km',
-      createdAt: '2024-01-14T14:00:00Z'
+  // Fetch trips from backend
+  const fetchTrips = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      
+      const response = await axios.get(`${API_BASE || 'http://localhost:2000'}/trips`);
+      
+      if (response.data && response.data.trips) {
+        // Transform backend data to match our UI expectations
+        const transformedTrips = response.data.trips.map(trip => ({
+          _id: trip._id,
+          tripId: trip.tripId || `TRP${trip._id.slice(-3)}`,
+          busNumber: trip.bus?.busNumber || trip.busNumber || 'N/A',
+          driverName: trip.driver?.name || trip.driverName || 'Unknown Driver',
+          source: trip.source?.name || trip.source || 'Unknown',
+          destination: trip.destination?.name || trip.destination || 'Unknown',
+          departureTime: trip.departureTime || trip.createdAt,
+          arrivalTime: trip.arrivalTime || trip.estimatedArrival,
+          status: trip.status || 'scheduled',
+          passengers: trip.passengers || trip.bookedSeats || 0,
+          totalSeats: trip.bus?.capacity || trip.totalSeats || 40,
+          fare: trip.fare || trip.price || 0,
+          distance: trip.distance || 'N/A',
+          createdAt: trip.createdAt
+        }));
+        
+        setTrips(transformedTrips);
+      } else {
+        setTrips([]);
+      }
+    } catch (error) {
+      console.error('Error fetching trips:', error);
+      setError(error.response?.data?.message || 'Failed to fetch trips');
+      setTrips([]);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setTrips(mockTrips);
-      setLoading(false);
-    }, 1000);
+    fetchTrips();
   }, []);
 
   const getStatusColor = (status) => {
@@ -151,17 +137,49 @@ const Trip = () => {
               <h1 className="text-3xl font-bold text-slate-900 mb-2">Trip Management</h1>
               <p className="text-slate-600">Monitor and manage all bus trips</p>
             </div>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-teal-500 to-sky-500 text-white font-semibold rounded-xl hover:from-teal-600 hover:to-sky-600 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/>
-              </svg>
-              Create Trip
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={fetchTrips}
+                className="inline-flex items-center gap-2 px-4 py-3 bg-slate-600 text-white font-semibold rounded-xl hover:bg-slate-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                Refresh
+              </button>
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-teal-500 to-sky-500 text-white font-semibold rounded-xl hover:from-teal-600 hover:to-sky-600 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                Create Trip
+              </button>
+            </div>
           </div>
         </div>
+
+        {/* Error Display */}
+        {error && (
+          <div className="mb-8 bg-red-50 border border-red-200 rounded-2xl p-4">
+            <div className="flex items-center gap-3">
+              <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <div>
+                <h3 className="text-red-800 font-semibold">Error Loading Trips</h3>
+                <p className="text-red-600 text-sm">{error}</p>
+              </div>
+              <button
+                onClick={fetchTrips}
+                className="ml-auto px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -362,14 +380,35 @@ const Trip = () => {
             </div>
           ))}
 
-          {!loading && filteredTrips.length === 0 && (
+          {!loading && !error && filteredTrips.length === 0 && trips.length === 0 && (
             <div className="col-span-full text-center py-12">
               <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg className="w-12 h-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.29-1.009-5.824-2.562M15 6.306a7.962 7.962 0 00-6 0m6 0V3a1 1 0 00-1-1H10a1 1 0 00-1 1v3.306"/>
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">No trips found</h3>
+              <h3 className="text-lg font-semibold text-slate-900 mb-2">No trips available</h3>
+              <p className="text-slate-600 mb-4">No trips have been created yet. Trips are created by drivers using the mobile app.</p>
+              <button
+                onClick={fetchTrips}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                Refresh
+              </button>
+            </div>
+          )}
+
+          {!loading && !error && filteredTrips.length === 0 && trips.length > 0 && (
+            <div className="col-span-full text-center py-12">
+              <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-12 h-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-slate-900 mb-2">No trips match your search</h3>
               <p className="text-slate-600">Try adjusting your search or filter criteria</p>
             </div>
           )}
