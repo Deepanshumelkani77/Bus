@@ -6,6 +6,7 @@ import Sidebar from './components/Sidebar'
 import Dashboard from './pages/Dashboard'
 import Bus from './pages/Bus'
 import Driver from './pages/Driver'
+import Trip from './pages/Trip'
 import Login from './pages/Login'
 
 const App = () => {
@@ -36,6 +37,7 @@ const App = () => {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/bus" element={<Bus />} />
           <Route path="/driver" element={<Driver />} />
+          <Route path="/trip" element={<Trip />} />
         </Routes>
       </main>
     </div>

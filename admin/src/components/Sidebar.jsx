@@ -53,7 +53,7 @@ const Sidebar = () => {
               { label: 'Dashboard',path:'/', icon: (
                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M13 5v14m-4 0h8"/></svg>
               ) },
-              { label: 'Trips', icon: (
+              { label: 'Trips', path: '/trip', icon: (
                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 7h18M3 12h18M3 17h18"/></svg>
               ) },
               { label: 'Buses',path:'/bus', icon: (
@@ -114,7 +114,7 @@ const Sidebar = () => {
               { label: 'Dashboard', path: '/', icon: (
                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M13 5v14m-4 0h8"/></svg>
               ) },
-              { label: 'Trips', icon: (
+              { label: 'Trips', path: '/trip', icon: (
                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 7h18M3 12h18M3 17h18"/></svg>
               ) },
               { label: 'Buses', path: '/bus', icon: (
