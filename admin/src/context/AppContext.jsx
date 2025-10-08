@@ -13,6 +13,39 @@ const AppContextProvider = (props) => {
 
   const API_BASE = 'http://localhost:2000';
 
+  // Logout function
+  const logout = () => {
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('admin');
+    delete axios.defaults.headers.common['Authorization'];
+    setAdmin(null);
+    navigate('/login');
+  };
+
+  // Setup axios interceptor to include auth token
+  useEffect(() => {
+    const token = localStorage.getItem('adminToken');
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    }
+
+    // Add response interceptor to handle token expiration
+    const responseInterceptor = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.status === 401) {
+          // Token expired or invalid
+          logout();
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      axios.interceptors.response.eject(responseInterceptor);
+    };
+  }, []);
+
   // Check if admin is authenticated
   const isAuthenticated = () => {
     const token = localStorage.getItem('adminToken');
@@ -31,9 +64,8 @@ const AppContextProvider = (props) => {
       setLoading(true);
       setError('');
       
-      // For now, we'll use a simple admin check
-      // In production, you'd want a separate admin authentication endpoint
-      const response = await axios.post(`${API_BASE}/auth/login`, {
+      // Use dedicated admin authentication endpoint
+      const response = await axios.post(`${API_BASE}/admin-auth/login`, {
         email,
         password
       });
@@ -41,8 +73,9 @@ const AppContextProvider = (props) => {
       if (response.data && response.data.token) {
         // Store admin token and data
         localStorage.setItem('adminToken', response.data.token);
-        localStorage.setItem('admin', JSON.stringify(response.data.driver));
-        setAdmin(response.data.driver);
+        localStorage.setItem('admin', JSON.stringify(response.data.admin));
+        axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+        setAdmin(response.data.admin);
         
         // Navigate to dashboard
         navigate('/dashboard');

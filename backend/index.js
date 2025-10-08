@@ -30,6 +30,8 @@ const authRoutes = require("./routes/auth");
 app.use("/auth", authRoutes);
 const userAuthRoutes = require("./routes/userAuth");
 app.use("/user-auth", userAuthRoutes);
+const adminAuthRoutes = require("./routes/adminAuth");
+app.use("/admin-auth", adminAuthRoutes);
 const busRoutes = require("./routes/bus");
 app.use("/buses", busRoutes);
 const tripRoutes = require("./routes/trips");
