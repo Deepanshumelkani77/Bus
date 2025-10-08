@@ -31,7 +31,7 @@ const Navbar = () => {
   }, []);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-[#0F172A] border-b border-slate-700/60 shadow-sm relative overflow-hidden">
+    <header className="fixed top-0 left-0 right-0 z-[100] bg-[#0F172A] border-b border-slate-700/60 shadow-sm overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0">
         <div className="absolute w-96 h-96 rounded-full bg-teal-400/5 -top-20 -left-20 animate-pulse"></div>
