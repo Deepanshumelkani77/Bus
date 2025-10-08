@@ -1,9 +1,34 @@
-import React from 'react'
+import React, { useContext, useState, useEffect, useRef } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { AppContext } from '../context/AppContext';
+
 const Navbar = () => {
+  const { logout, admin } = useContext(AppContext);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const profileMenuRef = useRef(null);
+  
   const toggleSidebar = () => {
     window.dispatchEvent(new CustomEvent('admin:toggleSidebar'))
   }
+
+  const handleLogout = () => {
+    logout();
+    setShowProfileMenu(false);
+  }
+
+  // Close profile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setShowProfileMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-[#0F172A] border-b border-slate-700/60 shadow-sm">
@@ -31,16 +56,43 @@ const Navbar = () => {
 
         {/* Right actions */}
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            title="Profile"
-            aria-label="Profile"
-            className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-slate-800/60 border border-slate-700/60 hover:bg-slate-700/70 hover:border-slate-600 transition-colors"
-          >
-            <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5zm0 2c-3.866 0-7 2.239-7 5v1a1 1 0 001 1h12a1 1 0 001-1v-1c0-2.761-3.134-5-7-5z" />
-            </svg>
-          </button>
+          {/* Admin Profile Menu */}
+          <div className="relative" ref={profileMenuRef}>
+            <button
+              type="button"
+              onClick={() => setShowProfileMenu(!showProfileMenu)}
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-slate-800/60 border border-slate-700/60 hover:bg-slate-700/70 hover:border-slate-600 transition-colors"
+            >
+              <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5zm0 2c-3.866 0-7 2.239-7 5v1a1 1 0 001 1h12a1 1 0 001-1v-1c0-2.761-3.134-5-7-5z" />
+              </svg>
+              <span className="hidden sm:block text-white text-sm font-medium">
+                {admin?.name || 'Admin'}
+              </span>
+              <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {/* Dropdown Menu */}
+            {showProfileMenu && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-200 py-1 z-50">
+                <div className="px-4 py-2 border-b border-slate-200">
+                  <div className="text-sm font-semibold text-slate-900">{admin?.name || 'Admin'}</div>
+                  <div className="text-xs text-slate-500">{admin?.email || 'admin@example.com'}</div>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
 
 <button
             type="button"
