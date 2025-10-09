@@ -79,7 +79,7 @@ export default function ProfileScreen() {
   const loadProfile = async () => {
     try {
       setLoading(true);
-      const token = await AsyncStorage.getItem('driverToken');
+      const token = await AsyncStorage.getItem('driver_token');
       if (!token) {
         Alert.alert('Error', 'Please login again');
         return;
@@ -188,7 +188,7 @@ export default function ProfileScreen() {
   const handleSave = async () => {
     try {
       setSaving(true);
-      const token = await AsyncStorage.getItem('driverToken');
+      const token = await AsyncStorage.getItem('driver_token');
       
       const response = await fetch(`${API_BASE}/auth/profile`, {
         method: 'PUT',

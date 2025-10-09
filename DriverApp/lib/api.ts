@@ -6,6 +6,7 @@
 // 
 
 import { Platform } from "react-native";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 let DEFAULT_BASE_URL =
   Platform.OS === "android"
@@ -48,8 +49,22 @@ export type Bus = {
   status?: string;
 };
 
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  const token = await AsyncStorage.getItem('driver_token');
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  
+  return headers;
+}
+
 async function getJSON<T>(path: string): Promise<T> {
-  const res = await fetch(`${BASE_URL}${path}`);
+  const headers = await getAuthHeaders();
+  const res = await fetch(`${BASE_URL}${path}`, { headers });
   const text = await res.text();
   const data = text ? JSON.parse(text) : {};
   if (!res.ok) {
@@ -60,6 +75,28 @@ async function getJSON<T>(path: string): Promise<T> {
 }
 
 async function postJSON<T>(path: string, body: any): Promise<T> {
+  const headers = await getAuthHeaders();
+  const res = await fetch(`${BASE_URL}${path}`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(body),
+  });
+  const text = await res.text();
+  let data: any;
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch (e) {
+    throw new Error('Invalid JSON response');
+  }
+  if (!res.ok) {
+    const msg = data?.message || `Request failed with status ${res.status}`;
+    throw { response: { data: { message: msg }, status: res.status } };
+  }
+  return data as T;
+}
+
+// Public endpoints (no auth required)
+async function postJSONPublic<T>(path: string, body: any): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -80,11 +117,11 @@ async function postJSON<T>(path: string, body: any): Promise<T> {
 }
 
 export async function signupDriver(input: { name: string; email: string; password: string; city: string }) {
-  return postJSON<AuthResponse>('/auth/signup', input);
+  return postJSONPublic<AuthResponse>('/auth/signup', input);
 }
 
 export async function loginDriver(input: { email: string; password: string }) {
-  return postJSON<AuthResponse>('/auth/login', input);
+  return postJSONPublic<AuthResponse>('/auth/login', input);
 }
 
 // Buses
