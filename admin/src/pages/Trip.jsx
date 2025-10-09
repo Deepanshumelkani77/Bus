@@ -274,109 +274,157 @@ const Trip = () => {
           </div>
         </div>
 
-        {/* Trips Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        {/* Trips List */}
+        <div className="space-y-4">
           {loading && Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/60 shadow-lg animate-pulse">
-              <div className="flex items-center justify-between mb-4">
-                <div className="h-6 bg-slate-200 rounded w-24"></div>
-                <div className="h-6 bg-slate-200 rounded w-20"></div>
-              </div>
-              <div className="space-y-3">
-                <div className="h-4 bg-slate-200 rounded w-full"></div>
-                <div className="h-4 bg-slate-200 rounded w-3/4"></div>
-                <div className="h-4 bg-slate-200 rounded w-1/2"></div>
-              </div>
-              <div className="flex gap-2 mt-4">
-                <div className="h-8 bg-slate-200 rounded flex-1"></div>
-                <div className="h-8 bg-slate-200 rounded flex-1"></div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4 flex-1">
+                  <div className="h-12 w-12 bg-slate-200 rounded-xl"></div>
+                  <div className="space-y-2 flex-1">
+                    <div className="h-4 bg-slate-200 rounded w-32"></div>
+                    <div className="h-3 bg-slate-200 rounded w-24"></div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-6">
+                  <div className="h-4 bg-slate-200 rounded w-20"></div>
+                  <div className="h-4 bg-slate-200 rounded w-16"></div>
+                  <div className="h-8 bg-slate-200 rounded w-20"></div>
+                </div>
               </div>
             </div>
           ))}
 
           {!loading && filteredTrips.map((trip) => (
-            <div key={trip._id} className="group bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/60 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
-              {/* Trip Header */}
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-teal-500 to-sky-500 rounded-xl flex items-center justify-center text-white font-bold text-sm">
-                    {trip.tripId.slice(-2)}
+            <div key={trip._id} className="group bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/60 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01]">
+              <div className="flex items-center justify-between">
+                {/* Left Section - Trip Info */}
+                <div className="flex items-center gap-6 flex-1">
+                  {/* Trip ID & Status */}
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-teal-500 to-sky-500 rounded-xl flex items-center justify-center text-white font-bold text-sm">
+                      {trip.tripId.slice(-3)}
+                    </div>
+                    <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border ${getStatusColor(trip.status)}`}>
+                      {getStatusIcon(trip.status)}
+                      {trip.status.charAt(0).toUpperCase() + trip.status.slice(1)}
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-bold text-slate-900">{trip.tripId}</h3>
-                    <p className="text-sm text-slate-600">{trip.busNumber}</p>
+
+                  {/* Route Information */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                      <span className="font-semibold text-slate-900 text-sm">{trip.source}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-4 h-0.5 bg-slate-300"></div>
+                      <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"/>
+                      </svg>
+                      <div className="w-4 h-0.5 bg-slate-300"></div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                      <span className="font-semibold text-slate-900 text-sm">{trip.destination}</span>
+                    </div>
+                  </div>
+
+                  {/* Bus & Driver Info */}
+                  <div className="hidden lg:flex flex-col gap-1">
+                    <div className="flex items-center gap-2">
+                      <svg className="w-4 h-4 text-slate-500" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M4 16c0 .88.39 1.67 1 2.22V20a1 1 0 001 1h1a1 1 0 001-1v-1h8v1a1 1 0 001 1h1a1 1 0 001-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10z"/>
+                      </svg>
+                      <span className="text-sm font-medium text-slate-700">{trip.busNumber}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <svg className="w-4 h-4 text-slate-500" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5zm0 2c-3.866 0-7 2.239-7 5v1a1 1 0 001 1h12a1 1 0 001-1v-1c0-2.761-3.134-5-7-5z"/>
+                      </svg>
+                      <span className="text-sm text-slate-600">{trip.driverName}</span>
+                    </div>
                   </div>
                 </div>
-                <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border ${getStatusColor(trip.status)}`}>
-                  {getStatusIcon(trip.status)}
-                  {trip.status.charAt(0).toUpperCase() + trip.status.slice(1)}
+
+                {/* Right Section - Details & Actions */}
+                <div className="flex items-center gap-8">
+                  {/* Passengers & Time */}
+                  <div className="hidden md:flex flex-col items-center gap-1">
+                    <div className="flex items-center gap-2">
+                      <svg className="w-4 h-4 text-slate-500" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zm4 18v-6h2.5l-2.54-7.63A1.5 1.5 0 0018.5 7h-3c-.83 0-1.5.67-1.5 1.5 0 .17.03.33.09.5L16.5 16H18v6h2zM12.5 11.5c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5S11 9.17 11 10s.67 1.5 1.5 1.5zM5.5 6c1.11 0 2-.89 2-2s-.89-2-2-2-2 .89-2 2 .89 2 2 2zm2 16v-7H9l-2.54-7.63A1.5 1.5 0 005 6H2c-.83 0-1.5.67-1.5 1.5 0 .17.03.33.09.5L3 14h1.5v8H7.5z"/>
+                      </svg>
+                      <span className="text-sm font-medium text-slate-700">{trip.passengers}/{trip.totalSeats}</span>
+                    </div>
+                    <div className="text-xs text-slate-500">{formatTime(trip.departureTime)}</div>
+                  </div>
+
+                  {/* Occupancy Progress */}
+                  <div className="hidden lg:flex flex-col items-center gap-2 w-24">
+                    <div className="text-xs text-slate-600 font-medium">
+                      {Math.round((trip.passengers / trip.totalSeats) * 100)}% Full
+                    </div>
+                    <div className="w-full bg-slate-200 rounded-full h-2">
+                      <div 
+                        className="bg-gradient-to-r from-teal-500 to-sky-500 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${(trip.passengers / trip.totalSeats) * 100}%` }}
+                      ></div>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex items-center gap-2">
+                    <button className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 hover:border-slate-300 transition-all duration-200">
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                      </svg>
+                    </button>
+                    <button className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 hover:border-slate-300 transition-all duration-200">
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536M4 20h4l10.5-10.5a2.5 2.5 0 00-3.536-3.536L4 16v4z"/>
+                      </svg>
+                    </button>
+                    <div className="relative">
+                      <button className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 hover:border-slate-300 transition-all duration-200">
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Route Information */}
-              <div className="mb-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  <span className="font-semibold text-slate-900">{trip.source}</span>
+              {/* Mobile Details - Show on smaller screens */}
+              <div className="lg:hidden mt-4 pt-4 border-t border-slate-200">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4 text-slate-500" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M4 16c0 .88.39 1.67 1 2.22V20a1 1 0 001 1h1a1 1 0 001-1v-1h8v1a1 1 0 001 1h1a1 1 0 001-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10z"/>
+                    </svg>
+                    <span className="font-medium text-slate-700">{trip.busNumber}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4 text-slate-500" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5zm0 2c-3.866 0-7 2.239-7 5v1a1 1 0 001 1h12a1 1 0 001-1v-1c0-2.761-3.134-5-7-5z"/>
+                    </svg>
+                    <span className="text-slate-600">{trip.driverName}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4 text-slate-500" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zm4 18v-6h2.5l-2.54-7.63A1.5 1.5 0 0018.5 7h-3c-.83 0-1.5.67-1.5 1.5 0 .17.03.33.09.5L16.5 16H18v6h2z"/>
+                    </svg>
+                    <span className="text-slate-600">{trip.passengers}/{trip.totalSeats} passengers</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span className="text-slate-600">{formatTime(trip.departureTime)}</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 ml-1">
-                  <div className="w-1 h-8 bg-slate-300 rounded-full"></div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                  <span className="font-semibold text-slate-900">{trip.destination}</span>
-                </div>
-              </div>
-
-              {/* Trip Details */}
-              <div className="space-y-2 mb-4">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-slate-600">Driver</span>
-                  <span className="font-medium text-slate-900">{trip.driverName}</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-slate-600">Departure</span>
-                  <span className="font-medium text-slate-900">{formatTime(trip.departureTime)}</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-slate-600">Passengers</span>
-                  <span className="font-medium text-slate-900">{trip.passengers}/{trip.totalSeats}</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-slate-600">Fare</span>
-                  <span className="font-medium text-slate-900">₹{trip.fare}</span>
-                </div>
-              </div>
-
-              {/* Progress Bar */}
-              <div className="mb-4">
-                <div className="flex items-center justify-between text-xs text-slate-600 mb-1">
-                  <span>Occupancy</span>
-                  <span>{Math.round((trip.passengers / trip.totalSeats) * 100)}%</span>
-                </div>
-                <div className="w-full bg-slate-200 rounded-full h-2">
-                  <div 
-                    className="bg-gradient-to-r from-teal-500 to-sky-500 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${(trip.passengers / trip.totalSeats) * 100}%` }}
-                  ></div>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex gap-2">
-                <button className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 text-sm font-medium transition-colors">
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                  </svg>
-                  View
-                </button>
-                <button className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 text-sm font-medium transition-colors">
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536M4 20h4l10.5-10.5a2.5 2.5 0 00-3.536-3.536L4 16v4z"/>
-                  </svg>
-                  Edit
-                </button>
               </div>
             </div>
           ))}
