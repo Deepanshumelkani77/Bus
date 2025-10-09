@@ -19,7 +19,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/drx3wkg1h/image/upload';
 const CLOUDINARY_PRESET = 'BusTrac';
-const API_BASE = 'http://localhost:2000';
+const API_BASE = 'http://10.65.103.156:2000';
 
 interface Driver {
   _id: string;
@@ -74,7 +74,7 @@ export default function ProfileScreen() {
         useNativeDriver: true,
       }),
     ]).start();
-  }, [fadeAnim, slideAnim]);
+  }, [fadeAnim, slideAnim]); // loadProfile is called once on mount
 
   const loadProfile = async () => {
     try {
