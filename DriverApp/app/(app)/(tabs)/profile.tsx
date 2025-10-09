@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -21,23 +21,40 @@ const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/drx3wkg1h/image/upload';
 const CLOUDINARY_PRESET = 'BusTrac';
 const API_BASE = 'http://localhost:2000';
 
+interface Driver {
+  _id: string;
+  name: string;
+  email: string;
+  city: string;
+  image?: string;
+  createdAt: string;
+  activeBus?: string;
+}
+
+interface FormData {
+  name: string;
+  email: string;
+  city: string;
+  image: string;
+}
+
 export default function ProfileScreen() {
-  const [driver, setDriver] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const [driver, setDriver] = useState<Driver | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [editing, setEditing] = useState<boolean>(false);
+  const [saving, setSaving] = useState<boolean>(false);
+  const [uploading, setUploading] = useState<boolean>(false);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
   
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<FormData>({
     name: '',
     email: '',
     city: '',
     image: '',
   });
 
-  const fadeAnim = new Animated.Value(0);
-  const slideAnim = new Animated.Value(50);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(50)).current;
 
   useEffect(() => {
     loadProfile();
@@ -57,7 +74,7 @@ export default function ProfileScreen() {
         useNativeDriver: true,
       }),
     ]).start();
-  }, []);
+  }, [fadeAnim, slideAnim]);
 
   const loadProfile = async () => {
     try {
@@ -95,7 +112,7 @@ export default function ProfileScreen() {
     }
   };
 
-  const uploadImage = async (uri) => {
+  const uploadImage = async (uri: string): Promise<string> => {
     try {
       setUploading(true);
       setUploadProgress(0);
@@ -110,8 +127,8 @@ export default function ProfileScreen() {
 
       const xhr = new XMLHttpRequest();
       
-      return new Promise((resolve, reject) => {
-        xhr.upload.addEventListener('progress', (event) => {
+      return new Promise<string>((resolve, reject) => {
+        xhr.upload.addEventListener('progress', (event: ProgressEvent) => {
           if (event.lengthComputable) {
             const progress = Math.round((event.loaded / event.total) * 100);
             setUploadProgress(progress);
