@@ -85,12 +85,16 @@ export default function ProfileScreen() {
         return;
       }
 
+      console.log('Loading profile with token:', token ? 'Token exists' : 'No token');
+
       const response = await fetch(`${API_BASE}/auth/profile`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });
+
+      console.log('Profile response status:', response.status);
 
       if (response.ok) {
         const data = await response.json();
@@ -102,11 +106,30 @@ export default function ProfileScreen() {
           image: data.driver.image || '',
         });
       } else {
-        throw new Error('Failed to load profile');
+        const errorData = await response.json();
+        console.log('Profile error response:', errorData);
+        
+        // If token is invalid, clear it and ask user to login again
+        if (response.status === 401) {
+          await AsyncStorage.removeItem('driver_token');
+          await AsyncStorage.removeItem('driver_data');
+          Alert.alert('Session Expired', 'Please login again', [
+            {
+              text: 'OK',
+              onPress: () => {
+                // You might want to navigate to login screen here
+                // router.replace('/(auth)/login');
+              }
+            }
+          ]);
+          return;
+        }
+        
+        throw new Error(errorData.message || 'Failed to load profile');
       }
     } catch (error) {
       console.error('Error loading profile:', error);
-      Alert.alert('Error', 'Failed to load profile');
+      Alert.alert('Error', 'Failed to load profile. Please try logging in again.');
     } finally {
       setLoading(false);
     }
@@ -364,6 +387,20 @@ export default function ProfileScreen() {
                 </View>
               </View>
             </View>
+          </View>
+
+          {/* Debug Button - Remove after testing */}
+          <View style={styles.debugSection}>
+            <TouchableOpacity
+              style={styles.debugButton}
+              onPress={async () => {
+                await AsyncStorage.removeItem('driver_token');
+                await AsyncStorage.removeItem('driver_data');
+                Alert.alert('Debug', 'Tokens cleared. Please restart app and login again.');
+              }}
+            >
+              <Text style={styles.debugButtonText}>Clear Tokens (Debug)</Text>
+            </TouchableOpacity>
           </View>
 
           {/* Action Buttons */}
@@ -656,5 +693,23 @@ const styles = StyleSheet.create({
   },
   disabledButton: {
     opacity: 0.6,
+  },
+  debugSection: {
+    marginTop: theme.spacing.lg,
+    paddingTop: theme.spacing.lg,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
+  },
+  debugButton: {
+    backgroundColor: theme.colors.coral,
+    borderRadius: theme.radius.md,
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.md,
+    alignItems: 'center',
+  },
+  debugButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
