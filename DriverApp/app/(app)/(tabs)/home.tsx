@@ -19,16 +19,24 @@ export default function HomeScreen() {
 
   async function loadCities() {
     try {
+      console.log('Loading cities...');
       const res = await getCities();
+      console.log('Cities loaded successfully:', res.cities?.length || 0);
       setCities(res.cities);
     } catch (e) {
-      // noop
+      console.error('Error loading cities:', e);
     }
   }
 
   async function loadBuses(city?: string) {
-    const res = await getBuses(city);
-    setBuses(res.buses);
+    try {
+      console.log('Loading buses for city:', city || 'all');
+      const res = await getBuses(city);
+      console.log('Buses loaded successfully:', res.buses?.length || 0);
+      setBuses(res.buses);
+    } catch (e) {
+      console.error('Error loading buses:', e);
+    }
   }
 
   async function initialize() {
