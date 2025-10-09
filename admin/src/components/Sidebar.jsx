@@ -14,13 +14,13 @@ const Sidebar = () => {
     <>
       {/* Overlay for mobile */}
       <div
-        className={`fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity lg:hidden ${open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+        className={`fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity lg:hidden z-[150] ${open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
         onClick={() => setOpen(false)}
       />
 
       {/* Mobile slide-in panel */}
       <aside
-        className={`fixed top-0 left-0 h-full w-72 bg-[#0F172A] shadow-2xl border-r border-slate-800 z-50 transform transition-transform duration-300 lg:hidden overflow-hidden ${open ? 'translate-x-0' : '-translate-x-full'}`}
+        className={`fixed top-0 left-0 h-full w-72 bg-[#0F172A] shadow-2xl border-r border-slate-800 z-[200] transform transition-transform duration-300 lg:hidden overflow-hidden ${open ? 'translate-x-0' : '-translate-x-full'}`}
         aria-label="Sidebar"
       >
         {/* Animated Background Elements */}
