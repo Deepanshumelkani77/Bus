@@ -12,7 +12,7 @@ import {
   Animated,
   Easing,
 } from 'react-native';
-// import * as ImagePicker from 'expo-image-picker'; // Commented out until package is installed
+import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { theme } from '../../../lib/theme';
 import { Ionicons } from '@expo/vector-icons';
