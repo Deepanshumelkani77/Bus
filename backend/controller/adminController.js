@@ -2,7 +2,7 @@ const Admin = require('../models/Admin');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_jwt_key_for_bus_app_2024_development_only';
 
 // POST /admin-auth/login
 async function loginAdmin(req, res) {

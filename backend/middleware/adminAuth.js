@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const Admin = require('../models/Admin');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_jwt_key_for_bus_app_2024_development_only';
 
 // Middleware to authenticate admin token
 const authenticateAdminToken = async (req, res, next) => {
