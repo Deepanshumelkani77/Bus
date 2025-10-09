@@ -23,19 +23,20 @@ const Trip = () => {
         // Transform backend data to match our UI expectations
         const transformedTrips = response.data.trips.map(trip => ({
           _id: trip._id,
-          tripId: trip.tripId || `TRP${trip._id.slice(-3)}`,
-          busNumber: trip.bus?.busNumber || trip.busNumber || 'N/A',
-          driverName: trip.driver?.name || trip.driverName || 'Unknown Driver',
-          source: trip.source?.name || trip.source || 'Unknown',
-          destination: trip.destination?.name || trip.destination || 'Unknown',
-          departureTime: trip.departureTime || trip.createdAt,
-          arrivalTime: trip.arrivalTime || trip.estimatedArrival,
-          status: trip.status || 'scheduled',
-          passengers: trip.passengers || trip.bookedSeats || 0,
-          totalSeats: trip.bus?.capacity || trip.totalSeats || 40,
-          fare: trip.fare || trip.price || 0,
-          distance: trip.distance || 'N/A',
-          createdAt: trip.createdAt
+          tripId: `TRP${trip._id.slice(-3).toUpperCase()}`,
+          busNumber: trip.bus?.busNumber || 'N/A',
+          driverName: trip.driver?.name || 'Unknown Driver',
+          source: trip.source || 'Unknown',
+          destination: trip.destination || 'Unknown',
+          departureTime: trip.startTime || trip.createdAt,
+          arrivalTime: trip.endTime || null,
+          status: trip.status?.toLowerCase() || 'pending',
+          passengers: trip.occupiedSeats || 0,
+          totalSeats: trip.bus?.totalSeats || trip.totalSeats || 40,
+          fare: trip.fare || 0,
+          distance: 'N/A', // Can be calculated from route if needed
+          createdAt: trip.createdAt,
+          city: trip.city
         }));
         
         setTrips(transformedTrips);
@@ -61,7 +62,7 @@ const Trip = () => {
         return 'bg-blue-50 text-blue-700 border-blue-200';
       case 'completed':
         return 'bg-green-50 text-green-700 border-green-200';
-      case 'scheduled':
+      case 'pending':
         return 'bg-yellow-50 text-yellow-700 border-yellow-200';
       case 'cancelled':
         return 'bg-red-50 text-red-700 border-red-200';
@@ -84,7 +85,7 @@ const Trip = () => {
             <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
           </svg>
         );
-      case 'scheduled':
+      case 'pending':
         return (
           <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
             <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
@@ -219,8 +220,8 @@ const Trip = () => {
                 </svg>
               </div>
               <div>
-                <p className="text-sm text-slate-600">Scheduled</p>
-                <p className="text-2xl font-bold text-slate-900">{trips.filter(t => t.status === 'scheduled').length}</p>
+                <p className="text-sm text-slate-600">Pending</p>
+                <p className="text-2xl font-bold text-slate-900">{trips.filter(t => t.status === 'pending').length}</p>
               </div>
             </div>
           </div>
@@ -266,7 +267,7 @@ const Trip = () => {
                 <option value="all">All Status</option>
                 <option value="ongoing">Ongoing</option>
                 <option value="completed">Completed</option>
-                <option value="scheduled">Scheduled</option>
+                <option value="pending">Pending</option>
                 <option value="cancelled">Cancelled</option>
               </select>
             </div>

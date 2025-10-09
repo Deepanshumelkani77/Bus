@@ -195,6 +195,21 @@ async function getActiveTrips(req, res) {
   }
 }
 
+// GET /trips - Get all trips for admin dashboard
+async function getAllTrips(req, res) {
+  try {
+    const trips = await Trip.find({})
+      .populate('bus', 'busNumber totalSeats')
+      .populate('driver', 'name')
+      .sort({ createdAt: -1 }); // Most recent first
+
+    return res.json({ trips });
+  } catch (e) {
+    console.error('Get all trips error', e);
+    res.status(500).json({ message: 'Failed to get trips' });
+  }
+}
+
 module.exports = { 
   createTrip, 
   getDriverTrips, 
@@ -202,5 +217,6 @@ module.exports = {
   completeTrip, 
   updateTripLocation, 
   getTripLocation,
-  getActiveTrips 
+  getActiveTrips,
+  getAllTrips 
 };

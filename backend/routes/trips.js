@@ -8,7 +8,8 @@ const {
   completeTrip, 
   updateTripLocation, 
   getTripLocation,
-  getActiveTrips 
+  getActiveTrips,
+  getAllTrips 
 } = require('../controller/tripController');
 
 // POST /trips/create
@@ -31,5 +32,8 @@ router.get('/:tripId/location', getTripLocation);
 
 // GET /trips/active - Public endpoint for users to track buses
 router.get('/active', getActiveTrips);
+
+// GET /trips - Admin endpoint to get all trips
+router.get('/', getAllTrips);
 
 module.exports = router;
