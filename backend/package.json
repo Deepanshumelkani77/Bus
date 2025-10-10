@@ -1,16 +1,25 @@
 {
-  "name": "clear",
+  "name": "bus-tracking-backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "Backend API for Bus Tracking System with real-time GPS tracking, smart trip matching, and comprehensive authentication",
   "main": "index.js",
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "seed-admin": "node seedAdmin.js"
+    "test": "node test-api.js",
+    "seed-admin": "node seedAdmin.js",
+    "seed-data": "node seedData.js",
+    "build": "echo 'No build step required for Node.js backend'",
+    "postinstall": "echo 'Backend dependencies installed successfully'",
+    "health-check": "node -e \"require('axios').get(process.env.API_BASE_URL + '/health').then(r => console.log('✅ Health check passed:', r.data)).catch(e => console.error('❌ Health check failed:', e.message))\""
   },
-  "author": "dev",
-  "license": "ISC",
+  "keywords": ["bus-tracking", "gps", "real-time", "express", "mongodb", "socket.io", "google-maps"],
+  "author": "Bus Tracking Team",
+  "license": "MIT",
   "dependencies": {
     "@googlemaps/polyline-codec": "^1.0.28",
     "axios": "^1.12.2",

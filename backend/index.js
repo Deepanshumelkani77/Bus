@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -8,14 +10,17 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: "*",
+    origin: process.env.SOCKET_CORS_ORIGIN || "*",
     methods: ["GET", "POST"]
   }
 });
 
 // Middleware
-app.use(express.json());
-app.use(cors());
+app.use(express.json({ limit: process.env.MAX_FILE_SIZE || '5mb' }));
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || "*",
+  credentials: true
+}));
 
 // Health check
 app.get("/health", (req, res) => {
@@ -45,17 +50,21 @@ app.use("/smart-trips", smartTripRoutes);
 const driverRoutes = require("./routes/driver");
 app.use("/drivers", driverRoutes);
 
-const PORT =  2000;
+const PORT = process.env.PORT || 2000;
 
 // Connect to MongoDB then start server
 async function start() {
   try {
-    const mongoUri = "mongodb+srv://deepumelkani123_db_user:Bus7777@cluster0.ax4xicv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+    const mongoUri = process.env.MONGO_URI;
     if (!mongoUri) {
-      console.warn("⚠️ MONGO_URI not set in environment. Using default local mongodb://127.0.0.1:27017/busapp");
+      console.error("❌ MONGO_URI not set in environment variables");
+      console.log("Please set MONGO_URI in your .env file");
+      process.exit(1);
     }
+    
     await mongoose.connect(mongoUri);
     console.log("✅ MongoDB Connected");
+    console.log(`🗄️  Database: ${mongoose.connection.name}`);
 
     // Socket.io connection handling
     io.on('connection', (socket) => {
@@ -72,7 +81,13 @@ async function start() {
       });
     });
 
-    server.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+    server.listen(PORT, () => {
+      console.log(`✅ Server running on port ${PORT}`);
+      console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`🔗 API Base URL: ${process.env.API_BASE_URL || `http://localhost:${PORT}`}`);
+      console.log(`🗝️  JWT Secret: ${process.env.JWT_SECRET ? 'Set' : 'Not Set'}`);
+      console.log(`🗺️  Google API Key: ${process.env.GOOGLE_API_KEY ? 'Set' : 'Not Set'}`);
+    });
   } catch (err) {
     console.error("❌ Server startup error:", err);
     process.exit(1);

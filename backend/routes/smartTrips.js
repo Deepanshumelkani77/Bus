@@ -5,7 +5,21 @@ const Bus = require("../models/Bus");
 const { decode } = require("@googlemaps/polyline-codec");
 
 const router = express.Router();
-const GOOGLE_API_KEY = "AIzaSyB3WtPB3oxkeJZ7rqjYjEwjdoHUmUyeEYE";
+const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
+
+// Middleware to check if Google API key is configured
+const checkGoogleApiKey = (req, res, next) => {
+  if (!GOOGLE_API_KEY) {
+    return res.status(500).json({ 
+      message: "Google API key not configured",
+      error: "GOOGLE_API_KEY environment variable is not set"
+    });
+  }
+  next();
+};
+
+// Apply middleware to all routes
+router.use(checkGoogleApiKey);
 
 // Utility function to calculate distance between two points using Haversine formula
 function calculateDistance(lat1, lon1, lat2, lon2) {

@@ -1,9 +1,10 @@
 // Simple API testing script
 // Run with: node test-api.js
 
+require('dotenv').config();
 const axios = require('axios');
 
-const BASE_URL = 'http://localhost:2000';
+const BASE_URL = process.env.API_BASE_URL || 'http://localhost:2000';
 
 async function testUserAuth() {
   console.log('🧪 Testing User Authentication API...\n');

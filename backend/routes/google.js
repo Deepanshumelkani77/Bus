@@ -3,8 +3,21 @@ const axios = require("axios");
 
 const router = express.Router();
 
-// Google API Key - using your provided key
-const GOOGLE_API_KEY = "AIzaSyB3WtPB3oxkeJZ7rqjYjEwjdoHUmUyeEYE";
+// Google API Key from environment variables
+const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
+
+// Middleware to check if Google API key is configured
+const checkGoogleApiKey = (req, res, next) => {
+  if (!GOOGLE_API_KEY) {
+    return res.status(500).json({ 
+      message: "Google API key not configured",
+    });
+  }
+  next();
+};
+
+// Apply middleware to all routes
+router.use(checkGoogleApiKey);
 
 // Places Autocomplete API
 router.get("/autocomplete", async (req, res) => {
