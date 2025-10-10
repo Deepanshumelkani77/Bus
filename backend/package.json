@@ -1,10 +1,13 @@
 {
+  
+   
+  
   "name": "bus-tracking-backend",
   "version": "1.0.0",
   "description": "Backend API for Bus Tracking System with real-time GPS tracking, smart trip matching, and comprehensive authentication",
   "main": "index.js",
   "engines": {
-    "node": ">=16.0.0",
+    "node": "21.7.1",
     "npm": ">=8.0.0"
   },
   "scripts": {
