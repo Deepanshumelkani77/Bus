@@ -19,7 +19,6 @@ const authenticateAnyUser = async (req, res, next) => {
     
     // Verify the token
     const decoded = jwt.verify(token, secret);
-    console.log('Token decoded:', { adminId: decoded.adminId, id: decoded.id, role: decoded.role });
     
     // Check if it's an admin token (has adminId) or driver token (has id and role: 'driver')
     if (decoded.adminId) {
@@ -38,7 +37,10 @@ const authenticateAnyUser = async (req, res, next) => {
       };
       req.user = decoded; // For compatibility
     } else if (decoded.id && decoded.role === 'driver') {
-      // Driver token
+      // Driver token - no need to check admin database
+      req.user = decoded;
+    } else if (decoded.id) {
+      // Could be driver token without explicit role, check if it has driver-like properties
       req.user = decoded;
     } else {
       return res.status(401).json({ message: 'Invalid token format' });
@@ -61,9 +63,11 @@ const authenticateAnyUser = async (req, res, next) => {
 router.get('/', authenticateAnyUser, listBuses); // /buses
 router.get('/cities', authenticateAnyUser, listCities); // /buses/cities
 
+// Mixed access routes
+router.post('/assign', authenticateAnyUser, assignBusToDriver); // /buses/assign - both admin and drivers can assign
+
 // Admin protected routes
 router.post('/seed', authenticateAdminToken, requirePermission('manage_buses'), seedBuses); // /buses/seed (dev)
-router.post('/assign', authenticateAdminToken, requirePermission('manage_buses'), assignBusToDriver); // /buses/assign
 router.post('/', authenticateAdminToken, requirePermission('manage_buses'), createBus); // /buses
 router.put('/:id', authenticateAdminToken, requirePermission('manage_buses'), updateBus); // /buses/:id
 router.delete('/:id', authenticateAdminToken, requirePermission('manage_buses'), deleteBus); // /buses/:id

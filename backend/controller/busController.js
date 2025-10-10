@@ -83,6 +83,11 @@ async function assignBusToDriver(req, res) {
     const { busId, driverId } = req.body;
     if (!busId || !driverId) return res.status(400).json({ message: 'busId and driverId are required' });
 
+    // Security check: If request is from a driver (not admin), they can only assign to themselves
+    if (req.user && req.user.role === 'driver' && req.user.id !== driverId) {
+      return res.status(403).json({ message: 'Drivers can only assign buses to themselves' });
+    }
+
     const bus = await Bus.findById(busId);
     if (!bus) return res.status(404).json({ message: 'Bus not found' });
     const driver = await Driver.findById(driverId);
