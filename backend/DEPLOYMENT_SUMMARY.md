@@ -129,9 +129,10 @@ DEPLOYMENT_URL=https://your-backend-domain.com
 ### **6. Deployment Readiness**
 
 #### **Platform Support**
-- ✅ **Heroku**: Ready with Procfile equivalent
-- ✅ **Railway**: Environment variable support
+- ✅ **Heroku**: Ready with Procfile and environment variables
+- ✅ **Railway**: Environment variable support configured
 - ✅ **Render**: Build and start commands configured
+- ✅ **Vercel**: Node.js deployment ready
 - ✅ **DigitalOcean**: App Platform ready
 - ✅ **AWS EC2**: PM2 configuration ready
 
@@ -205,6 +206,14 @@ railway up
 2. Set build command: `npm install`
 3. Set start command: `npm start`
 4. Add environment variables in dashboard
+
+### **Vercel**
+```bash
+npm install -g vercel
+vercel login
+vercel
+# Set environment variables in Vercel dashboard
+```
 
 ## ✅ **Verification Checklist**
 

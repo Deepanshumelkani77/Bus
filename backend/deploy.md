@@ -117,6 +117,22 @@ sudo apt install nginx
 # Configure reverse proxy
 ```
 
+### 6. **Vercel Deployment**
+
+```bash
+# Install Vercel CLI
+npm install -g vercel
+
+# Login to Vercel
+vercel login
+
+# Deploy
+vercel
+
+# Set environment variables in Vercel dashboard
+# Configure as Node.js project
+```
+
 ## 🔧 Environment Variables Reference
 
 | Variable | Description | Example |
@@ -230,12 +246,17 @@ curl -X GET https://your-backend-url.com/health
 2. **Application Scaling**
    - Use horizontal scaling
    - Implement load balancing
-   - Consider containerization (Docker)
+   - Use PM2 cluster mode for multi-core utilization
 
 3. **Caching**
    - Implement Redis caching
    - Cache Google API responses
    - Use CDN for static assets
+
+4. **Performance Optimization**
+   - Enable gzip compression
+   - Implement API response caching
+   - Optimize database queries with indexing
 
 ## 🔄 CI/CD Pipeline
 
