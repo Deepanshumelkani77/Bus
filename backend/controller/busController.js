@@ -123,12 +123,25 @@ module.exports.assignBusToDriver = assignBusToDriver;
 async function createBus(req, res) {
   try {
     const { busNumber, city, totalSeats, status, image } = req.body || {};
+    
+    // Debug logging
+    console.log('Create bus request body:', req.body);
+    console.log('Image field received:', image);
+    
     if (!busNumber || !city || !totalSeats) {
       return res.status(400).json({ message: 'busNumber, city and totalSeats are required' });
     }
     const exists = await Bus.findOne({ busNumber });
     if (exists) return res.status(409).json({ message: 'Bus number already exists' });
-    const bus = await Bus.create({ busNumber, city, totalSeats, status, image });
+    
+    const busData = { busNumber, city, totalSeats, status };
+    if (image) {
+      busData.image = image;
+      console.log('Including image in bus creation:', image);
+    }
+    
+    const bus = await Bus.create(busData);
+    console.log('Bus created successfully:', bus);
     res.status(201).json({ bus });
   } catch (e) {
     console.error('Create bus error', e);
@@ -141,15 +154,25 @@ async function updateBus(req, res) {
   try {
     const { id } = req.params;
     const { busNumber, city, totalSeats, status, image } = req.body || {};
+    
+    // Debug logging
+    console.log('Update bus request body:', req.body);
+    console.log('Image field received:', image);
+    
     const update = {};
     if (busNumber) update.busNumber = busNumber;
     if (city) update.city = city;
     if (typeof totalSeats !== 'undefined') update.totalSeats = totalSeats;
     if (status) update.status = status;
-    if (typeof image !== 'undefined') update.image = image;
+    if (typeof image !== 'undefined') {
+      update.image = image;
+      console.log('Including image in bus update:', image);
+    }
 
+    console.log('Update object:', update);
     const bus = await Bus.findByIdAndUpdate(id, update, { new: true });
     if (!bus) return res.status(404).json({ message: 'Bus not found' });
+    console.log('Bus updated successfully:', bus);
     res.json({ bus });
   } catch (e) {
     console.error('Update bus error', e);

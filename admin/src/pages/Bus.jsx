@@ -100,6 +100,8 @@ const Bus = () => {
       const fd = new FormData()
       fd.append('file', file)
       fd.append('upload_preset', CLOUDINARY_PRESET)
+      
+      console.log('Uploading image to Cloudinary...')
       const res = await axios.post(CLOUDINARY_URL, fd, {
         onUploadProgress: (evt) => {
           if (!evt.total) return
@@ -107,12 +109,20 @@ const Bus = () => {
           setUploadProgress(pct)
         },
       })
+      
+      console.log('Cloudinary response:', res.data)
       const url = res?.data?.secure_url || res?.data?.url
+      console.log('Image URL extracted:', url)
+      
       if (url) {
         setForm((f) => ({ ...f, image: url }))
         setLocalPreview(url)
+        console.log('Image URL set in form state')
+      } else {
+        console.error('No URL found in Cloudinary response')
       }
     } catch (e) {
+      console.error('Image upload error:', e)
       setError(e?.response?.data?.error?.message || e.message || 'Image upload failed')
     } finally {
       setUploading(false)
@@ -139,19 +149,31 @@ const Bus = () => {
         status: form.status,
         image: form.image?.trim() || undefined,
       }
+      
+      // Debug logging
+      console.log('Form data before submit:', form)
+      console.log('Payload being sent:', payload)
+      console.log('Image URL:', form.image)
+      
       if (!payload.busNumber || !payload.city || !payload.totalSeats) {
         setError('Please provide bus number, city and total seats')
         return
       }
+      
+      let response;
       if (editingBus?._id) {
-        await axios.put(`${API_BASE}/buses/${editingBus._id}`, payload)
+        response = await axios.put(`${API_BASE}/buses/${editingBus._id}`, payload)
       } else {
-        await axios.post(`${API_BASE}/buses`, payload)
+        response = await axios.post(`${API_BASE}/buses`, payload)
       }
+      
+      console.log('Backend response:', response.data)
+      
       await fetchBuses()
       setModalOpen(false)
       setEditingBus(null)
     } catch (e) {
+      console.error('Submit error:', e)
       setError(e?.response?.data?.message || e.message || 'Failed to save bus')
     } finally {
       setSaving(false)
