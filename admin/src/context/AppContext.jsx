@@ -11,7 +11,7 @@ const AppContextProvider = (props) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const API_BASE = 'https://bustrac-backend.onrender.com';
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://bustrac-backend.onrender.com';
 
   // Logout function
   const logout = () => {

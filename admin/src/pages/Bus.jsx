@@ -2,9 +2,9 @@ import React, { useEffect, useMemo, useState } from 'react'
 import axios from 'axios'
 
 const Bus = () => {
-  const API_BASE = useMemo(() => 'https://bustrac-backend.onrender.com', [])
-  const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/drx3wkg1h/image/upload'
-  const CLOUDINARY_PRESET = 'BusTrac'
+  const API_BASE = useMemo(() => import.meta.env.VITE_API_BASE_URL || 'https://bustrac-backend.onrender.com', [])
+  const CLOUDINARY_URL = import.meta.env.VITE_CLOUDINARY_URL || 'https://api.cloudinary.com/v1_1/drx3wkg1h/image/upload'
+  const CLOUDINARY_PRESET = import.meta.env.VITE_CLOUDINARY_PRESET || 'BusTrac'
 
   const [buses, setBuses] = useState([])
   const [cities, setCities] = useState([])
