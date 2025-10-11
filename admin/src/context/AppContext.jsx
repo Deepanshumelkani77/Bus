@@ -50,6 +50,14 @@ const AppContextProvider = (props) => {
   const isAuthenticated = () => {
     const token = localStorage.getItem('adminToken');
     const adminData = localStorage.getItem('admin');
+    const hasAuthHeader = axios.defaults.headers.common['Authorization'];
+    
+    if (token && adminData && !hasAuthHeader) {
+      // Token exists but axios header is missing, restore it
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      console.log('Restored missing axios auth header');
+    }
+    
     return !!(token && adminData);
   };
 
@@ -99,11 +107,16 @@ const AppContextProvider = (props) => {
     
     if (token && adminData) {
       try {
+        // Set the axios default header for authentication
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         setAdmin(JSON.parse(adminData));
+        console.log('Admin authentication restored from localStorage');
       } catch (error) {
         console.error('Error parsing admin data:', error);
         logout();
       }
+    } else {
+      console.log('No admin token found in localStorage');
     }
   }, []);
 
