@@ -11,7 +11,7 @@ const AppContextProvider = (props) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const API_BASE = 'http://localhost:2000';
+  const API_BASE = 'https://bustrac-backend.onrender.com';
 
   // Logout function
   const logout = () => {
