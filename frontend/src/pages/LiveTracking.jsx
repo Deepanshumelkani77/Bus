@@ -38,7 +38,7 @@ const LiveTracking = () => {
 
   // Initialize socket connection
   useEffect(() => {
-    const newSocket = io('http://localhost:2000');
+    const newSocket = io('https://bustrac-backend.onrender.com');
     setSocket(newSocket);
 
     newSocket.on('bus-location-update', (data) => {
@@ -104,7 +104,7 @@ const LiveTracking = () => {
   const loadTripDetails = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`http://localhost:2000/smart-trips/trip-details/${tripId}`);
+      const response = await axios.get(`https://bustrac-backend.onrender.com/smart-trips/trip-details/${tripId}`);
       const tripData = response.data.trip;
       
       setTrip(tripData);
@@ -164,7 +164,7 @@ const LiveTracking = () => {
     const interval = setInterval(async () => {
       try {
         // First try to get location from trips endpoint
-        const locationResponse = await axios.get(`http://localhost:2000/trips/${tripId}/location`);
+        const locationResponse = await axios.get(`https://bustrac-backend.onrender.com/trips/${tripId}/location`);
         
         if (locationResponse.data.currentLocation) {
           console.log('Polling: New location received from trips endpoint:', locationResponse.data.currentLocation);
@@ -178,7 +178,7 @@ const LiveTracking = () => {
           }
         } else {
           // Fallback to smart-trips endpoint for trip details
-          const tripResponse = await axios.get(`http://localhost:2000/smart-trips/trip-details/${tripId}`);
+          const tripResponse = await axios.get(`https://bustrac-backend.onrender.com/smart-trips/trip-details/${tripId}`);
           const tripData = tripResponse.data.trip;
           
           if (tripData.currentLocation) {
@@ -396,7 +396,7 @@ const LiveTracking = () => {
 
   const calculateETA = async (busLocation, userLocation) => {
     try {
-      const response = await axios.post(`http://localhost:2000/smart-trips/calculate-etas/${tripId}`, {
+      const response = await axios.post(`https://bustrac-backend.onrender.com/smart-trips/calculate-etas/${tripId}`, {
         pickupPoints: [{
           lat: userLocation.latitude,
           lng: userLocation.longitude,
@@ -503,7 +503,7 @@ const LiveTracking = () => {
       
       // Try trips endpoint first
       try {
-        const locationResponse = await axios.get(`http://localhost:2000/trips/${tripId}/location`);
+        const locationResponse = await axios.get(`https://bustrac-backend.onrender.com/trips/${tripId}/location`);
         if (locationResponse.data.currentLocation) {
           console.log('Manual fetch: Location received from trips endpoint:', locationResponse.data.currentLocation);
           setBusLocation(locationResponse.data.currentLocation);
@@ -520,7 +520,7 @@ const LiveTracking = () => {
       }
       
       // Fallback to smart-trips endpoint
-      const response = await axios.get(`http://localhost:2000/smart-trips/trip-details/${tripId}`);
+      const response = await axios.get(`https://bustrac-backend.onrender.com/smart-trips/trip-details/${tripId}`);
       const tripData = response.data.trip;
       
       if (tripData.currentLocation) {
