@@ -103,23 +103,23 @@ const Bus = () => {
       
       console.log('Uploading image to Cloudinary...')
       
-      // Create a separate axios instance for Cloudinary without auth headers
-      const cloudinaryAxios = axios.create({
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
+      // Use fetch instead of axios to avoid CORS issues with auth headers
+      const response = await fetch(CLOUDINARY_URL, {
+        method: 'POST',
+        body: fd,
+        // Explicitly set mode to avoid CORS issues
+        mode: 'cors',
+        // No custom headers to avoid preflight issues
       })
       
-      const res = await cloudinaryAxios.post(CLOUDINARY_URL, fd, {
-        onUploadProgress: (evt) => {
-          if (!evt.total) return
-          const pct = Math.round((evt.loaded * 100) / evt.total)
-          setUploadProgress(pct)
-        },
-      })
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
       
-      console.log('Cloudinary response:', res.data)
-      const url = res?.data?.secure_url || res?.data?.url
+      const data = await response.json()
+      console.log('Cloudinary response:', data)
+      
+      const url = data?.secure_url || data?.url
       console.log('Image URL extracted:', url)
       
       if (url) {
@@ -128,10 +128,11 @@ const Bus = () => {
         console.log('Image URL set in form state')
       } else {
         console.error('No URL found in Cloudinary response')
+        setError('No image URL returned from Cloudinary')
       }
     } catch (e) {
       console.error('Image upload error:', e)
-      setError(e?.response?.data?.error?.message || e.message || 'Image upload failed')
+      setError(e.message || 'Image upload failed')
     } finally {
       setUploading(false)
     }

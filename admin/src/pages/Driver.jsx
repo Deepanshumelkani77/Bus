@@ -96,27 +96,27 @@ const Driver = () => {
       fd.append('file', file)
       fd.append('upload_preset', CLOUDINARY_PRESET)
       
-      // Create a separate axios instance for Cloudinary without auth headers
-      const cloudinaryAxios = axios.create({
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
+      // Use fetch instead of axios to avoid CORS issues with auth headers
+      const response = await fetch(CLOUDINARY_URL, {
+        method: 'POST',
+        body: fd,
+        // No headers needed - fetch will set Content-Type automatically for FormData
       })
       
-      const res = await cloudinaryAxios.post(CLOUDINARY_URL, fd, {
-        onUploadProgress: (evt) => {
-          if (!evt.total) return
-          const pct = Math.round((evt.loaded * 100) / evt.total)
-          setUploadProgress(pct)
-        },
-      })
-      const url = res?.data?.secure_url || res?.data?.url
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
+      const data = await response.json()
+      const url = data?.secure_url || data?.url
       if (url) {
         setForm((f) => ({ ...f, image: url }))
         setLocalPreview(url)
+      } else {
+        setError('No image URL returned from Cloudinary')
       }
     } catch (e) {
-      setError(e?.response?.data?.error?.message || e.message || 'Image upload failed')
+      setError(e.message || 'Image upload failed')
     } finally {
       setUploading(false)
     }
