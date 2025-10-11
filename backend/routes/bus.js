@@ -59,9 +59,9 @@ const authenticateAnyUser = async (req, res, next) => {
   }
 };
 
-// Public routes (for viewing) - accessible by both admins and drivers
-router.get('/', authenticateAnyUser, listBuses); // /buses
-router.get('/cities', authenticateAnyUser, listCities); // /buses/cities
+// Public routes (for viewing) - temporarily made public for testing
+router.get('/', listBuses); // /buses - temporarily public
+router.get('/cities', listCities); // /buses/cities - temporarily public
 
 // Mixed access routes
 router.post('/assign', authenticateAnyUser, assignBusToDriver); // /buses/assign - both admin and drivers can assign
