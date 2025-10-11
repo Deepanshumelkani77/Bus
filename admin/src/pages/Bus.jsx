@@ -102,7 +102,15 @@ const Bus = () => {
       fd.append('upload_preset', CLOUDINARY_PRESET)
       
       console.log('Uploading image to Cloudinary...')
-      const res = await axios.post(CLOUDINARY_URL, fd, {
+      
+      // Create a separate axios instance for Cloudinary without auth headers
+      const cloudinaryAxios = axios.create({
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+      
+      const res = await cloudinaryAxios.post(CLOUDINARY_URL, fd, {
         onUploadProgress: (evt) => {
           if (!evt.total) return
           const pct = Math.round((evt.loaded * 100) / evt.total)

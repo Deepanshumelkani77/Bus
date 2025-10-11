@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Admin Account</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .success { border-left: 4px solid #4CAF50; }
+        .error { border-left: 4px solid #f44336; }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Create Admin Account</h1>
+        <p>This will create a super admin account for your Bus Tracking System admin panel.</p>
+        
+        <button onclick="createAdmin()" id="createBtn">
+            Create Super Admin Account
+        </button>
+        
+        <div id="result"></div>
+        
+        <div style="margin-top: 30px; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 8px;">
+            <h3>📋 Default Credentials:</h3>
+            <p><strong>Email:</strong> deepumelkani123@gmail.com</p>
+            <p><strong>Password:</strong> hack77</p>
+            <p><small>⚠️ Please change the password after first login!</small></p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://bustrac-backend.onrender.com';
+        
+        async function createAdmin() {
+            const btn = document.getElementById('createBtn');
+            const result = document.getElementById('result');
+            
+            // Show loading
+            btn.innerHTML = '<span class="loading"></span> Creating Admin...';
+            btn.disabled = true;
+            result.innerHTML = '';
+            
+            try {
+                const response = await fetch(`${API_BASE}/admin-auth/create-super-admin`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    result.innerHTML = `
+                        <div class="result success">
+                            <h3>✅ ${data.message}</h3>
+                            <p><strong>Email:</strong> ${data.email}</p>
+                            <p><strong>Password:</strong> ${data.password}</p>
+                            <p><small>${data.warning}</small></p>
+                            <p><strong>Next Step:</strong> Go to your admin panel and login with these credentials!</p>
+                        </div>
+                    `;
+                } else {
+                    result.innerHTML = `
+                        <div class="result success">
+                            <h3>ℹ️ ${data.message}</h3>
+                            <p>Admin account already exists. You can login with:</p>
+                            <p><strong>Email:</strong> deepumelkani123@gmail.com</p>
+                            <p><strong>Password:</strong> hack77</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                result.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Error</h3>
+                        <p>Failed to create admin account: ${error.message}</p>
+                        <p>Please make sure your backend is deployed and running.</p>
+                    </div>
+                `;
+            } finally {
+                btn.innerHTML = 'Create Super Admin Account';
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
