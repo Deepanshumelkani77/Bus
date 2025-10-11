@@ -13,7 +13,7 @@ const Dashboard = () => {
   const [lastRefresh, setLastRefresh] = useState(null)
 
   // Config (update if your backend runs elsewhere)
-  const API_BASE = useMemo(() => 'http://localhost:2000', [])
+  const API_BASE = useMemo(() => 'https://bustrac-backend.onrender.com', [])
 
   // Fetch live data
   const fetchData = async () => {
