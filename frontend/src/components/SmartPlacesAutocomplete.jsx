@@ -30,7 +30,7 @@ const SmartPlacesAutocomplete = ({
 
     setIsLoading(true);
     try {
-      const response = await axios.get(`http://localhost:2000/google/autocomplete`, {
+      const response = await axios.get(`https://bustrac-backend.onrender.com/google/autocomplete`, {
         params: { input }
       });
 
@@ -68,7 +68,7 @@ const SmartPlacesAutocomplete = ({
 
     // Get place details
     try {
-      const response = await axios.get(`http://localhost:2000/google/place-details`, {
+      const response = await axios.get(`https://bustrac-backend.onrender.com/google/place-details`, {
         params: { place_id: suggestion.place_id }
       });
 
