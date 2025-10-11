@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState, useRef } from 'react'
 import axios from 'axios'
 
 const Driver = () => {
-  const API_BASE = useMemo(() => 'http://localhost:2000', [])
+  const API_BASE = useMemo(() => 'https://bustrac-backend.onrender.com', [])
   const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/drx3wkg1h/image/upload'
   const CLOUDINARY_PRESET = 'BusTrac'
 
