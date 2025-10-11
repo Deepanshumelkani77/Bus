@@ -22,7 +22,7 @@ const AppContextProvider = (props) => {
   const [error, setError] = useState("");
 
   // Base URL for API calls
-  const API_BASE_URL = "http://localhost:2000";
+  const API_BASE_URL = "https://bustrac-backend.onrender.com";
 
   // Signup
   const signup = async (name, email, password, city, phone) => {
