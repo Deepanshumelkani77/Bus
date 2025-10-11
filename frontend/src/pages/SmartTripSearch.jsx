@@ -16,7 +16,7 @@ const SmartTripSearch = () => {
 
   // Initialize socket connection for real-time updates
   useEffect(() => {
-    const newSocket = io('http://localhost:2000');
+    const newSocket = io('https://bustrac-backend.onrender.com');
     setSocket(newSocket);
 
     // Listen for real-time ETA updates
@@ -58,7 +58,7 @@ const SmartTripSearch = () => {
     setSearchPerformed(true);
 
     try {
-      const response = await axios.post('http://localhost:2000/smart-trips/find-matching-trips', {
+      const response = await axios.post('https://bustrac-backend.onrender.com/smart-trips/find-matching-trips', {
         sourceLat: source.lat,
         sourceLng: source.lng,
         destLat: destination.lat,
@@ -303,7 +303,7 @@ const BusCard = ({ trip, source }) => {
     
     setIsLoadingETA(true);
     try {
-      const response = await axios.get(`http://localhost:2000/smart-trips/eta/${trip.tripId}`, {
+      const response = await axios.get(`https://bustrac-backend.onrender.com/smart-trips/eta/${trip.tripId}`, {
         params: {
           userLat: source.lat,
           userLng: source.lng
