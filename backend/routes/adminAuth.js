@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { loginAdmin, getAdminProfile, updateAdminProfile } = require('../controller/adminController');
 const { authenticateAdminToken, requireSuperAdmin } = require('../middleware/adminAuth');
+const bcrypt = require('bcryptjs');
 
 // POST /admin-auth/login
 router.post('/login', loginAdmin);
