@@ -17,7 +17,7 @@ const Trip = () => {
       setLoading(true);
       setError('');
       
-      const response = await axios.get(`${API_BASE || 'http://localhost:2000'}/trips`);
+      const response = await axios.get(`${API_BASE || 'https://bustrac-backend.onrender.com'}/trips`);
       
       if (response.data && response.data.trips) {
         // Transform backend data to match our UI expectations
