@@ -1,25 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-  Image,
-  Alert,
-  ActivityIndicator,
-  Animated,
-  Easing,
-} from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, Animated, Easing } from 'react-native';
+import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { theme } from '../../../lib/theme';
-import { Ionicons } from '@expo/vector-icons';
+import { useAuth } from '../../../lib/AuthContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import ErrorBoundary from '../../../components/ErrorBoundary';
 
 const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/drx3wkg1h/image/upload';
 const CLOUDINARY_PRESET = 'BusTrac';
-const API_BASE = 'http://10.65.103.156:2000';
+const API_BASE = 'https://bustrac-backend.onrender.com';
 
 interface Driver {
   _id: string;
@@ -38,7 +27,7 @@ interface FormData {
   image: string;
 }
 
-export default function ProfileScreen() {
+function ProfileScreen() {
   const [driver, setDriver] = useState<Driver | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [editing, setEditing] = useState<boolean>(false);
@@ -443,6 +432,14 @@ export default function ProfileScreen() {
         </View>
       </Animated.View>
     </ScrollView>
+  );
+}
+
+export default function Profile() {
+  return (
+    <ErrorBoundary>
+      <ProfileScreen />
+    </ErrorBoundary>
   );
 }
 

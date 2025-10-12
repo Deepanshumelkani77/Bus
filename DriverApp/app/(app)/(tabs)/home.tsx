@@ -1,12 +1,14 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, RefreshControl, ScrollView, Modal, TextInput } from 'react-native';
+import React, { useState, useEffect, useMemo } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, FlatList, ActivityIndicator, RefreshControl, Modal, TextInput } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../../../lib/theme';
-import { getBuses, getCities, Bus, assignBusToDriver } from '../../../lib/api';
+import { getCities, getBuses, Bus, assignBusToDriver } from '../../../lib/api';
+import ErrorBoundary from '../../../components/ErrorBoundary';
 import { useAuth } from '../../../lib/AuthContext';
 import { useRouter } from 'expo-router';
 import BusCard from '../../../components/BusCard';
 
-export default function HomeScreen() {
+function HomeScreen() {
   const router = useRouter();
   const { driver, isAuthenticated } = useAuth();
   const [cities, setCities] = useState<string[]>([]);
@@ -22,9 +24,10 @@ export default function HomeScreen() {
       console.log('Loading cities...');
       const res = await getCities();
       console.log('Cities loaded successfully:', res.cities?.length || 0);
-      setCities(res.cities);
+      setCities(res.cities || []);
     } catch (e) {
       console.error('Error loading cities:', e);
+      setCities([]);
     }
   }
 
@@ -33,16 +36,22 @@ export default function HomeScreen() {
       console.log('Loading buses for city:', city || 'all');
       const res = await getBuses(city);
       console.log('Buses loaded successfully:', res.buses?.length || 0);
-      setBuses(res.buses);
+      setBuses(res.buses || []);
     } catch (e) {
       console.error('Error loading buses:', e);
+      setBuses([]);
     }
   }
 
   async function initialize() {
-    setLoading(true);
-    await Promise.all([loadCities(), loadBuses(selectedCity)]);
-    setLoading(false);
+    try {
+      setLoading(true);
+      await Promise.all([loadCities(), loadBuses(selectedCity)]);
+    } catch (error) {
+      console.error('Error during initialization:', error);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -157,6 +166,14 @@ export default function HomeScreen() {
         </View>
       </Modal>
     </View>
+  );
+}
+
+export default function Home() {
+  return (
+    <ErrorBoundary>
+      <HomeScreen />
+    </ErrorBoundary>
   );
 }
 

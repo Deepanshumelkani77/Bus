@@ -2,21 +2,24 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
-  TouchableOpacity,
-  Platform,
-  Alert,
-  ActivityIndicator,
   TextInput,
-  ScrollView,
-  KeyboardAvoidingView,
+  TouchableOpacity,
+  FlatList,
+  Alert,
+  StyleSheet,
   SafeAreaView,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
   Modal,
+  ActivityIndicator,
 } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import axios from 'axios';
-import { useAuth } from '../../../lib/AuthContext';
 import { theme } from '../../../lib/theme';
+import { useAuth } from '../../../lib/AuthContext';
+import ErrorBoundary from '../../../components/ErrorBoundary';
 
 // Google API Key
 const GOOGLE_API_KEY = "AIzaSyBpr4hS8JlH5-ZJK_cJRGndeeezpdLtbkk";
@@ -64,7 +67,7 @@ interface GoogleDirectionsResponse {
   routes: GoogleDirectionsRoute[];
 }
 
-export default function RoutesScreen() {
+function RoutesScreen() {
   const { driver, token, isAuthenticated } = useAuth();
   
   // Location states
@@ -131,7 +134,7 @@ export default function RoutesScreen() {
   };
 
   // Search places using backend Google API
-  const searchPlaces = async (query: string, isSource: boolean) => {
+  const searchPlaces = async (query: string, isSource: boolean): Promise<void> => {
     if (query.length < 2) {
       if (isSource) {
         setSourceSuggestions([]);
@@ -151,30 +154,69 @@ export default function RoutesScreen() {
           params: {
             input: query,
           },
+          timeout: 30000, // 30 second timeout
         }
       );
 
       console.log('Places API response:', response.data);
 
       if (response.data.status === 'OK') {
-        const suggestions = response.data.predictions.slice(0, 5);
+        const predictions = response.data.predictions || [];
         if (isSource) {
-          setSourceSuggestions(suggestions);
+          setSourceSuggestions(predictions);
           setShowSourceSuggestions(true);
         } else {
-          setDestSuggestions(suggestions);
+          setDestSuggestions(predictions);
           setShowDestSuggestions(true);
         }
-      } else {
-        console.warn('Places API error:', response.data.status);
       }
     } catch (error) {
       console.error('Places API error:', error);
+      // Clear suggestions on error
+      if (isSource) {
+        setSourceSuggestions([]);
+        setShowSourceSuggestions(false);
+      } else {
+        setDestSuggestions([]);
+        setShowDestSuggestions(false);
+      }
+    }
+  };
+
+  // Get directions using backend Google API
+  const getDirections = async (): Promise<void> => {
+    if (!sourceCoords || !destCoords) {
+      Alert.alert('Error', 'Please select both source and destination');
+      return;
+    }
+
+    try {
+      console.log('Getting directions');
+      const response = await axios.get(
+        `https://bustrac-backend.onrender.com/google/directions`,
+        {
+          params: {
+            origin: `${sourceCoords.lat},${sourceCoords.lng}`,
+            destination: `${destCoords.lat},${destCoords.lng}`,
+          },
+        }
+      );
+
+      console.log('Directions API response:', response.data);
+
+      if (response.data.status === 'OK') {
+        const routes = response.data.routes;
+        console.log(routes);
+      } else {
+        console.warn('Directions API error:', response.data.status);
+      }
+    } catch (error) {
+      console.error('Directions API error:', error);
     }
   };
 
   // Get place details using backend Google API
-  const getPlaceDetails = async (placeId: string, isSource: boolean) => {
+  const getPlaceDetails = async (placeId: string, isSource: boolean): Promise<void> => {
     try {
       console.log('Getting place details for:', placeId);
       const response = await axios.get(
@@ -284,13 +326,12 @@ export default function RoutesScreen() {
     if (route && route.coords.length > 0 && mapRef.current) {
       mapRef.current.fitToCoordinates(route.coords, {
         edgePadding: { top: 100, right: 50, bottom: 200, left: 50 },
-        animated: true,
       });
     }
   };
 
-  // Save selected route to backend
-  const saveRoute = async () => {
+  // Save route function
+  const saveRoute = async (): Promise<void> => {
     if (selectedRouteIndex === null || !routes[selectedRouteIndex]) {
       Alert.alert('No Route Selected', 'Please select a route first');
       return;
@@ -731,6 +772,14 @@ export default function RoutesScreen() {
         </Modal>
       </KeyboardAvoidingView>
     </SafeAreaView>
+  );
+}
+
+export default function Routes() {
+  return (
+    <ErrorBoundary>
+      <RoutesScreen />
+    </ErrorBoundary>
   );
 }
 

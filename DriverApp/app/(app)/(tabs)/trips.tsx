@@ -1,19 +1,20 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Alert,
+import { 
+  View, 
+  Text, 
+  TouchableOpacity, 
+  FlatList, 
+  Alert, 
+  StyleSheet, 
   ActivityIndicator,
-  FlatList,
-  RefreshControl,
-  Platform,
+  RefreshControl 
 } from 'react-native';
-import { useAuth } from '../../../lib/AuthContext';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import axios from 'axios';
 import * as Location from 'expo-location';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { theme } from '../../../lib/theme';
+import { useAuth } from '../../../lib/AuthContext';
+import ErrorBoundary from '../../../components/ErrorBoundary';
 
 interface Trip {
   _id: string;
@@ -43,7 +44,7 @@ interface LocationData {
   heading?: number;
 }
 
-export default function TripsScreen() {
+function TripsScreen() {
   const { driver, token, isAuthenticated } = useAuth();
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
@@ -398,6 +399,14 @@ export default function TripsScreen() {
         }
       />
     </View>
+  );
+}
+
+export default function Trips() {
+  return (
+    <ErrorBoundary>
+      <TripsScreen />
+    </ErrorBoundary>
   );
 }
 
