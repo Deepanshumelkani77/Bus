@@ -146,7 +146,7 @@ export default function RoutesScreen() {
     try {
       console.log('Searching places for:', query);
       const response = await axios.get(
-        `http://10.65.103.156:2000/google/autocomplete`,
+        `https://bustrac-backend.onrender.com/google/autocomplete`,
         {
           params: {
             input: query,
@@ -178,7 +178,7 @@ export default function RoutesScreen() {
     try {
       console.log('Getting place details for:', placeId);
       const response = await axios.get(
-        `http://10.65.103.156:2000/google/place-details`,
+        `https://bustrac-backend.onrender.com/google/place-details`,
         {
           params: {
             place_id: placeId,
@@ -227,7 +227,7 @@ export default function RoutesScreen() {
       console.log('Fetching routes from:', origin, 'to:', destination);
 
       const response = await axios.get<GoogleDirectionsResponse>(
-        `http://10.65.103.156:2000/google/directions`,
+        `https://bustrac-backend.onrender.com/google/directions`,
         {
           params: {
             origin,
@@ -307,7 +307,7 @@ export default function RoutesScreen() {
       
       // Save route to backend with proper authentication
       const response = await axios.post(
-        'http://10.65.103.156:2000/routes/save',
+        'https://bustrac-backend.onrender.com/routes/save',
         {
           driverId: driver._id,
           source: sourceText,
@@ -405,7 +405,7 @@ export default function RoutesScreen() {
       };
 
       const response = await axios.post(
-        'http://10.65.103.156:2000/trips/create',
+        'https://bustrac-backend.onrender.com/trips/create',
         tripData,
         {
           headers: {

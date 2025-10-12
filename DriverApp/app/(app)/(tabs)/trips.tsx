@@ -88,7 +88,7 @@ export default function TripsScreen() {
   const sendLocationToBackend = useCallback(async (location: LocationData, tripId: string) => {
     try {
       await axios.post(
-        'http://10.65.103.156:2000/trips/location',
+        'https://bustrac-backend.onrender.com/trips/location',
         {
           tripId,
           latitude: location.latitude,
@@ -154,7 +154,7 @@ export default function TripsScreen() {
     try {
       setLoading(true);
       const response = await axios.get(
-        `http://10.65.103.156:2000/trips/driver/${driver?._id}`,
+        `https://bustrac-backend.onrender.com/trips/driver/${driver?._id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -203,7 +203,7 @@ export default function TripsScreen() {
   const startTrip = async (trip: Trip) => {
     try {
       const response = await axios.patch(
-        `http://10.65.103.156:2000/trips/${trip._id}/start`,
+        `https://bustrac-backend.onrender.com/trips/${trip._id}/start`,
         {},
         {
           headers: {
@@ -235,7 +235,7 @@ export default function TripsScreen() {
           onPress: async () => {
             try {
               const response = await axios.patch(
-                `http://10.65.103.156:2000/trips/${trip._id}/complete`,
+                `https://bustrac-backend.onrender.com/trips/${trip._id}/complete`,
                 {},
                 {
                   headers: {
