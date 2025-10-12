@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, Animated, Easing } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, Animated, Easing, ActivityIndicator, Image } from 'react-native';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { theme } from '../../../lib/theme';
 import { useAuth } from '../../../lib/AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -65,7 +66,7 @@ function ProfileScreen() {
     ]).start();
   }, [fadeAnim, slideAnim]); // loadProfile is called once on mount
 
-  const loadProfile = async () => {
+  const loadProfile = async (): Promise<void> => {
     try {
       setLoading(true);
       const token = await AsyncStorage.getItem('driver_token');
@@ -173,7 +174,7 @@ function ProfileScreen() {
     }
   };
 
-  const pickImage = async () => {
+  const pickImage = async (): Promise<void> => {
     try {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
@@ -197,7 +198,7 @@ function ProfileScreen() {
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = async (): Promise<void> => {
     try {
       setSaving(true);
       const token = await AsyncStorage.getItem('driver_token');
