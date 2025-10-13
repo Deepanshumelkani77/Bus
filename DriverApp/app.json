@@ -7,7 +7,7 @@
     "icon": "./assets/images/icon.png",
     "scheme": "bustrac",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "ios": {
       "supportsTablet": true
     },
@@ -20,7 +20,10 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.bustrac"
+      "package": "com.anonymous.bustrac",
+      "compileSdkVersion": 34,
+      "targetSdkVersion": 34,
+      "minSdkVersion": 23
     },
     "web": {
       "output": "static",

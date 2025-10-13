@@ -11,6 +11,8 @@
     "lint": "expo lint"
   },
   "dependencies": {
+    "@expo/config": "~9.0.0",
+    "@expo/config-plugins": "~9.0.0",
     "@expo/vector-icons": "^15.0.2",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-navigation/bottom-tabs": "^7.4.0",
@@ -34,9 +36,9 @@
     "expo-web-browser": "~15.0.8",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "react-native": "0.81.4",
+    "react-native": "0.76.5",
     "react-native-gesture-handler": "~2.28.0",
-    "react-native-google-places-autocomplete": "^2.5.7",
+    "react-native-google-places-autocomplete": "2.5.6",
     "react-native-maps": "1.20.1",
     "react-native-reanimated": "~4.1.1",
     "react-native-safe-area-context": "~5.6.0",
