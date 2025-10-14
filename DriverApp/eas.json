@@ -6,27 +6,13 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal",
-      "android": {
-        "buildType": "apk"
-      }
+      "distribution": "internal"
     },
     "preview": {
-      "distribution": "internal",
-      "android": {
-        "buildType": "apk",
-        "gradleCommand": ":app:assembleRelease"
-      },
-      "env": {
-        "NODE_ENV": "production",
-        "EXPO_USE_HERMES": "false"
-      }
+      "distribution": "internal"
     },
     "production": {
-      "autoIncrement": true,
-      "android": {
-        "buildType": "app-bundle"
-      }
+      "autoIncrement": true
     }
   },
   "submit": {

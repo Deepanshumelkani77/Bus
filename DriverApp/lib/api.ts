@@ -8,7 +8,10 @@
 import { Platform } from "react-native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-let DEFAULT_BASE_URL = "https://bustrac-backend.onrender.com";
+let DEFAULT_BASE_URL =
+  Platform.OS === "android"
+    ? "http://10.65.103.156:2000"  // same as your Metro IP
+    : "http://10.65.103.156:2000"; // works for iOS too
 
 export const BASE_URL = DEFAULT_BASE_URL;
 

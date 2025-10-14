@@ -1,15 +1,25 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, Animated, Easing, ActivityIndicator, Image } from 'react-native';
-import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  TextInput,
+  Image,
+  Alert,
+  ActivityIndicator,
+  Animated,
+  Easing,
+} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { theme } from '../../../lib/theme';
-import { useAuth } from '../../../lib/AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import ErrorBoundary from '../../../components/ErrorBoundary';
+import { theme } from '../../../lib/theme';
+import { Ionicons } from '@expo/vector-icons';
 
 const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/drx3wkg1h/image/upload';
 const CLOUDINARY_PRESET = 'BusTrac';
-const API_BASE = 'https://bustrac-backend.onrender.com';
+const API_BASE = 'http://10.65.103.156:2000';
 
 interface Driver {
   _id: string;
@@ -28,7 +38,7 @@ interface FormData {
   image: string;
 }
 
-function ProfileScreen() {
+export default function ProfileScreen() {
   const [driver, setDriver] = useState<Driver | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [editing, setEditing] = useState<boolean>(false);
@@ -66,7 +76,7 @@ function ProfileScreen() {
     ]).start();
   }, [fadeAnim, slideAnim]); // loadProfile is called once on mount
 
-  const loadProfile = async (): Promise<void> => {
+  const loadProfile = async () => {
     try {
       setLoading(true);
       const token = await AsyncStorage.getItem('driver_token');
@@ -174,7 +184,7 @@ function ProfileScreen() {
     }
   };
 
-  const pickImage = async (): Promise<void> => {
+  const pickImage = async () => {
     try {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
@@ -198,7 +208,7 @@ function ProfileScreen() {
     }
   };
 
-  const handleSave = async (): Promise<void> => {
+  const handleSave = async () => {
     try {
       setSaving(true);
       const token = await AsyncStorage.getItem('driver_token');
@@ -433,14 +443,6 @@ function ProfileScreen() {
         </View>
       </Animated.View>
     </ScrollView>
-  );
-}
-
-export default function Profile() {
-  return (
-    <ErrorBoundary>
-      <ProfileScreen />
-    </ErrorBoundary>
   );
 }
 

@@ -1,20 +1,19 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { 
-  View, 
-  Text, 
-  TouchableOpacity, 
-  FlatList, 
-  Alert, 
-  StyleSheet, 
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
   ActivityIndicator,
-  RefreshControl 
+  FlatList,
+  RefreshControl,
+  Platform,
 } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useAuth } from '../../../lib/AuthContext';
 import axios from 'axios';
 import * as Location from 'expo-location';
-import { theme } from '../../../lib/theme';
-import { useAuth } from '../../../lib/AuthContext';
-import ErrorBoundary from '../../../components/ErrorBoundary';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 interface Trip {
   _id: string;
@@ -44,7 +43,7 @@ interface LocationData {
   heading?: number;
 }
 
-function TripsScreen() {
+export default function TripsScreen() {
   const { driver, token, isAuthenticated } = useAuth();
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
@@ -89,7 +88,7 @@ function TripsScreen() {
   const sendLocationToBackend = useCallback(async (location: LocationData, tripId: string) => {
     try {
       await axios.post(
-        'https://bustrac-backend.onrender.com/trips/location',
+        'http://10.65.103.156:2000/trips/location',
         {
           tripId,
           latitude: location.latitude,
@@ -155,7 +154,7 @@ function TripsScreen() {
     try {
       setLoading(true);
       const response = await axios.get(
-        `https://bustrac-backend.onrender.com/trips/driver/${driver?._id}`,
+        `http://10.65.103.156:2000/trips/driver/${driver?._id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -204,7 +203,7 @@ function TripsScreen() {
   const startTrip = async (trip: Trip) => {
     try {
       const response = await axios.patch(
-        `https://bustrac-backend.onrender.com/trips/${trip._id}/start`,
+        `http://10.65.103.156:2000/trips/${trip._id}/start`,
         {},
         {
           headers: {
@@ -236,7 +235,7 @@ function TripsScreen() {
           onPress: async () => {
             try {
               const response = await axios.patch(
-                `https://bustrac-backend.onrender.com/trips/${trip._id}/complete`,
+                `http://10.65.103.156:2000/trips/${trip._id}/complete`,
                 {},
                 {
                   headers: {
@@ -399,14 +398,6 @@ function TripsScreen() {
         }
       />
     </View>
-  );
-}
-
-export default function Trips() {
-  return (
-    <ErrorBoundary>
-      <TripsScreen />
-    </ErrorBoundary>
   );
 }
 

@@ -38,7 +38,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const API_BASE_URL = 'https://bustrac-backend.onrender.com';
+  const API_BASE_URL = 'http://10.65.103.156:2000';
 
   // Load stored auth data on app start
   useEffect(() => {
@@ -65,20 +65,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setLoading(true);
       
-      console.log('🔄 Attempting login to:', API_BASE_URL);
-      console.log('📧 Email:', email);
-      
       const response = await axios.post(`${API_BASE_URL}/auth/login`, {
         email,
         password,
-      }, {
-        timeout: 30000, // 30 second timeout
-        headers: {
-          'Content-Type': 'application/json',
-        }
       });
-
-      console.log('✅ Login response received:', response.status);
 
       if (response.data.token && response.data.driver) {
         const { token: newToken, driver: driverData } = response.data;
@@ -91,33 +81,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setToken(newToken);
         setDriver(driverData);
         
-        console.log('✅ Login successful for driver:', driverData.name);
         return { success: true, message: 'Login successful' };
       } else {
-        console.error('❌ Invalid response structure:', response.data);
         return { success: false, message: 'Invalid response from server' };
       }
     } catch (error: any) {
-      console.error('❌ Login error details:', {
-        message: error.message,
-        code: error.code,
-        status: error.response?.status,
-        data: error.response?.data,
-        url: `${API_BASE_URL}/auth/login`
-      });
-      
-      let message = 'Login failed';
-      
-      if (error.code === 'NETWORK_ERROR' || error.message === 'Network Error') {
-        message = 'Cannot connect to server. Please check your internet connection and try again.';
-      } else if (error.code === 'ECONNABORTED') {
-        message = 'Connection timeout. The server might be sleeping, please try again.';
-      } else if (error.response?.status === 401) {
-        message = 'Invalid email or password';
-      } else if (error.response?.data?.message) {
-        message = error.response.data.message;
-      }
-      
+      console.error('Login error:', error);
+      const message = error.response?.data?.message || 'Login failed';
       return { success: false, message };
     } finally {
       setLoading(false);

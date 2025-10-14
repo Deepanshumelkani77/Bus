@@ -2,24 +2,21 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
-  TextInput,
-  TouchableOpacity,
-  FlatList,
-  Alert,
   StyleSheet,
-  SafeAreaView,
-  KeyboardAvoidingView,
+  TouchableOpacity,
   Platform,
-  ScrollView,
-  Modal,
+  Alert,
   ActivityIndicator,
+  TextInput,
+  ScrollView,
+  KeyboardAvoidingView,
+  SafeAreaView,
+  Modal,
 } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import axios from 'axios';
-import { theme } from '../../../lib/theme';
 import { useAuth } from '../../../lib/AuthContext';
-import ErrorBoundary from '../../../components/ErrorBoundary';
+import { theme } from '../../../lib/theme';
 
 // Google API Key
 const GOOGLE_API_KEY = "AIzaSyBpr4hS8JlH5-ZJK_cJRGndeeezpdLtbkk";
@@ -67,7 +64,7 @@ interface GoogleDirectionsResponse {
   routes: GoogleDirectionsRoute[];
 }
 
-function RoutesScreen() {
+export default function RoutesScreen() {
   const { driver, token, isAuthenticated } = useAuth();
   
   // Location states
@@ -134,7 +131,7 @@ function RoutesScreen() {
   };
 
   // Search places using backend Google API
-  const searchPlaces = async (query: string, isSource: boolean): Promise<void> => {
+  const searchPlaces = async (query: string, isSource: boolean) => {
     if (query.length < 2) {
       if (isSource) {
         setSourceSuggestions([]);
@@ -149,78 +146,39 @@ function RoutesScreen() {
     try {
       console.log('Searching places for:', query);
       const response = await axios.get(
-        `https://bustrac-backend.onrender.com/google/autocomplete`,
+        `http://10.65.103.156:2000/google/autocomplete`,
         {
           params: {
             input: query,
           },
-          timeout: 30000, // 30 second timeout
         }
       );
 
       console.log('Places API response:', response.data);
 
       if (response.data.status === 'OK') {
-        const predictions = response.data.predictions || [];
+        const suggestions = response.data.predictions.slice(0, 5);
         if (isSource) {
-          setSourceSuggestions(predictions);
+          setSourceSuggestions(suggestions);
           setShowSourceSuggestions(true);
         } else {
-          setDestSuggestions(predictions);
+          setDestSuggestions(suggestions);
           setShowDestSuggestions(true);
         }
+      } else {
+        console.warn('Places API error:', response.data.status);
       }
     } catch (error) {
       console.error('Places API error:', error);
-      // Clear suggestions on error
-      if (isSource) {
-        setSourceSuggestions([]);
-        setShowSourceSuggestions(false);
-      } else {
-        setDestSuggestions([]);
-        setShowDestSuggestions(false);
-      }
-    }
-  };
-
-  // Get directions using backend Google API
-  const getDirections = async (): Promise<void> => {
-    if (!sourceCoords || !destCoords) {
-      Alert.alert('Error', 'Please select both source and destination');
-      return;
-    }
-
-    try {
-      console.log('Getting directions');
-      const response = await axios.get(
-        `https://bustrac-backend.onrender.com/google/directions`,
-        {
-          params: {
-            origin: `${sourceCoords.lat},${sourceCoords.lng}`,
-            destination: `${destCoords.lat},${destCoords.lng}`,
-          },
-        }
-      );
-
-      console.log('Directions API response:', response.data);
-
-      if (response.data.status === 'OK') {
-        const routes = response.data.routes;
-        console.log(routes);
-      } else {
-        console.warn('Directions API error:', response.data.status);
-      }
-    } catch (error) {
-      console.error('Directions API error:', error);
     }
   };
 
   // Get place details using backend Google API
-  const getPlaceDetails = async (placeId: string, isSource: boolean): Promise<void> => {
+  const getPlaceDetails = async (placeId: string, isSource: boolean) => {
     try {
       console.log('Getting place details for:', placeId);
       const response = await axios.get(
-        `https://bustrac-backend.onrender.com/google/place-details`,
+        `http://10.65.103.156:2000/google/place-details`,
         {
           params: {
             place_id: placeId,
@@ -269,7 +227,7 @@ function RoutesScreen() {
       console.log('Fetching routes from:', origin, 'to:', destination);
 
       const response = await axios.get<GoogleDirectionsResponse>(
-        `https://bustrac-backend.onrender.com/google/directions`,
+        `http://10.65.103.156:2000/google/directions`,
         {
           params: {
             origin,
@@ -326,12 +284,13 @@ function RoutesScreen() {
     if (route && route.coords.length > 0 && mapRef.current) {
       mapRef.current.fitToCoordinates(route.coords, {
         edgePadding: { top: 100, right: 50, bottom: 200, left: 50 },
+        animated: true,
       });
     }
   };
 
-  // Save route function
-  const saveRoute = async (): Promise<void> => {
+  // Save selected route to backend
+  const saveRoute = async () => {
     if (selectedRouteIndex === null || !routes[selectedRouteIndex]) {
       Alert.alert('No Route Selected', 'Please select a route first');
       return;
@@ -348,7 +307,7 @@ function RoutesScreen() {
       
       // Save route to backend with proper authentication
       const response = await axios.post(
-        'https://bustrac-backend.onrender.com/routes/save',
+        'http://10.65.103.156:2000/routes/save',
         {
           driverId: driver._id,
           source: sourceText,
@@ -446,7 +405,7 @@ function RoutesScreen() {
       };
 
       const response = await axios.post(
-        'https://bustrac-backend.onrender.com/trips/create',
+        'http://10.65.103.156:2000/trips/create',
         tripData,
         {
           headers: {
@@ -772,14 +731,6 @@ function RoutesScreen() {
         </Modal>
       </KeyboardAvoidingView>
     </SafeAreaView>
-  );
-}
-
-export default function Routes() {
-  return (
-    <ErrorBoundary>
-      <RoutesScreen />
-    </ErrorBoundary>
   );
 }
 
