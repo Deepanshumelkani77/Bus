@@ -18,8 +18,7 @@ import axios from 'axios';
 import { useAuth } from '../../../lib/AuthContext';
 import { theme } from '../../../lib/theme';
 
-// Google API Key
-const GOOGLE_API_KEY = "AIzaSyBpr4hS8JlH5-ZJK_cJRGndeeezpdLtbkk";
+// Google API Key is handled by backend - no need for client-side key
 
 // Type definitions
 interface Coordinates {
@@ -66,6 +65,17 @@ interface GoogleDirectionsResponse {
 
 export default function RoutesScreen() {
   const { driver, token, isAuthenticated } = useAuth();
+
+  // Add error boundary and safety checks
+  if (!isAuthenticated()) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Please login to access routes</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
   
   // Location states
   const [sourceText, setSourceText] = useState<string>('');
@@ -170,6 +180,7 @@ export default function RoutesScreen() {
       }
     } catch (error) {
       console.error('Places API error:', error);
+      Alert.alert('Search Error', 'Failed to search places. Please check your internet connection.');
     }
   };
 
@@ -209,6 +220,7 @@ export default function RoutesScreen() {
       }
     } catch (error) {
       console.error('Place details error:', error);
+      Alert.alert('Location Error', 'Failed to get location details.');
     }
   };
 
@@ -271,7 +283,7 @@ export default function RoutesScreen() {
       }
     } catch (error) {
       console.error('Directions API error:', error);
-      Alert.alert('Error', 'Failed to fetch routes. Please check your connection.');
+      Alert.alert('Route Error', 'Failed to fetch routes. Please check your internet connection and try again.');
     } finally {
       setLoadingRoutes(false);
     }
@@ -744,6 +756,17 @@ const styles = StyleSheet.create({
   },
   map: {
     flex: 1,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
   },
   webMapPlaceholder: {
     flex: 1,
