@@ -38,7 +38,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const API_BASE_URL = 'http://10.65.103.156:2000';
+  const API_BASE_URL = 'https://bustrac-backend.onrender.com';
 
   // Load stored auth data on app start
   useEffect(() => {
