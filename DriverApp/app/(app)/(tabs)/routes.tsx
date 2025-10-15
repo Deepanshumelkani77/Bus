@@ -16,7 +16,7 @@ import {
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import axios from 'axios';
 import { useAuth } from '../../../lib/AuthContext';
-import { theme } from '../../../lib/theme';
+// import { theme } from '../../../lib/theme';
 
 // Google API Key is handled by backend - no need for client-side key
 
@@ -93,7 +93,14 @@ export default function RoutesScreen() {
   // Trip states
   const [showTripModal, setShowTripModal] = useState<boolean>(false);
   const [creatingTrip, setCreatingTrip] = useState<boolean>(false);
-  const [savedRouteData, setSavedRouteData] = useState<any>(null);
+  const [savedRouteData, setSavedRouteData] = useState<{
+    routeId: string;
+    source: string;
+    destination: string;
+    sourceCoords: Coordinates;
+    destinationCoords: Coordinates;
+    selectedRoute: RouteData;
+  } | null>(null);
   
   // Search states
   const [sourceSuggestions, setSourceSuggestions] = useState<PlaceResult[]>([]);
@@ -102,15 +109,11 @@ export default function RoutesScreen() {
   const [showDestSuggestions, setShowDestSuggestions] = useState<boolean>(false);
 
   const mapRef = useRef<MapView>(null);
-  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Add cleanup for async operations
+  // Add cleanup for search timeout
   useEffect(() => {
-    let isMounted = true;
-    
     return () => {
-      isMounted = false;
-      // Cleanup any pending requests or timeouts
       if (searchTimeoutRef.current) {
         clearTimeout(searchTimeoutRef.current);
       }
@@ -205,7 +208,7 @@ export default function RoutesScreen() {
     } catch (error) {
       console.error('Places API error:', error);
       // Don't show alert for every search error, just log it
-      if (axios.isAxiosError(error) && error.code === 'ECONNABORTED') {
+      if (error instanceof Error && 'code' in error && error.code === 'ECONNABORTED') {
         console.warn('Search request timed out');
       }
     }
