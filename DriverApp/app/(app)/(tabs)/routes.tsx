@@ -64,14 +64,15 @@ interface GoogleDirectionsResponse {
 }
 
 export default function RoutesScreen() {
-  const { driver, token, isAuthenticated } = useAuth();
+  const { driver, token, isAuthenticated, loading } = useAuth();
 
-  // Add error boundary and safety checks
-  if (!isAuthenticated()) {
+  // Show loading state while auth is being checked
+  if (loading) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>Please login to access routes</Text>
+          <ActivityIndicator size="large" color="#2196F3" />
+          <Text style={styles.errorText}>Loading...</Text>
         </View>
       </SafeAreaView>
     );
@@ -101,6 +102,20 @@ export default function RoutesScreen() {
   const [showDestSuggestions, setShowDestSuggestions] = useState<boolean>(false);
 
   const mapRef = useRef<MapView>(null);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Add cleanup for async operations
+  useEffect(() => {
+    let isMounted = true;
+    
+    return () => {
+      isMounted = false;
+      // Cleanup any pending requests or timeouts
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Decode polyline from Google Directions API
   const decodePolyline = (encoded: string): { latitude: number; longitude: number }[] => {
@@ -142,6 +157,11 @@ export default function RoutesScreen() {
 
   // Search places using backend Google API
   const searchPlaces = async (query: string, isSource: boolean) => {
+    // Clear previous timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
     if (query.length < 2) {
       if (isSource) {
         setSourceSuggestions([]);
@@ -153,6 +173,9 @@ export default function RoutesScreen() {
       return;
     }
 
+    // Debounce search requests
+    searchTimeoutRef.current = setTimeout(async () => {
+
     try {
       console.log('Searching places for:', query);
       const response = await axios.get(
@@ -161,12 +184,13 @@ export default function RoutesScreen() {
           params: {
             input: query,
           },
+          timeout: 10000, // 10 second timeout
         }
       );
 
       console.log('Places API response:', response.data);
 
-      if (response.data.status === 'OK') {
+      if (response.data && response.data.status === 'OK' && response.data.predictions) {
         const suggestions = response.data.predictions.slice(0, 5);
         if (isSource) {
           setSourceSuggestions(suggestions);
@@ -176,12 +200,16 @@ export default function RoutesScreen() {
           setShowDestSuggestions(true);
         }
       } else {
-        console.warn('Places API error:', response.data.status);
+        console.warn('Places API error:', response.data?.status || 'Unknown error');
       }
     } catch (error) {
       console.error('Places API error:', error);
-      Alert.alert('Search Error', 'Failed to search places. Please check your internet connection.');
+      // Don't show alert for every search error, just log it
+      if (axios.isAxiosError(error) && error.code === 'ECONNABORTED') {
+        console.warn('Search request timed out');
+      }
     }
+    }, 300); // 300ms debounce
   };
 
   // Get place details using backend Google API
@@ -194,29 +222,33 @@ export default function RoutesScreen() {
           params: {
             place_id: placeId,
           },
+          timeout: 10000, // 10 second timeout
         }
       );
 
       console.log('Place details response:', response.data);
 
-      if (response.data.status === 'OK') {
+      if (response.data && response.data.status === 'OK' && response.data.result) {
         const place = response.data.result;
-        const coords = {
-          lat: place.geometry.location.lat,
-          lng: place.geometry.location.lng,
-        };
+        if (place.geometry && place.geometry.location) {
+          const coords = {
+            lat: place.geometry.location.lat,
+            lng: place.geometry.location.lng,
+          };
 
-        if (isSource) {
-          setSourceCoords(coords);
-          setSourceText(place.formatted_address || place.name);
-          setShowSourceSuggestions(false);
-        } else {
-          setDestCoords(coords);
-          setDestText(place.formatted_address || place.name);
-          setShowDestSuggestions(false);
+          if (isSource) {
+            setSourceCoords(coords);
+            setSourceText(place.formatted_address || place.name || 'Selected Location');
+            setShowSourceSuggestions(false);
+          } else {
+            setDestCoords(coords);
+            setDestText(place.formatted_address || place.name || 'Selected Location');
+            setShowDestSuggestions(false);
+          }
         }
       } else {
-        console.warn('Place details error:', response.data.status);
+        console.warn('Place details error:', response.data?.status || 'Unknown error');
+        Alert.alert('Location Error', 'Failed to get location details.');
       }
     } catch (error) {
       console.error('Place details error:', error);
@@ -340,6 +372,7 @@ export default function RoutesScreen() {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
+          timeout: 15000, // 15 second timeout
         }
       );
 
@@ -495,8 +528,8 @@ export default function RoutesScreen() {
                 latitudeDelta: 0.1,
                 longitudeDelta: 0.1,
               }}
-              showsUserLocation={true}
-              showsMyLocationButton={true}
+              showsUserLocation={false}
+              showsMyLocationButton={false}
             >
               {/* Source Marker */}
               {sourceCoords && (
@@ -551,7 +584,12 @@ export default function RoutesScreen() {
               value={sourceText}
               onChangeText={(text) => {
                 setSourceText(text);
-                searchPlaces(text, true);
+                if (text.trim()) {
+                  searchPlaces(text.trim(), true);
+                } else {
+                  setSourceSuggestions([]);
+                  setShowSourceSuggestions(false);
+                }
               }}
               placeholder="Enter pickup location (e.g., Delhi, India)"
               placeholderTextColor="#999"
@@ -593,7 +631,12 @@ export default function RoutesScreen() {
               value={destText}
               onChangeText={(text) => {
                 setDestText(text);
-                searchPlaces(text, false);
+                if (text.trim()) {
+                  searchPlaces(text.trim(), false);
+                } else {
+                  setDestSuggestions([]);
+                  setShowDestSuggestions(false);
+                }
               }}
               placeholder="Enter destination location (e.g., Mumbai, India)"
               placeholderTextColor="#999"
