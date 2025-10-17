@@ -16,9 +16,9 @@ import {
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import axios from 'axios';
 import { useAuth } from '../../../lib/AuthContext';
-import crashlyticsService from '@/lib/crashlytics';
-import PerformanceMonitor from '@/lib/performance';
-import CrashTestButton from '@/components/CrashTestButton';
+// import { theme } from '../../../lib/theme';
+
+// Google API Key is handled by backend - no need for client-side key
 
 // Type definitions
 interface Coordinates {
@@ -45,6 +45,22 @@ interface PlaceResult {
       lng: number;
     };
   };
+}
+
+interface GoogleDirectionsLeg {
+  distance?: { text: string; value: number };
+  duration?: { text: string; value: number };
+}
+
+interface GoogleDirectionsRoute {
+  summary?: string;
+  legs?: GoogleDirectionsLeg[];
+  overview_polyline: { points: string };
+}
+
+interface GoogleDirectionsResponse {
+  status: string;
+  routes: GoogleDirectionsRoute[];
 }
 
 export default function RoutesScreen() {
@@ -82,165 +98,29 @@ export default function RoutesScreen() {
   const [destSuggestions, setDestSuggestions] = useState<PlaceResult[]>([]);
   const [showSourceSuggestions, setShowSourceSuggestions] = useState<boolean>(false);
   const [showDestSuggestions, setShowDestSuggestions] = useState<boolean>(false);
-  
-  // Abort controllers for API calls
-  const sourceAbortController = useRef<AbortController | null>(null);
-  const destAbortController = useRef<AbortController | null>(null);
-  const debouncedSearch = useRef<ReturnType<typeof setTimeout> | null>(null);
-  
-  // API Base URL
-  const API_BASE_URL = 'https://bustrac-backend.onrender.com';
-  
+
   const mapRef = useRef<MapView>(null);
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Search function with debouncing
-  const searchPlaces = (input: string, isSource: boolean) => {
-    if (debouncedSearch.current) {
-      clearTimeout(debouncedSearch.current);
-    }
-    
-    debouncedSearch.current = setTimeout(() => {
-      fetchPlaces(input, isSource);
-    }, 500);
-  };
-
-  // Fetch places from Google Places API
-  const fetchPlaces = async (input: string, isSource: boolean = true) => {
-    if (!input.trim()) {
-      if (isSource) {
-        setSourceSuggestions([]);
-      } else {
-        setDestSuggestions([]);
+  // Add cleanup for search timeout
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
       }
-      return;
-    }
+    };
+  }, []);
 
-    const controller = new AbortController();
-    if (isSource) {
-      sourceAbortController.current = controller;
-    } else {
-      destAbortController.current = controller;
-    }
-
-    try {
-      const response = await PerformanceMonitor.monitorAPICall(
-        'google_places_search',
-        async () => {
-          return await axios.get(`${API_BASE_URL}/google/places`, {
-            params: { input },
-            headers: { Authorization: `Bearer ${token}` },
-            timeout: 8000,
-            signal: controller.signal
-          });
-        },
-        { input_length: input.length }
-      );
-
-      if (response.data && response.data.predictions) {
-        if (isSource) {
-          setSourceSuggestions(response.data.predictions);
-        } else {
-          setDestSuggestions(response.data.predictions);
-        }
-      }
-    } catch (error: unknown) {
-      if ((error as any)?.name !== 'AbortError' && (error as any)?.name !== 'CanceledError') {
-        console.error('Places API error:', error);
-        crashlyticsService.recordError(error as Error, 'Places API search error');
-      }
-    }
-  };
-
-  // Handle place selection
-  const handlePlaceSelect = async (place: PlaceResult, isSource: boolean) => {
-    try {
-      const response = await PerformanceMonitor.monitorAPICall(
-        'google_place_details',
-        async () => {
-          return await axios.get(`${API_BASE_URL}/google/place-details`, {
-            params: { placeId: place.place_id },
-            headers: { Authorization: `Bearer ${token}` },
-            timeout: 10000,
-          });
-        }
-      );
-
-      if (response.data && response.data.result && response.data.result.geometry) {
-        const { lat, lng } = response.data.result.geometry.location;
-        const coords = { lat, lng };
-
-        if (isSource) {
-          setSourceCoords(coords);
-          setSourceText(place.description);
-          setSourceSuggestions([]);
-          setShowSourceSuggestions(false);
-        } else {
-          setDestCoords(coords);
-          setDestText(place.description);
-          setDestSuggestions([]);
-          setShowDestSuggestions(false);
-        }
-      }
-    } catch (error: unknown) {
-      console.error('Place details error:', error);
-      crashlyticsService.recordError(error as Error, 'Place details API error');
-    }
-  };
-
-  // Fetch directions from Google Directions API
-  const fetchDirections = async () => {
-    if (!sourceCoords || !destCoords) return;
-
-    setLoadingRoutes(true);
-
-    try {
-      const response = await PerformanceMonitor.monitorRouteCalculation(
-        sourceText,
-        destText,
-        async () => {
-          return await axios.get(`${API_BASE_URL}/google/directions`, {
-            params: {
-              origin: `${sourceCoords.lat},${sourceCoords.lng}`,
-              destination: `${destCoords.lat},${destCoords.lng}`,
-            },
-            headers: { Authorization: `Bearer ${token}` },
-            timeout: 12000,
-          });
-        }
-      );
-
-      if (response.data && response.data.routes && response.data.routes.length > 0) {
-        const parsedRoutes = response.data.routes.map((route: any, index: number) => ({
-          id: `route_${index}`,
-          summary: route.summary || 'Route',
-          distance: route.legs[0]?.distance?.text || 'Unknown',
-          duration: route.legs[0]?.duration?.text || 'Unknown',
-          distanceValue: route.legs[0]?.distance?.value || 0,
-          durationValue: route.legs[0]?.duration?.value || 0,
-          coords: decodePolyline(route.overview_polyline.points),
-        }));
-        
-        setRoutes(parsedRoutes);
-        setSelectedRouteIndex(0);
-      }
-    } catch (error: unknown) {
-      console.error('Directions API error:', error);
-      crashlyticsService.recordError(error as Error, 'Directions API error');
-      Alert.alert('Error', 'Failed to fetch routes. Please try again.');
-    } finally {
-      setLoadingRoutes(false);
-    }
-  };
-
-  // Decode polyline points
-  const decodePolyline = (encoded: string) => {
-    const points = [];
+  // Decode polyline from Google Directions API
+  const decodePolyline = (encoded: string): { latitude: number; longitude: number }[] => {
+    if (!encoded) return [];
+    const points: { latitude: number; longitude: number }[] = [];
     let index = 0;
     let lat = 0;
     let lng = 0;
 
     while (index < encoded.length) {
-      let b;
+      let b: number;
       let shift = 0;
       let result = 0;
       do {
@@ -248,7 +128,7 @@ export default function RoutesScreen() {
         result |= (b & 0x1f) << shift;
         shift += 5;
       } while (b >= 0x20);
-      const dlat = ((result & 1) !== 0 ? ~(result >> 1) : (result >> 1));
+      const dlat = (result & 1) !== 0 ? ~(result >> 1) : result >> 1;
       lat += dlat;
 
       shift = 0;
@@ -258,7 +138,7 @@ export default function RoutesScreen() {
         result |= (b & 0x1f) << shift;
         shift += 5;
       } while (b >= 0x20);
-      const dlng = ((result & 1) !== 0 ? ~(result >> 1) : (result >> 1));
+      const dlng = (result & 1) !== 0 ? ~(result >> 1) : result >> 1;
       lng += dlng;
 
       points.push({
@@ -269,102 +149,379 @@ export default function RoutesScreen() {
     return points;
   };
 
-  // Create trip
-  const createTrip = async () => {
-    if (!savedRouteData) {
-      Alert.alert('Error', 'No route data available');
+  // Search places using backend Google API
+  const searchPlaces = async (query: string, isSource: boolean) => {
+    // Clear previous timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    if (query.length < 2) {
+      if (isSource) {
+        setSourceSuggestions([]);
+        setShowSourceSuggestions(false);
+      } else {
+        setDestSuggestions([]);
+        setShowDestSuggestions(false);
+      }
       return;
     }
 
-    setCreatingTrip(true);
+    // Debounce search requests
+    searchTimeoutRef.current = setTimeout(async () => {
+      try {
+        console.log('Searching places for:', query);
+        
+        // Add network connectivity check for deployed environment
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+        
+        const response = await axios.get(
+          `https://bustrac-backend.onrender.com/google/autocomplete`,
+          {
+            params: {
+              input: query,
+            },
+            timeout: 8000, // Reduced timeout for deployed environment
+            signal: controller.signal,
+          }
+        );
+        
+        clearTimeout(timeoutId);
+        console.log('Places API response:', response.data);
+
+        if (response.data && response.data.status === 'OK' && response.data.predictions) {
+          const suggestions = response.data.predictions.slice(0, 5);
+          if (isSource) {
+            setSourceSuggestions(suggestions);
+            setShowSourceSuggestions(true);
+          } else {
+            setDestSuggestions(suggestions);
+            setShowDestSuggestions(true);
+          }
+        } else {
+          console.warn('Places API error:', response.data?.status || 'Unknown error');
+        }
+      } catch (error) {
+        console.error('Places API error:', error);
+        // Handle deployment-specific network errors gracefully
+        if (error instanceof Error) {
+          if (error.name === 'AbortError' || error.message.includes('timeout')) {
+            console.warn('Search request timed out in deployed environment');
+          } else if (error.message.includes('Network Error')) {
+            console.warn('Network connectivity issue in deployed environment');
+          }
+        }
+        // Silently fail in deployed environment to prevent crashes
+      }
+    }, 500); // Increased debounce for deployed environment
+  };
+
+  // Get place details using backend Google API
+  const getPlaceDetails = async (placeId: string, isSource: boolean) => {
+    try {
+      console.log('Getting place details for:', placeId);
+      
+      // Add abort controller for deployed environment
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+      
+      const response = await axios.get(
+        `https://bustrac-backend.onrender.com/google/place-details`,
+        {
+          params: {
+            place_id: placeId,
+          },
+          timeout: 8000, // Reduced timeout for deployed environment
+          signal: controller.signal,
+        }
+      );
+      
+      clearTimeout(timeoutId);
+      console.log('Place details response:', response.data);
+
+      if (response.data && response.data.status === 'OK' && response.data.result) {
+        const place = response.data.result;
+        if (place.geometry && place.geometry.location) {
+          const coords = {
+            lat: place.geometry.location.lat,
+            lng: place.geometry.location.lng,
+          };
+
+          if (isSource) {
+            setSourceCoords(coords);
+            setSourceText(place.formatted_address || place.name || 'Selected Location');
+            setShowSourceSuggestions(false);
+          } else {
+            setDestCoords(coords);
+            setDestText(place.formatted_address || place.name || 'Selected Location');
+            setShowDestSuggestions(false);
+          }
+        }
+      } else {
+        console.warn('Place details error:', response.data?.status || 'Unknown error');
+        // Don't show alert in deployed environment to prevent crashes
+        console.warn('Failed to get location details in deployed environment');
+      }
+    } catch (error) {
+      console.error('Place details error:', error);
+      // Handle deployment-specific errors gracefully
+      if (error instanceof Error && (error.name === 'AbortError' || error.message.includes('timeout'))) {
+        console.warn('Place details request timed out in deployed environment');
+      } else {
+        console.warn('Failed to get location details in deployed environment');
+      }
+    }
+  };
+
+  // Fetch routes using backend Google Directions API
+  const fetchRoutes = async () => {
+    if (!sourceCoords || !destCoords) {
+      Alert.alert('Missing Locations', 'Please select both source and destination');
+      return;
+    }
 
     try {
+      setLoadingRoutes(true);
+      const origin = `${sourceCoords.lat},${sourceCoords.lng}`;
+      const destination = `${destCoords.lat},${destCoords.lng}`;
+
+      console.log('Fetching routes from:', origin, 'to:', destination);
+      
+      // Add abort controller and reduced timeout for deployed environment
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+      const response = await axios.get<GoogleDirectionsResponse>(
+        `https://bustrac-backend.onrender.com/google/directions`,
+        {
+          params: {
+            origin,
+            destination,
+          },
+          timeout: 12000, // Increased timeout for directions API
+          signal: controller.signal,
+        }
+      );
+      
+      clearTimeout(timeoutId);
+
+      console.log('Directions API response:', response.data);
+
+      if (response.data.status !== 'OK') {
+        Alert.alert('Route Error', response.data.status || 'Failed to fetch routes');
+        return;
+      }
+
+      const parsedRoutes = response.data.routes.map((route: GoogleDirectionsRoute, index: number) => {
+        const leg = route.legs?.[0] || {};
+        return {
+          id: `route_${index}_${Date.now()}`,
+          summary: route.summary || `Route ${index + 1}`,
+          distance: leg.distance?.text || 'N/A',
+          duration: leg.duration?.text || 'N/A',
+          distanceValue: leg.distance?.value || 0,
+          durationValue: leg.duration?.value || 0,
+          coords: decodePolyline(route.overview_polyline.points),
+        };
+      });
+
+      setRoutes(parsedRoutes);
+      setSelectedRouteIndex(0);
+
+      // Fit map to show the first route
+      if (parsedRoutes.length > 0 && mapRef.current) {
+        const coords = parsedRoutes[0].coords;
+        if (coords.length > 0) {
+          mapRef.current.fitToCoordinates(coords, {
+            edgePadding: { top: 100, right: 50, bottom: 200, left: 50 },
+            animated: true,
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Directions API error:', error);
+      // Handle deployment-specific errors gracefully
+      if (error instanceof Error) {
+        if (error.name === 'AbortError' || error.message.includes('timeout')) {
+          Alert.alert('Route Error', 'Request timed out. Please try again with a stable internet connection.');
+        } else if (error.message.includes('Network Error')) {
+          Alert.alert('Network Error', 'Please check your internet connection and try again.');
+        } else {
+          Alert.alert('Route Error', 'Failed to fetch routes. Please try again.');
+        }
+      } else {
+        Alert.alert('Route Error', 'An unexpected error occurred. Please try again.');
+      }
+    } finally {
+      setLoadingRoutes(false);
+    }
+  };
+
+  // Select a route
+  const selectRoute = (index: number) => {
+    setSelectedRouteIndex(index);
+    const route = routes[index];
+    if (route && route.coords.length > 0 && mapRef.current) {
+      mapRef.current.fitToCoordinates(route.coords, {
+        edgePadding: { top: 100, right: 50, bottom: 200, left: 50 },
+        animated: true,
+      });
+    }
+  };
+
+  // Save selected route to backend
+  const saveRoute = async () => {
+    if (selectedRouteIndex === null || !routes[selectedRouteIndex]) {
+      Alert.alert('No Route Selected', 'Please select a route first');
+      return;
+    }
+
+    if (!isAuthenticated() || !driver || !token) {
+      Alert.alert('Authentication Required', 'Please login to save routes');
+      return;
+    }
+
+    try {
+      setSavingRoute(true);
+      const selectedRoute = routes[selectedRouteIndex];
+      
+      // Save route to backend with proper authentication
+      const response = await axios.post(
+        'https://bustrac-backend.onrender.com/routes/save',
+        {
+          driverId: driver._id,
+          source: sourceText,
+          destination: destText,
+          sourceCoords,
+          destinationCoords: destCoords,
+          selectedRoute: {
+            summary: selectedRoute.summary,
+            distance: selectedRoute.distance,
+            duration: selectedRoute.duration,
+            distanceValue: selectedRoute.distanceValue,
+            durationValue: selectedRoute.durationValue,
+            polyline: selectedRoute.coords,
+          },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          timeout: 12000, // Reduced timeout for deployed environment
+        }
+      );
+
+      if (response.status === 200) {
+        // Store the saved route data for trip creation
+        setSavedRouteData({
+          routeId: response.data.route._id,
+          source: sourceText,
+          destination: destText,
+          sourceCoords: sourceCoords!,
+          destinationCoords: destCoords!,
+          selectedRoute: selectedRoute
+        });
+        
+        Alert.alert(
+          'Route Saved Successfully!', 
+          'Would you like to create a trip for this route?',
+          [
+            {
+              text: 'Later',
+              style: 'cancel',
+              onPress: () => clearRoute(),
+            },
+            {
+              text: 'Create Trip',
+              onPress: () => setShowTripModal(true),
+            },
+          ]
+        );
+      } else {
+        Alert.alert('Error', 'Failed to save route. Please try again.');
+      }
+    } catch (error) {
+      console.error('Save route error:', error);
+      Alert.alert('Error', 'Failed to save route. Please try again.');
+    } finally {
+      setSavingRoute(false);
+    }
+  };
+
+  // Clear route data
+  const clearRoute = () => {
+    setSourceText('');
+    setDestText('');
+    setSourceCoords(null);
+    setDestCoords(null);
+    setRoutes([]);
+    setSelectedRouteIndex(null);
+    setSourceSuggestions([]);
+    setDestSuggestions([]);
+    setShowSourceSuggestions(false);
+    setShowDestSuggestions(false);
+  };
+
+  // Create trip function
+  const createTrip = async () => {
+    if (!savedRouteData || !driver) {
+      Alert.alert('Error', 'Missing route or driver information');
+      return;
+    }
+
+    try {
+      setCreatingTrip(true);
+      
+      // For now, we'll use a placeholder busId. In a real app, this would come from bus selection
+      const busId = driver.activeBus || '507f1f77bcf86cd799439011'; // placeholder bus ID
+      
       const tripData = {
-        driverId: driver?._id,
+        busId: busId,
+        driverId: driver._id,
         source: savedRouteData.source,
         destination: savedRouteData.destination,
         sourceCoords: savedRouteData.sourceCoords,
         destinationCoords: savedRouteData.destinationCoords,
-        routeData: savedRouteData.selectedRoute,
       };
 
-      const response = await PerformanceMonitor.monitorAPICall(
-        'create_trip',
-        async () => {
-          return await axios.post(`${API_BASE_URL}/trips/create`, tripData, {
-            headers: { Authorization: `Bearer ${token}` },
-            timeout: 10000,
-          });
+      const response = await axios.post(
+        'https://bustrac-backend.onrender.com/trips/create',
+        tripData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
         }
       );
 
-      if (response.data && response.data.success) {
-        Alert.alert('Success', 'Trip created successfully!');
-        setShowTripModal(false);
-        setSavedRouteData(null);
-        // Reset form
-        setSourceText('');
-        setDestText('');
-        setSourceCoords(null);
-        setDestCoords(null);
-        setRoutes([]);
-        setSelectedRouteIndex(null);
+      if (response.status === 200) {
+        Alert.alert(
+          'Trip Created Successfully!',
+          `Trip from ${savedRouteData.source} to ${savedRouteData.destination} has been created.`,
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                setShowTripModal(false);
+                clearRoute();
+                setSavedRouteData(null);
+              },
+            },
+          ]
+        );
       }
-    } catch (error: unknown) {
+    } catch (error) {
       console.error('Create trip error:', error);
-      crashlyticsService.recordError(error as Error, 'Trip creation error');
       Alert.alert('Error', 'Failed to create trip. Please try again.');
     } finally {
       setCreatingTrip(false);
     }
   };
 
-  // Save route
-  const saveRoute = () => {
-    if (selectedRouteIndex === null || !routes[selectedRouteIndex]) {
-      Alert.alert('Error', 'Please select a route first');
-      return;
-    }
-
-    const selectedRoute = routes[selectedRouteIndex];
-    setSavedRouteData({
-      routeId: selectedRoute.id,
-      source: sourceText,
-      destination: destText,
-      sourceCoords: sourceCoords!,
-      destinationCoords: destCoords!,
-      selectedRoute,
-    });
-
-    Alert.alert(
-      'Route Saved',
-      'Route has been saved successfully. Would you like to create a trip?',
-      [
-        { text: 'Later', style: 'cancel' },
-        { text: 'Create Trip', onPress: () => setShowTripModal(true) },
-      ]
-    );
-  };
-
-  // Error boundary retry
-  const retryAfterError = () => {
-    setHasError(false);
-  };
-
-  if (hasError) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>Something went wrong</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={retryAfterError}>
-            <Text style={styles.retryButtonText}>Retry</Text>
-          </TouchableOpacity>
-        </View>
-        <CrashTestButton visible={__DEV__} />
-      </SafeAreaView>
-    );
-  }
-
+  // Show loading state while auth is being checked
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
@@ -372,11 +529,27 @@ export default function RoutesScreen() {
           <ActivityIndicator size="large" color="#2196F3" />
           <Text style={styles.errorText}>Loading...</Text>
         </View>
-        <CrashTestButton visible={__DEV__} />
+      </SafeAreaView>
+    );
+  }
+  
+  if (hasError) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Something went wrong</Text>
+          <TouchableOpacity 
+            style={styles.retryButton} 
+            onPress={() => setHasError(false)}
+          >
+            <Text style={styles.retryButtonText}>Try Again</Text>
+          </TouchableOpacity>
+        </View>
       </SafeAreaView>
     );
   }
 
+  // Show authentication warning if not logged in
   if (!isAuthenticated()) {
     return (
       <SafeAreaView style={styles.container}>
@@ -389,13 +562,12 @@ export default function RoutesScreen() {
             You can still view the map and search for places, but saving routes requires authentication.
           </Text>
         </View>
-        <CrashTestButton visible={__DEV__} />
       </SafeAreaView>
     );
   }
 
-  return (
-    <SafeAreaView style={styles.container}>
+    return (
+      <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView 
         style={styles.container} 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -423,6 +595,9 @@ export default function RoutesScreen() {
               }}
               showsUserLocation={false}
               showsMyLocationButton={false}
+              onMapReady={() => {
+                console.log('Map loaded successfully');
+              }}
             >
               {/* Source Marker */}
               {sourceCoords && (
@@ -467,117 +642,175 @@ export default function RoutesScreen() {
 
         {/* Controls Panel */}
         <View style={styles.controlsPanel}>
+          <Text style={styles.title}>Plan Your Route</Text>
+
           {/* Source Input */}
           <View style={styles.inputContainer}>
+            <Text style={styles.label}>Source Location</Text>
             <TextInput
-              style={styles.input}
-              placeholder="Enter source location"
+              style={styles.textInput}
               value={sourceText}
               onChangeText={(text) => {
                 setSourceText(text);
-                setShowSourceSuggestions(true);
-                searchPlaces(text, true);
+                if (text.trim()) {
+                  searchPlaces(text.trim(), true);
+                } else {
+                  setSourceSuggestions([]);
+                  setShowSourceSuggestions(false);
+                }
               }}
-              onFocus={() => setShowSourceSuggestions(true)}
+              placeholder="Enter pickup location (e.g., Delhi, India)"
+              placeholderTextColor="#999"
             />
+            {/* Manual coordinate entry for testing */}
+            {!sourceCoords && sourceText.length > 0 && (
+              <TouchableOpacity
+                style={styles.manualButton}
+                onPress={() => {
+                  // Demo coordinates for Delhi
+                  setSourceCoords({ lat: 28.6139, lng: 77.2090 });
+                  setSourceText(sourceText || 'Delhi, India');
+                  setShowSourceSuggestions(false);
+                }}
+              >
+                <Text style={styles.manualButtonText}>Use "{sourceText}" as source</Text>
+              </TouchableOpacity>
+            )}
             {showSourceSuggestions && sourceSuggestions.length > 0 && (
-              <ScrollView style={styles.suggestionsContainer}>
+              <View style={styles.suggestionsContainer}>
                 {sourceSuggestions.map((suggestion) => (
                   <TouchableOpacity
                     key={suggestion.place_id}
                     style={styles.suggestionItem}
-                    onPress={() => handlePlaceSelect(suggestion, true)}
+                    onPress={() => getPlaceDetails(suggestion.place_id, true)}
                   >
                     <Text style={styles.suggestionText}>{suggestion.description}</Text>
                   </TouchableOpacity>
                 ))}
-              </ScrollView>
+              </View>
             )}
           </View>
 
           {/* Destination Input */}
           <View style={styles.inputContainer}>
+            <Text style={styles.label}>Destination Location</Text>
             <TextInput
-              style={styles.input}
-              placeholder="Enter destination"
+              style={styles.textInput}
               value={destText}
               onChangeText={(text) => {
                 setDestText(text);
-                setShowDestSuggestions(true);
-                searchPlaces(text, false);
+                if (text.trim()) {
+                  searchPlaces(text.trim(), false);
+                } else {
+                  setDestSuggestions([]);
+                  setShowDestSuggestions(false);
+                }
               }}
-              onFocus={() => setShowDestSuggestions(true)}
+              placeholder="Enter destination location (e.g., Mumbai, India)"
+              placeholderTextColor="#999"
             />
+            {/* Manual coordinate entry for testing */}
+            {!destCoords && destText.length > 0 && (
+              <TouchableOpacity
+                style={styles.manualButton}
+                onPress={() => {
+                  // Demo coordinates for Mumbai
+                  setDestCoords({ lat: 19.0760, lng: 72.8777 });
+                  setDestText(destText || 'Mumbai, India');
+                  setShowDestSuggestions(false);
+                }}
+              >
+                <Text style={styles.manualButtonText}>Use "{destText}" as destination</Text>
+              </TouchableOpacity>
+            )}
             {showDestSuggestions && destSuggestions.length > 0 && (
-              <ScrollView style={styles.suggestionsContainer}>
+              <View style={styles.suggestionsContainer}>
                 {destSuggestions.map((suggestion) => (
                   <TouchableOpacity
                     key={suggestion.place_id}
                     style={styles.suggestionItem}
-                    onPress={() => handlePlaceSelect(suggestion, false)}
+                    onPress={() => getPlaceDetails(suggestion.place_id, false)}
                   >
                     <Text style={styles.suggestionText}>{suggestion.description}</Text>
                   </TouchableOpacity>
                 ))}
-              </ScrollView>
+              </View>
             )}
           </View>
 
-          {/* Get Routes Button */}
-          <TouchableOpacity
-            style={[styles.button, (!sourceCoords || !destCoords) && styles.buttonDisabled]}
-            onPress={fetchDirections}
-            disabled={!sourceCoords || !destCoords || loadingRoutes}
-          >
-            {loadingRoutes ? (
-              <ActivityIndicator color="#fff" size="small" />
-            ) : (
-              <Text style={styles.buttonText}>Get Routes</Text>
-            )}
-          </TouchableOpacity>
+          {/* Action Buttons */}
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={[
+                styles.primaryButton,
+                (!sourceCoords || !destCoords || loadingRoutes) && styles.disabledButton,
+              ]}
+              onPress={fetchRoutes}
+              disabled={!sourceCoords || !destCoords || loadingRoutes}
+            >
+              {loadingRoutes ? (
+                <ActivityIndicator color="#fff" size="small" />
+              ) : (
+                <Text style={styles.primaryButtonText}>Find Routes</Text>
+              )}
+            </TouchableOpacity>
 
-          {/* Routes List */}
-          {routes.length > 0 && (
-            <ScrollView style={styles.routesContainer}>
+            <TouchableOpacity style={styles.secondaryButton} onPress={clearRoute}>
+              <Text style={styles.secondaryButtonText}>Clear</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Routes List */}
+        {routes.length > 0 && (
+          <View style={styles.routesContainer}>
+            <Text style={styles.routesTitle}>Available Routes</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {routes.map((route, index) => (
                 <TouchableOpacity
                   key={route.id}
                   style={[
-                    styles.routeItem,
-                    index === selectedRouteIndex && styles.selectedRoute
+                    styles.routeCard,
+                    index === selectedRouteIndex && styles.selectedRouteCard,
                   ]}
-                  onPress={() => setSelectedRouteIndex(index)}
+                  onPress={() => selectRoute(index)}
                 >
                   <Text style={styles.routeSummary}>{route.summary}</Text>
-                  <Text style={styles.routeDetails}>
-                    {route.distance} • {route.duration}
+                  <Text style={styles.routeDistance}>{route.distance}</Text>
+                  <Text style={styles.routeDuration}>{route.duration}</Text>
+                  <Text style={[
+                    styles.routeStatus,
+                    index === selectedRouteIndex && styles.selectedRouteStatus,
+                  ]}>
+                    {index === selectedRouteIndex ? 'Selected' : 'Select'}
                   </Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
-          )}
 
-          {/* Save Route Button */}
-          {selectedRouteIndex !== null && (
-            <TouchableOpacity
-              style={styles.saveButton}
-              onPress={saveRoute}
-              disabled={savingRoute}
-            >
-              {savingRoute ? (
-                <ActivityIndicator color="#fff" size="small" />
-              ) : (
-                <Text style={styles.saveButtonText}>Save Route & Create Trip</Text>
-              )}
-            </TouchableOpacity>
-          )}
-        </View>
+            {/* Save Route Button */}
+            {selectedRouteIndex !== null && (
+              <TouchableOpacity
+                style={[styles.saveButton, savingRoute && styles.disabledButton]}
+                onPress={saveRoute}
+                disabled={savingRoute}
+              >
+                {savingRoute ? (
+                  <ActivityIndicator color="#fff" size="small" />
+                ) : (
+                  <Text style={styles.saveButtonText}>Save Selected Route</Text>
+                )}
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
 
         {/* Trip Creation Modal */}
         <Modal
           visible={showTripModal}
-          animationType="slide"
           transparent={true}
+          animationType="slide"
+          onRequestClose={() => setShowTripModal(false)}
         >
           <View style={styles.modalOverlay}>
             <View style={styles.modalContainer}>
@@ -588,25 +821,24 @@ export default function RoutesScreen() {
                   <Text style={styles.tripDetailLabel}>Route Details:</Text>
                   <Text style={styles.tripDetailText}>From: {savedRouteData.source}</Text>
                   <Text style={styles.tripDetailText}>To: {savedRouteData.destination}</Text>
-                  <Text style={styles.tripDetailText}>
-                    Distance: {savedRouteData.selectedRoute.distance}
-                  </Text>
-                  <Text style={styles.tripDetailText}>
-                    Duration: {savedRouteData.selectedRoute.duration}
-                  </Text>
+                  <Text style={styles.tripDetailText}>Distance: {savedRouteData.selectedRoute?.distance}</Text>
+                  <Text style={styles.tripDetailText}>Duration: {savedRouteData.selectedRoute?.duration}</Text>
                 </View>
               )}
 
               <View style={styles.modalButtons}>
                 <TouchableOpacity
                   style={[styles.modalButton, styles.cancelButton]}
-                  onPress={() => setShowTripModal(false)}
+                  onPress={() => {
+                    setShowTripModal(false);
+                    setSavedRouteData(null);
+                  }}
                 >
                   <Text style={styles.cancelButtonText}>Cancel</Text>
                 </TouchableOpacity>
-                
+
                 <TouchableOpacity
-                  style={[styles.modalButton, styles.createButton]}
+                  style={[styles.modalButton, styles.createButton, creatingTrip && styles.disabledButton]}
                   onPress={createTrip}
                   disabled={creatingTrip}
                 >
@@ -620,12 +852,9 @@ export default function RoutesScreen() {
             </View>
           </View>
         </Modal>
-        
-        {/* Crash Test Button - Only visible in development */}
-        <CrashTestButton visible={__DEV__} />
-      </KeyboardAvoidingView>
-    </SafeAreaView>
-  );
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    );
 }
 
 const styles = StyleSheet.create({
@@ -649,8 +878,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     textAlign: 'center',
-    marginBottom: 12,
-    lineHeight: 24,
   },
   webMapPlaceholder: {
     flex: 1,
@@ -667,35 +894,55 @@ const styles = StyleSheet.create({
     padding: 16,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    maxHeight: '50%',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: -2 },
         shadowOpacity: 0.1,
-        shadowRadius: 4,
+        shadowRadius: 8,
       },
       android: {
         elevation: 8,
       },
     }),
   },
-  inputContainer: {
-    marginBottom: 12,
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 16,
+    textAlign: 'center',
   },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
+  inputContainer: {
+    marginBottom: 16,
+    position: 'relative',
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#555',
+    marginBottom: 8,
+  },
+  textInput: {
+    backgroundColor: '#f8f8f8',
     borderRadius: 12,
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     fontSize: 16,
-    backgroundColor: '#f9f9f9',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    color: '#333',
   },
   suggestionsContainer: {
-    maxHeight: 150,
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    right: 0,
     backgroundColor: '#fff',
     borderRadius: 8,
     marginTop: 4,
+    maxHeight: 200,
+    zIndex: 1000,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -711,53 +958,91 @@ const styles = StyleSheet.create({
   suggestionItem: {
     padding: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: '#f0f0f0',
   },
   suggestionText: {
     fontSize: 14,
     color: '#333',
   },
-  button: {
+  buttonContainer: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  primaryButton: {
+    flex: 2,
     backgroundColor: '#2196F3',
-    padding: 16,
+    paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',
-    marginBottom: 12,
   },
-  buttonDisabled: {
-    backgroundColor: '#ccc',
-    opacity: 0.6,
-  },
-  buttonText: {
+  primaryButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },
+  secondaryButton: {
+    flex: 1,
+    backgroundColor: '#f0f0f0',
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  secondaryButtonText: {
+    color: '#666',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  disabledButton: {
+    opacity: 0.6,
+  },
   routesContainer: {
+    backgroundColor: '#fff',
+    padding: 16,
     maxHeight: 200,
+  },
+  routesTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
     marginBottom: 12,
   },
-  routeItem: {
-    backgroundColor: '#f9f9f9',
+  routeCard: {
+    backgroundColor: '#f8f8f8',
     padding: 12,
-    borderRadius: 8,
-    marginBottom: 8,
+    borderRadius: 12,
+    marginRight: 12,
+    minWidth: 180,
     borderWidth: 2,
     borderColor: 'transparent',
   },
-  selectedRoute: {
-    borderColor: '#2196F3',
+  selectedRouteCard: {
     backgroundColor: '#e3f2fd',
+    borderColor: '#2196F3',
   },
   routeSummary: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: 'bold',
     color: '#333',
     marginBottom: 4,
   },
-  routeDetails: {
-    fontSize: 14,
+  routeDistance: {
+    fontSize: 12,
     color: '#666',
+    marginBottom: 2,
+  },
+  routeDuration: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 8,
+  },
+  routeStatus: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#2196F3',
+    textAlign: 'center',
+  },
+  selectedRouteStatus: {
+    color: '#1976D2',
   },
   saveButton: {
     backgroundColor: '#4CAF50',
@@ -770,6 +1055,21 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  manualButton: {
+    backgroundColor: '#e3f2fd',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: '#2196F3',
+  },
+  manualButtonText: {
+    color: '#2196F3',
+    fontSize: 14,
+    fontWeight: '500',
+    textAlign: 'center',
   },
   authWarningContainer: {
     flex: 1,
@@ -809,6 +1109,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  // Modal styles
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
