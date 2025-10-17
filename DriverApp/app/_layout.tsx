@@ -1,8 +1,16 @@
 import { Stack } from "expo-router";
 import { theme } from "../lib/theme";
 import { AuthProvider } from "../lib/AuthContext";
+import { useEffect } from "react";
+import { initializeCrashlytics, setUserId } from "../lib/crashlytics";
+import "../lib/firebase";
 
 export default function RootLayout() {
+  useEffect(() => {
+    // Initialize Firebase Crashlytics
+    initializeCrashlytics();
+  }, []);
+
   return (
     <AuthProvider>
       <Stack

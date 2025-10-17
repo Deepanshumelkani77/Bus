@@ -16,6 +16,7 @@ import {
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import axios from 'axios';
 import { useAuth } from '../../../lib/AuthContext';
+import { logError, logEvent } from '../../../lib/crashlytics';
 // import { theme } from '../../../lib/theme';
 
 // Google API Key is handled by backend - no need for client-side key
@@ -204,8 +205,9 @@ export default function RoutesScreen() {
         }
       } catch (error) {
         console.error('Places API error:', error);
-        // Handle deployment-specific network errors gracefully
+        // Log error to Firebase Crashlytics
         if (error instanceof Error) {
+          logError(error, 'Places API search');
           if (error.name === 'AbortError' || error.message.includes('timeout')) {
             console.warn('Search request timed out in deployed environment');
           } else if (error.message.includes('Network Error')) {
@@ -265,11 +267,14 @@ export default function RoutesScreen() {
       }
     } catch (error) {
       console.error('Place details error:', error);
-      // Handle deployment-specific errors gracefully
-      if (error instanceof Error && (error.name === 'AbortError' || error.message.includes('timeout'))) {
-        console.warn('Place details request timed out in deployed environment');
-      } else {
-        console.warn('Failed to get location details in deployed environment');
+      // Log error to Firebase Crashlytics
+      if (error instanceof Error) {
+        logError(error, 'Place details API');
+        if (error.name === 'AbortError' || error.message.includes('timeout')) {
+          console.warn('Place details request timed out in deployed environment');
+        } else {
+          console.warn('Failed to get location details in deployed environment');
+        }
       }
     }
   };
@@ -341,8 +346,9 @@ export default function RoutesScreen() {
       }
     } catch (error) {
       console.error('Directions API error:', error);
-      // Handle deployment-specific errors gracefully
+      // Log error to Firebase Crashlytics
       if (error instanceof Error) {
+        logError(error, 'Directions API');
         if (error.name === 'AbortError' || error.message.includes('timeout')) {
           Alert.alert('Route Error', 'Request timed out. Please try again with a stable internet connection.');
         } else if (error.message.includes('Network Error')) {

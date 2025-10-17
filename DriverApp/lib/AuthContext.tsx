@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import { setUserId, logEvent } from './crashlytics';
 
 interface Driver {
   _id: string;
@@ -80,6 +81,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // Update state
         setToken(newToken);
         setDriver(driverData);
+        
+        // Set user ID for crashlytics
+        setUserId(driverData._id);
+        logEvent('driver_login', { driverId: driverData._id, city: driverData.city });
         
         return { success: true, message: 'Login successful' };
       } else {
