@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import ErrorHandler from './errorHandler';
 
 interface Driver {
   _id: string;
@@ -56,6 +57,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     } catch (error) {
       console.error('Error loading stored auth:', error);
+      ErrorHandler.reportError(error as Error, 'Failed to load stored authentication');
     } finally {
       setLoading(false);
     }
@@ -81,12 +83,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setToken(newToken);
         setDriver(driverData);
         
+        // Set user context for crash reporting
+        ErrorHandler.setUserContext(driverData._id, {
+          name: driverData.name,
+          email: driverData.email,
+          city: driverData.city,
+          role: 'driver'
+        });
+        
+        ErrorHandler.logEvent(`Driver login successful: ${driverData.name}`);
+        
         return { success: true, message: 'Login successful' };
       } else {
         return { success: false, message: 'Invalid response from server' };
       }
     } catch (error: any) {
       console.error('Login error:', error);
+      ErrorHandler.reportError(error, 'Driver login failed');
       const message = error.response?.data?.message || 'Login failed';
       return { success: false, message };
     } finally {
@@ -103,8 +116,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Clear state
       setToken(null);
       setDriver(null);
+      
+      // Clear user context from crash reporting
+      ErrorHandler.logEvent('Driver logged out');
     } catch (error) {
       console.error('Logout error:', error);
+      ErrorHandler.reportError(error as Error, 'Logout error');
     }
   };
 

@@ -16,6 +16,9 @@ import {
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import axios from 'axios';
 import { useAuth } from '../../../lib/AuthContext';
+import crashlyticsService from '@/lib/crashlytics';
+import PerformanceMonitor from '@/lib/performance';
+import CrashTestButton from '@/components/CrashTestButton';
 // import { theme } from '../../../lib/theme';
 
 // Google API Key is handled by backend - no need for client-side key
@@ -98,6 +101,25 @@ export default function RoutesScreen() {
   const [destSuggestions, setDestSuggestions] = useState<PlaceResult[]>([]);
   const [showSourceSuggestions, setShowSourceSuggestions] = useState<boolean>(false);
   const [showDestSuggestions, setShowDestSuggestions] = useState<boolean>(false);
+  
+  // Abort controllers for API calls
+  const sourceAbortController = useRef<AbortController | null>(null);
+  const destAbortController = useRef<AbortController | null>(null);
+  const debouncedSearch = useRef<ReturnType<typeof setTimeout> | null>(null);
+  
+  // API Base URL
+  const API_BASE_URL = 'https://bustrac-backend.onrender.com';
+  
+  // Search function with debouncing
+  const searchPlaces = (input: string, isSource: boolean) => {
+    if (debouncedSearch.current) {
+      clearTimeout(debouncedSearch.current);
+    }
+    
+    debouncedSearch.current = setTimeout(() => {
+      fetchPlaces(input, isSource);
+    }, 500); // Increased debounce delay for deployed environment
+  };
 
   const mapRef = useRef<MapView>(null);
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -149,75 +171,55 @@ export default function RoutesScreen() {
     return points;
   };
 
-  // Search places using backend Google API
-  const searchPlaces = async (query: string, isSource: boolean) => {
-    // Clear previous timeout
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
-    }
-
-    if (query.length < 2) {
+  // Fetch places from Google Places API
+  const fetchPlaces = async (input: string, isSource: boolean = true) => {
+    if (!input.trim()) {
       if (isSource) {
         setSourceSuggestions([]);
-        setShowSourceSuggestions(false);
       } else {
         setDestSuggestions([]);
-        setShowDestSuggestions(false);
       }
       return;
     }
 
-    // Debounce search requests
-    searchTimeoutRef.current = setTimeout(async () => {
-      try {
-        console.log('Searching places for:', query);
-        
-        // Add network connectivity check for deployed environment
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8000);
-        
-        const response = await axios.get(
-          `https://bustrac-backend.onrender.com/google/autocomplete`,
-          {
-            params: {
-              input: query,
-            },
-            timeout: 8000, // Reduced timeout for deployed environment
-            signal: controller.signal,
-          }
-        );
-        
-        clearTimeout(timeoutId);
-        console.log('Places API response:', response.data);
+    const controller = new AbortController();
+    if (isSource) {
+      sourceAbortController.current = controller;
+    } else {
+      destAbortController.current = controller;
+    }
 
-        if (response.data && response.data.status === 'OK' && response.data.predictions) {
-          const suggestions = response.data.predictions.slice(0, 5);
-          if (isSource) {
-            setSourceSuggestions(suggestions);
-            setShowSourceSuggestions(true);
-          } else {
-            setDestSuggestions(suggestions);
-            setShowDestSuggestions(true);
-          }
+    try {
+      const response = await PerformanceMonitor.monitorAPICall(
+        'google_places_search',
+        async () => {
+          return await axios.get(`${API_BASE_URL}/google/places`, {
+            params: { input },
+            headers: { Authorization: `Bearer ${token}` },
+            timeout: 8000,
+            signal: controller.signal
+          });
+        },
+        { input_length: input.length }
+      );
+
+      if (response.data && response.data.predictions) {
+        if (isSource) {
+          setSourceSuggestions(response.data.predictions);
         } else {
-          console.warn('Places API error:', response.data?.status || 'Unknown error');
+          setDestSuggestions(response.data.predictions);
         }
-      } catch (error) {
-        console.error('Places API error:', error);
-        // Handle deployment-specific network errors gracefully
-        if (error instanceof Error) {
-          if (error.name === 'AbortError' || error.message.includes('timeout')) {
-            console.warn('Search request timed out in deployed environment');
-          } else if (error.message.includes('Network Error')) {
-            console.warn('Network connectivity issue in deployed environment');
-          }
-        }
-        // Silently fail in deployed environment to prevent crashes
       }
-    }, 500); // Increased debounce for deployed environment
+    } catch (error: any) {
+      if (error.name !== 'AbortError' && error.name !== 'CanceledError') {
+        console.error('Places API error:', error);
+        crashlyticsService.recordError(error as Error, 'Places API search error');
+        // Silent failure in production - don't show alerts
+      }
+    }
   };
 
-  // Get place details using backend Google API
+  // Get place details 
   const getPlaceDetails = async (placeId: string, isSource: boolean) => {
     try {
       console.log('Getting place details for:', placeId);
@@ -226,51 +228,44 @@ export default function RoutesScreen() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 8000);
       
-      const response = await axios.get(
-        `https://bustrac-backend.onrender.com/google/place-details`,
-        {
-          params: {
-            place_id: placeId,
-          },
-          timeout: 8000, // Reduced timeout for deployed environment
-          signal: controller.signal,
+      const response = await PerformanceMonitor.monitorAPICall(
+        'google_place_details',
+        async () => {
+          return await axios.get(`${API_BASE_URL}/google/place-details`, {
+            params: { placeId },
+            headers: { Authorization: `Bearer ${token}` },
+            timeout: 10000,
+            signal: controller.signal
+          });
         }
       );
       
       clearTimeout(timeoutId);
       console.log('Place details response:', response.data);
 
-      if (response.data && response.data.status === 'OK' && response.data.result) {
-        const place = response.data.result;
-        if (place.geometry && place.geometry.location) {
-          const coords = {
-            lat: place.geometry.location.lat,
-            lng: place.geometry.location.lng,
-          };
+      if (response.data && response.data.result && response.data.result.geometry) {
+        const { lat, lng } = response.data.result.geometry.location;
+        const coords = {
+          lat: lat,
+          lng: lng,
+        };
 
-          if (isSource) {
-            setSourceCoords(coords);
-            setSourceText(place.formatted_address || place.name || 'Selected Location');
-            setShowSourceSuggestions(false);
-          } else {
-            setDestCoords(coords);
-            setDestText(place.formatted_address || place.name || 'Selected Location');
-            setShowDestSuggestions(false);
-          }
+        if (isSource) {
+          setSourceCoords(coords);
+          setSourceText(response.data.result.formatted_address || response.data.result.name || 'Selected Location');
+          setShowSourceSuggestions(false);
+        } else {
+          setDestCoords(coords);
+          setDestText(response.data.result.formatted_address || response.data.result.name || 'Selected Location');
+          setShowDestSuggestions(false);
         }
-      } else {
-        console.warn('Place details error:', response.data?.status || 'Unknown error');
-        // Don't show alert in deployed environment to prevent crashes
-        console.warn('Failed to get location details in deployed environment');
       }
-    } catch (error) {
-      console.error('Place details error:', error);
-      // Handle deployment-specific errors gracefully
-      if (error instanceof Error && (error.name === 'AbortError' || error.message.includes('timeout'))) {
-        console.warn('Place details request timed out in deployed environment');
-      } else {
-        console.warn('Failed to get location details in deployed environment');
+    } catch (error: any) {
+      if (error.name !== 'AbortError' && error.name !== 'CanceledError') {
+        console.error('Place details error:', error);
+        crashlyticsService.recordError(error as Error, 'Place details API error');
       }
+      console.warn('Failed to get location details in deployed environment');
     }
   };
 
@@ -292,15 +287,19 @@ export default function RoutesScreen() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 12000);
 
-      const response = await axios.get<GoogleDirectionsResponse>(
-        `https://bustrac-backend.onrender.com/google/directions`,
-        {
-          params: {
-            origin,
-            destination,
-          },
-          timeout: 12000, // Increased timeout for directions API
-          signal: controller.signal,
+      const response = await PerformanceMonitor.monitorRouteCalculation(
+        sourceText,
+        destText,
+        async () => {
+          return await axios.get(`${API_BASE_URL}/google/directions`, {
+            params: {
+              origin,
+              destination,
+            },
+            headers: { Authorization: `Bearer ${token}` },
+            timeout: 12000,
+            signal: controller.signal
+          });
         }
       );
       
@@ -339,19 +338,22 @@ export default function RoutesScreen() {
           });
         }
       }
-    } catch (error) {
-      console.error('Directions API error:', error);
-      // Handle deployment-specific errors gracefully
-      if (error instanceof Error) {
-        if (error.name === 'AbortError' || error.message.includes('timeout')) {
-          Alert.alert('Route Error', 'Request timed out. Please try again with a stable internet connection.');
-        } else if (error.message.includes('Network Error')) {
-          Alert.alert('Network Error', 'Please check your internet connection and try again.');
+    } catch (error: any) {
+      if (error.name !== 'AbortError' && error.name !== 'CanceledError') {
+        console.error('Directions API error:', error);
+        crashlyticsService.recordError(error as Error, 'Directions API error');
+        // Handle deployment-specific errors gracefully
+        if (error instanceof Error) {
+          if (error.name === 'AbortError' || error.message.includes('timeout')) {
+            Alert.alert('Route Error', 'Request timed out. Please try again with a stable internet connection.');
+          } else if (error.message.includes('Network Error')) {
+            Alert.alert('Network Error', 'Please check your internet connection and try again.');
+          } else {
+            Alert.alert('Route Error', 'Failed to fetch routes. Please try again.');
+          }
         } else {
-          Alert.alert('Route Error', 'Failed to fetch routes. Please try again.');
+          Alert.alert('Route Error', 'An unexpected error occurred. Please try again.');
         }
-      } else {
-        Alert.alert('Route Error', 'An unexpected error occurred. Please try again.');
       }
     } finally {
       setLoadingRoutes(false);
@@ -388,7 +390,7 @@ export default function RoutesScreen() {
       
       // Save route to backend with proper authentication
       const response = await axios.post(
-        'https://bustrac-backend.onrender.com/routes/save',
+        `${API_BASE_URL}/routes/save`,
         {
           driverId: driver._id,
           source: sourceText,
@@ -409,7 +411,6 @@ export default function RoutesScreen() {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
-          timeout: 12000, // Reduced timeout for deployed environment
         }
       );
 
@@ -442,8 +443,11 @@ export default function RoutesScreen() {
       } else {
         Alert.alert('Error', 'Failed to save route. Please try again.');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Save route error:', error);
+      // Log error to Crashlytics
+      crashlyticsService.recordError(error as Error, 'Save route API error');
+      
       Alert.alert('Error', 'Failed to save route. Please try again.');
     } finally {
       setSavingRoute(false);
@@ -487,7 +491,7 @@ export default function RoutesScreen() {
       };
 
       const response = await axios.post(
-        'https://bustrac-backend.onrender.com/trips/create',
+        `${API_BASE_URL}/trips/create`,
         tripData,
         {
           headers: {
@@ -513,8 +517,11 @@ export default function RoutesScreen() {
           ]
         );
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Create trip error:', error);
+      // Log error to Crashlytics
+      crashlyticsService.recordError(error as Error, 'Create trip API error');
+      
       Alert.alert('Error', 'Failed to create trip. Please try again.');
     } finally {
       setCreatingTrip(false);
@@ -562,16 +569,83 @@ export default function RoutesScreen() {
             You can still view the map and search for places, but saving routes requires authentication.
           </Text>
         </View>
+        
+        {/* Crash Test Button - Only visible in development */}
+        <CrashTestButton visible={__DEV__} />
       </SafeAreaView>
     );
   }
 
-    return (
-      <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView 
-        style={styles.container} 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
+  return (
+    <SafeAreaView style={styles.container}>
+    <KeyboardAvoidingView 
+      style={styles.container} 
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      {/* Driver Info Header */}
+      {driver && (
+        <View style={styles.driverHeader}>
+          <Text style={styles.driverHeaderText}>
+            Welcome, {driver.name} • {driver.city}
+          </Text>
+        </View>
+      )}
+
+      {/* Map View */}
+      <View style={styles.mapContainer}>
+        {Platform.OS !== 'web' ? (
+          <MapView
+            ref={mapRef}
+            style={styles.map}
+            initialRegion={{
+              latitude: 28.6139,
+              longitude: 77.2090,
+              latitudeDelta: 0.1,
+              longitudeDelta: 0.1,
+            }}
+            showsUserLocation={false}
+            showsMyLocationButton={false}
+            onMapReady={() => {
+              console.log('Map loaded successfully');
+            }}
+          >
+            {/* Source Marker */}
+            {sourceCoords && (
+              <Marker
+                coordinate={{
+                  latitude: sourceCoords.lat,
+                  longitude: sourceCoords.lng,
+                }}
+                title="Source"
+                pinColor="green"
+              />
+            )}
+
+            {/* Destination Marker */}
+            {destCoords && (
+              <Marker
+                coordinate={{
+                  latitude: destCoords.lat,
+                  longitude: destCoords.lng,
+                }}
+                title="Destination"
+                pinColor="red"
+              />
+            )}
+
+            {/* Route Polylines */}
+            {routes.map((route, index) => (
+              <Polyline
+                key={route.id}
+                coordinates={route.coords}
+                strokeColor={index === selectedRouteIndex ? '#2196F3' : 'rgba(0,0,0,0.3)'}
+                strokeWidth={index === selectedRouteIndex ? 6 : 4}
+              />
+            ))}
+          </MapView>
+        ) : (
+          <View style={styles.webMapPlaceholder}>
+            <Text style={styles.webMapText}>Map View (Mobile Only)</Text>
         {/* Driver Info Header */}
         {driver && (
           <View style={styles.driverHeader}>
@@ -852,9 +926,12 @@ export default function RoutesScreen() {
             </View>
           </View>
         </Modal>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-    );
+        
+        {/* Crash Test Button - Only visible in development */}
+        <CrashTestButton visible={__DEV__} />
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({
