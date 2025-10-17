@@ -66,17 +66,8 @@ interface GoogleDirectionsResponse {
 export default function RoutesScreen() {
   const { driver, token, isAuthenticated, loading } = useAuth();
 
-  // Show loading state while auth is being checked
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.errorContainer}>
-          <ActivityIndicator size="large" color="#2196F3" />
-          <Text style={styles.errorText}>Loading...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
+  // Add error boundary for deployed environment
+  const [hasError, setHasError] = React.useState(false);
   
   // Location states
   const [sourceText, setSourceText] = useState<string>('');
@@ -178,57 +169,75 @@ export default function RoutesScreen() {
 
     // Debounce search requests
     searchTimeoutRef.current = setTimeout(async () => {
+      try {
+        console.log('Searching places for:', query);
+        
+        // Add network connectivity check for deployed environment
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+        
+        const response = await axios.get(
+          `https://bustrac-backend.onrender.com/google/autocomplete`,
+          {
+            params: {
+              input: query,
+            },
+            timeout: 8000, // Reduced timeout for deployed environment
+            signal: controller.signal,
+          }
+        );
+        
+        clearTimeout(timeoutId);
+        console.log('Places API response:', response.data);
 
-    try {
-      console.log('Searching places for:', query);
-      const response = await axios.get(
-        `https://bustrac-backend.onrender.com/google/autocomplete`,
-        {
-          params: {
-            input: query,
-          },
-          timeout: 10000, // 10 second timeout
-        }
-      );
-
-      console.log('Places API response:', response.data);
-
-      if (response.data && response.data.status === 'OK' && response.data.predictions) {
-        const suggestions = response.data.predictions.slice(0, 5);
-        if (isSource) {
-          setSourceSuggestions(suggestions);
-          setShowSourceSuggestions(true);
+        if (response.data && response.data.status === 'OK' && response.data.predictions) {
+          const suggestions = response.data.predictions.slice(0, 5);
+          if (isSource) {
+            setSourceSuggestions(suggestions);
+            setShowSourceSuggestions(true);
+          } else {
+            setDestSuggestions(suggestions);
+            setShowDestSuggestions(true);
+          }
         } else {
-          setDestSuggestions(suggestions);
-          setShowDestSuggestions(true);
+          console.warn('Places API error:', response.data?.status || 'Unknown error');
         }
-      } else {
-        console.warn('Places API error:', response.data?.status || 'Unknown error');
+      } catch (error) {
+        console.error('Places API error:', error);
+        // Handle deployment-specific network errors gracefully
+        if (error instanceof Error) {
+          if (error.name === 'AbortError' || error.message.includes('timeout')) {
+            console.warn('Search request timed out in deployed environment');
+          } else if (error.message.includes('Network Error')) {
+            console.warn('Network connectivity issue in deployed environment');
+          }
+        }
+        // Silently fail in deployed environment to prevent crashes
       }
-    } catch (error) {
-      console.error('Places API error:', error);
-      // Don't show alert for every search error, just log it
-      if (error instanceof Error && 'code' in error && error.code === 'ECONNABORTED') {
-        console.warn('Search request timed out');
-      }
-    }
-    }, 300); // 300ms debounce
+    }, 500); // Increased debounce for deployed environment
   };
 
   // Get place details using backend Google API
   const getPlaceDetails = async (placeId: string, isSource: boolean) => {
     try {
       console.log('Getting place details for:', placeId);
+      
+      // Add abort controller for deployed environment
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+      
       const response = await axios.get(
         `https://bustrac-backend.onrender.com/google/place-details`,
         {
           params: {
             place_id: placeId,
           },
-          timeout: 10000, // 10 second timeout
+          timeout: 8000, // Reduced timeout for deployed environment
+          signal: controller.signal,
         }
       );
-
+      
+      clearTimeout(timeoutId);
       console.log('Place details response:', response.data);
 
       if (response.data && response.data.status === 'OK' && response.data.result) {
@@ -251,11 +260,17 @@ export default function RoutesScreen() {
         }
       } else {
         console.warn('Place details error:', response.data?.status || 'Unknown error');
-        Alert.alert('Location Error', 'Failed to get location details.');
+        // Don't show alert in deployed environment to prevent crashes
+        console.warn('Failed to get location details in deployed environment');
       }
     } catch (error) {
       console.error('Place details error:', error);
-      Alert.alert('Location Error', 'Failed to get location details.');
+      // Handle deployment-specific errors gracefully
+      if (error instanceof Error && (error.name === 'AbortError' || error.message.includes('timeout'))) {
+        console.warn('Place details request timed out in deployed environment');
+      } else {
+        console.warn('Failed to get location details in deployed environment');
+      }
     }
   };
 
@@ -272,6 +287,10 @@ export default function RoutesScreen() {
       const destination = `${destCoords.lat},${destCoords.lng}`;
 
       console.log('Fetching routes from:', origin, 'to:', destination);
+      
+      // Add abort controller and reduced timeout for deployed environment
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 12000);
 
       const response = await axios.get<GoogleDirectionsResponse>(
         `https://bustrac-backend.onrender.com/google/directions`,
@@ -280,8 +299,12 @@ export default function RoutesScreen() {
             origin,
             destination,
           },
+          timeout: 12000, // Increased timeout for directions API
+          signal: controller.signal,
         }
       );
+      
+      clearTimeout(timeoutId);
 
       console.log('Directions API response:', response.data);
 
@@ -318,7 +341,18 @@ export default function RoutesScreen() {
       }
     } catch (error) {
       console.error('Directions API error:', error);
-      Alert.alert('Route Error', 'Failed to fetch routes. Please check your internet connection and try again.');
+      // Handle deployment-specific errors gracefully
+      if (error instanceof Error) {
+        if (error.name === 'AbortError' || error.message.includes('timeout')) {
+          Alert.alert('Route Error', 'Request timed out. Please try again with a stable internet connection.');
+        } else if (error.message.includes('Network Error')) {
+          Alert.alert('Network Error', 'Please check your internet connection and try again.');
+        } else {
+          Alert.alert('Route Error', 'Failed to fetch routes. Please try again.');
+        }
+      } else {
+        Alert.alert('Route Error', 'An unexpected error occurred. Please try again.');
+      }
     } finally {
       setLoadingRoutes(false);
     }
@@ -375,7 +409,7 @@ export default function RoutesScreen() {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
-          timeout: 15000, // 15 second timeout
+          timeout: 12000, // Reduced timeout for deployed environment
         }
       );
 
@@ -487,6 +521,34 @@ export default function RoutesScreen() {
     }
   };
 
+  // Show loading state while auth is being checked
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.errorContainer}>
+          <ActivityIndicator size="large" color="#2196F3" />
+          <Text style={styles.errorText}>Loading...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+  
+  if (hasError) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Something went wrong</Text>
+          <TouchableOpacity 
+            style={styles.retryButton} 
+            onPress={() => setHasError(false)}
+          >
+            <Text style={styles.retryButtonText}>Try Again</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   // Show authentication warning if not logged in
   if (!isAuthenticated()) {
     return (
@@ -504,8 +566,8 @@ export default function RoutesScreen() {
     );
   }
 
-  return (
-    <SafeAreaView style={styles.container}>
+    return (
+      <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView 
         style={styles.container} 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -533,6 +595,9 @@ export default function RoutesScreen() {
               }}
               showsUserLocation={false}
               showsMyLocationButton={false}
+              onMapReady={() => {
+                console.log('Map loaded successfully');
+              }}
             >
               {/* Source Marker */}
               {sourceCoords && (
@@ -787,9 +852,9 @@ export default function RoutesScreen() {
             </View>
           </View>
         </Modal>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
-  );
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    );
 }
 
 const styles = StyleSheet.create({
@@ -1105,6 +1170,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#4CAF50',
   },
   createButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  retryButton: {
+    backgroundColor: '#2196F3',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    marginTop: 16,
+  },
+  retryButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
