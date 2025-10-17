@@ -419,8 +419,8 @@ export default function RoutesScreen() {
           routeId: response.data.route._id,
           source: sourceText,
           destination: destText,
-          sourceCoords,
-          destinationCoords: destCoords,
+          sourceCoords: sourceCoords!,
+          destinationCoords: destCoords!,
           selectedRoute: selectedRoute
         });
         
