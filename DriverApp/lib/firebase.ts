@@ -1,5 +1,5 @@
-import { initializeApp, getApps } from 'firebase/app';
-import { getAnalytics, isSupported } from 'firebase/analytics';
+import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
+import { getAnalytics, isSupported, Analytics } from 'firebase/analytics';
 import { Platform } from 'react-native';
 
 // Your Firebase configuration
@@ -14,7 +14,7 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-let app;
+let app: FirebaseApp;
 if (getApps().length === 0) {
   app = initializeApp(firebaseConfig);
 } else {
@@ -22,7 +22,7 @@ if (getApps().length === 0) {
 }
 
 // Initialize Analytics (only on web platform)
-let analytics;
+let analytics: Analytics | undefined;
 if (Platform.OS === 'web') {
   isSupported().then((supported) => {
     if (supported) {
