@@ -1,40 +1,28 @@
-// Crashlytics setup for React Native
-import crashlytics from '@react-native-firebase/crashlytics';
-
+// Crashlytics setup for Expo/Web (using console logging as fallback)
 // Initialize crashlytics
 export const initializeCrashlytics = () => {
-  // Enable crashlytics collection
-  crashlytics().setCrashlyticsCollectionEnabled(true);
-  
-  console.log('Firebase Crashlytics initialized');
+  console.log('Firebase Crashlytics initialized (Web fallback)');
 };
 
 // Log custom errors
 export const logError = (error: Error, context?: string) => {
-  if (context) {
-    crashlytics().log(`Context: ${context}`);
-  }
-  crashlytics().recordError(error);
+  console.error(`[Crashlytics] ${context || 'Error'}:`, error);
+  // In production, you could send this to a logging service
 };
 
 // Log custom events
 export const logEvent = (event: string, attributes?: { [key: string]: string }) => {
-  crashlytics().log(event);
-  if (attributes) {
-    Object.entries(attributes).forEach(([key, value]) => {
-      crashlytics().setAttribute(key, value);
-    });
-  }
+  console.log(`[Crashlytics] Event: ${event}`, attributes);
+  // In production, you could send this to an analytics service
 };
 
 // Set user identifier
 export const setUserId = (userId: string) => {
-  crashlytics().setUserId(userId);
+  console.log(`[Crashlytics] User ID set: ${userId}`);
+  // In production, you could store this for error attribution
 };
 
 // Test crash (for testing purposes only)
 export const testCrash = () => {
-  crashlytics().crash();
+  console.warn('[Crashlytics] Test crash called (no-op in web environment)');
 };
-
-export default crashlytics;
